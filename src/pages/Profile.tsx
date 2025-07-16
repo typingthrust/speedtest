@@ -5,25 +5,29 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Keyboard, Bell, User as UserIcon, Award, Users, BookOpen, Rocket } from 'lucide-react';
 import { ExpandableTabs } from '../components/ui/expandable-tabs';
 import type { OverlayType } from '../components/OverlayProvider';
-import { Line } from 'react-chartjs-2';
+import { Line, Bar } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
   PointElement,
   LineElement,
+  BarElement,
   Filler,
   Title,
   Tooltip,
   Legend,
 } from 'chart.js';
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Filler, Title, Tooltip, Legend);
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Filler, Title, Tooltip, Legend);
 import Navbar from '../components/Navbar';
 import Certificate from '../components/Certificate';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import KeyboardHeatmap from '../components/KeyboardHeatmap';
 import Footer from '../components/Footer';
+import { supabase } from '../lib/supabaseClient';
+import { useUser } from '@clerk/clerk-react';
+import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '../components/ui/alert-dialog';
 
 interface Stats {
   wpm?: number;
@@ -142,22 +146,30 @@ function filterHistory(history: any[], duration: string, range: string) {
 }
 
 export default function Profile() {
-  const { user, logout } = useAuth();
+  const { user, loading, logout } = useAuth();
   const { state } = usePersonalization();
   const navigate = useNavigate();
+  const clerkUser = useUser().user;
   // Filter state
   const [selectedDuration, setSelectedDuration] = useState('all');
   const [selectedRange, setSelectedRange] = useState('all');
   // Tab state for analytics
   const [selectedTab, setSelectedTab] = useState<'overview' | 'advanced'>('overview');
+  // Dialog state
+  const [showDeleteProgress, setShowDeleteProgress] = useState(false);
+  const [showDeleteAccount, setShowDeleteAccount] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  // Add state for advanced analytics tab
+  const [activeAnalyticsTab, setActiveAnalyticsTab] = useState('Speed Trends');
 
-  // Redirect to /signin if not authenticated
+  // Redirect to /signin if not authenticated, but only after loading is complete
   React.useEffect(() => {
-    if (!user) {
+    if (!loading && !user) {
       navigate('/signin', { replace: true });
     }
-  }, [user, navigate]);
+  }, [user, loading, navigate]);
 
+  if (loading) return null;
   if (!user) {
     // Optionally, render nothing while redirecting
     return null;
@@ -196,34 +208,47 @@ export default function Profile() {
       {
         label: 'WPM',
         data: wpmData,
-        borderColor: '#6366f1',
-        backgroundColor: 'rgba(99,102,241,0.08)',
+        borderColor: '#111',
+        backgroundColor: 'rgba(34,34,34,0.08)',
         fill: true,
         tension: 0.4,
         pointRadius: 2,
+        pointBackgroundColor: '#333',
         borderWidth: 2,
       },
       {
         label: 'Accuracy',
         data: accData,
-        borderColor: '#10b981',
-        backgroundColor: 'rgba(16,185,129,0.08)',
+        borderColor: '#bbb',
+        backgroundColor: 'rgba(180,180,180,0.08)',
         fill: true,
         tension: 0.4,
         pointRadius: 2,
+        pointBackgroundColor: '#bbb',
         borderWidth: 2,
       },
     ],
   };
+  // Calculate max for Y axis with 10% headroom
+  const maxY = Math.max(100, Math.ceil(Math.max(...wpmData, ...accData) * 1.1));
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
-    plugins: { legend: { display: true }, tooltip: { enabled: true } },
-    scales: {
-      x: { display: false },
-      y: { display: true, min: 0, max: 100, ticks: { color: '#bdbdbd', font: { size: 12 } } },
+    plugins: {
+      legend: { display: true, labels: { color: '#222', font: { size: 14 } } },
+      tooltip: { enabled: true, backgroundColor: '#222', titleColor: '#fff', bodyColor: '#fff' },
     },
-    elements: { line: { borderWidth: 2 } },
+    scales: {
+      x: { display: false, grid: { color: '#eee' }, ticks: { color: '#bbb' } },
+      y: {
+        display: true,
+        min: 0,
+        max: maxY,
+        grid: { color: '#eee' },
+        ticks: { color: '#bbb', font: { size: 12 } },
+      },
+    },
+    elements: { line: { borderWidth: 2 }, point: { backgroundColor: '#333' } },
   };
 
   // --- Error Heatmap Aggregation ---
@@ -306,11 +331,165 @@ export default function Profile() {
     pdf.save('ProType-Certificate.pdf');
   };
 
+  // Delete Progress handler
+  async function handleDeleteProgress() {
+    if (!user) return;
+    setDeleting(true);
+    await supabase.from('user_stats').delete().eq('user_id', user.id);
+    await supabase.from('test_results').delete().eq('user_id', user.id);
+    await supabase.from('user_gamification').delete().eq('user_id', user.id);
+    setDeleting(false);
+    window.location.reload();
+  }
+
+  // Delete Account handler
+  async function handleDeleteAccount() {
+    if (!user || !clerkUser) return;
+    setDeleting(true);
+    // Call backend to delete Clerk account
+    try {
+      const res = await fetch('/api/delete-account', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.id }),
+      });
+      if (!res.ok) throw new Error('Failed to delete account');
+      // Delete analytics after account deletion
+      await supabase.from('user_stats').delete().eq('user_id', user.id);
+      await supabase.from('test_results').delete().eq('user_id', user.id);
+      await supabase.from('user_gamification').delete().eq('user_id', user.id);
+      setDeleting(false);
+      // Log out and redirect
+      await logout();
+      navigate('/', { replace: true });
+    } catch (err) {
+      setDeleting(false);
+      alert('Account deletion failed. Please try again or contact support.');
+    }
+  }
+
+  // Consistency Score: 100 - (stddev of WPM / mean WPM) * 100, clamped 0-100
+  let consistency = '-';
+  if (filteredHistory.length > 1) {
+    const wpmValues = filteredHistory.map(h => h.wpm || 0);
+    const mean = wpmValues.reduce((a, b) => a + b, 0) / wpmValues.length;
+    const variance = wpmValues.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / wpmValues.length;
+    const stddev = Math.sqrt(variance);
+    if (mean > 0) {
+      consistency = String(Math.max(0, Math.min(100, Math.round(100 - (stddev / mean) * 100))));
+    }
+  }
+
+  // --- Advanced Analytics Tab Content ---
+  // Helper: Error distribution by character
+  const errorCharCounts: Record<string, number> = {};
+  for (const session of filteredHistory) {
+    if (session.keystrokeStats && session.keystrokeStats.keyCounts) {
+      for (const [key, count] of Object.entries(session.keystrokeStats.keyCounts)) {
+        errorCharCounts[key] = (errorCharCounts[key] || 0) + Number(count);
+      }
+    }
+  }
+  const errorCharLabels = Object.keys(errorCharCounts);
+  const errorCharData = Object.values(errorCharCounts);
+  const errorCharChartData = {
+    labels: errorCharLabels,
+    datasets: [
+      {
+        label: 'Errors',
+        data: errorCharData,
+        backgroundColor: '#bbb',
+        borderColor: '#111',
+        borderWidth: 1,
+      },
+    ],
+  };
+  const errorCharChartOptions = {
+    responsive: true,
+    plugins: { legend: { display: false }, tooltip: { enabled: true, backgroundColor: '#222', titleColor: '#fff', bodyColor: '#fff' } },
+    scales: { x: { grid: { color: '#eee' }, ticks: { color: '#bbb' } }, y: { grid: { color: '#eee' }, ticks: { color: '#bbb' }, beginAtZero: true } },
+  };
+  // Helper: Time per session
+  const sessionTimes = filteredHistory.map(h => h.time || 0);
+  const sessionTimeLabels = filteredHistory.map((h, i) => `Test ${i + 1}`);
+  const sessionTimeChartData = {
+    labels: sessionTimeLabels,
+    datasets: [
+      {
+        label: 'Time (s)',
+        data: sessionTimes,
+        fill: true,
+        backgroundColor: 'rgba(34,34,34,0.08)',
+        borderColor: '#111',
+        pointBackgroundColor: '#333',
+        tension: 0.4,
+      },
+    ],
+  };
+  const sessionTimeChartOptions = {
+    responsive: true,
+    plugins: { legend: { display: false }, tooltip: { enabled: true, backgroundColor: '#222', titleColor: '#fff', bodyColor: '#fff' } },
+    scales: { x: { grid: { color: '#eee' }, ticks: { color: '#bbb' } }, y: { grid: { color: '#eee' }, ticks: { color: '#bbb' }, beginAtZero: true } },
+  };
+  // Helper: Consistency chart (WPM variance)
+  const wpmVarianceLabels = filteredHistory.map((h, i) => i + 1);
+  const wpmVarianceData = filteredHistory.map(h => h.wpm || 0);
+  const wpmVarianceChartData = {
+    labels: wpmVarianceLabels,
+    datasets: [
+      {
+        label: 'WPM',
+        data: wpmVarianceData,
+        borderColor: '#111',
+        backgroundColor: 'rgba(34,34,34,0.08)',
+        fill: true,
+        tension: 0.4,
+        pointRadius: 2,
+        pointBackgroundColor: '#333',
+        borderWidth: 2,
+      },
+    ],
+  };
+  const wpmVarianceChartOptions = {
+    responsive: true,
+    plugins: { legend: { display: false }, tooltip: { enabled: true, backgroundColor: '#222', titleColor: '#fff', bodyColor: '#fff' } },
+    scales: { x: { grid: { color: '#eee' }, ticks: { color: '#bbb' } }, y: { grid: { color: '#eee' }, ticks: { color: '#bbb' }, beginAtZero: true } },
+  };
+  // Helper: Category breakdown
+  const categoryStats: Record<string, { wpm: number[] }> = {};
+  for (const h of filteredHistory) {
+    const cat = h.testType || 'General';
+    if (!categoryStats[cat]) categoryStats[cat] = { wpm: [] };
+    if (h.wpm) categoryStats[cat].wpm.push(h.wpm);
+  }
+  const categoryLabels = Object.keys(categoryStats);
+  const categoryWpmData = categoryLabels.map(cat => {
+    const arr = categoryStats[cat].wpm;
+    return arr.length ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) : 0;
+  });
+  const categoryChartData = {
+    labels: categoryLabels,
+    datasets: [
+      {
+        label: 'Avg WPM',
+        data: categoryWpmData,
+        backgroundColor: '#bbb',
+        borderColor: '#111',
+        borderWidth: 1,
+      },
+    ],
+  };
+  const categoryChartOptions = {
+    responsive: true,
+    plugins: { legend: { display: false }, tooltip: { enabled: true, backgroundColor: '#222', titleColor: '#fff', bodyColor: '#fff' } },
+    scales: { x: { grid: { color: '#eee' }, ticks: { color: '#bbb' } }, y: { grid: { color: '#eee' }, ticks: { color: '#bbb' }, beginAtZero: true } },
+  };
+
   return (
     <div className="min-h-screen bg-white flex flex-col">
       {/* Main Dynamic Navbar */}
       <Navbar />
-      <div className="w-full max-w-7xl mx-auto flex flex-col gap-10 px-4 md:px-8 py-12">
+      <div className="w-full flex flex-col gap-10 px-2 md:px-8 py-12">
         {/* Profile Header */}
         <section className="flex flex-col md:flex-row items-center md:items-start gap-10 md:gap-16 w-full">
           {/* Redesigned Avatar & Info Card */}
@@ -352,10 +531,54 @@ export default function Profile() {
               >
                 Download Certificate
               </button>
+              <div className="mt-2 flex flex-row gap-2 w-full">
+                <button
+                  onClick={() => setShowDeleteProgress(true)}
+                  className="px-4 py-2 rounded-full bg-red-600 text-white font-semibold hover:bg-red-700 transition text-sm flex-1"
+                >
+                  Delete Progress
+                </button>
+                <button
+                  onClick={() => setShowDeleteAccount(true)}
+                  className="px-4 py-2 rounded-full bg-red-900 text-white font-semibold hover:bg-red-800 transition text-sm flex-1"
+                >
+                  Delete Account
+                </button>
+              </div>
+              {/* Delete Progress Dialog */}
+              <AlertDialog open={showDeleteProgress} onOpenChange={setShowDeleteProgress}>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete All Progress?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This will permanently delete all your analytics, stats, and test history. This cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+                    <AlertDialogAction disabled={deleting} onClick={handleDeleteProgress} className="bg-red-600 hover:bg-red-700">Delete Progress</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+              {/* Delete Account Dialog */}
+              <AlertDialog open={showDeleteAccount} onOpenChange={setShowDeleteAccount}>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete Account?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This will permanently delete your account and all analytics. This cannot be undone. Are you sure?
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+                    <AlertDialogAction disabled={deleting} onClick={handleDeleteAccount} className="bg-red-900 hover:bg-red-800">Delete Account</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
             {/* Hidden Certificate for download rendering */}
             <div style={{ position: 'absolute', left: '-9999px', top: 0, pointerEvents: 'none' }} aria-hidden="true">
-              <Certificate name={user.username || user.email || 'User'} wpm={bestWpm} accuracy={bestAccuracy} date={new Date().toLocaleDateString()} />
+              <Certificate name={user.username || user.email || 'User'} wpm={bestWpm} accuracy={bestAccuracy} date={new Date().toLocaleDateString()} email={user.email || ''} />
             </div>
           </div>
           {/* Analytics Section with Tabs */}
@@ -434,321 +657,127 @@ export default function Profile() {
               </>
             )}
             {selectedTab === 'advanced' && (
-              <div className="w-full bg-white rounded-2xl shadow p-4 sm:p-8 border border-gray-100 flex flex-col items-center min-h-[300px]">
-                {filteredHistory.length < 2 ? (
-                  <div className="flex flex-col items-center justify-center w-full h-64">
-                    <span className="text-2xl font-bold text-gray-900 mb-2 text-center">Advanced Analytics</span>
-                    <span className="text-gray-500 text-base mb-6 text-center">Unlock deep-dive stats like per-finger analysis, error heatmaps, and actionable insights by completing your first typing tests.</span>
-                    <span className="text-gray-400 text-sm mb-4 text-center">Complete at least 2 tests to view your advanced analytics.</span>
-                    <button
-                      className="px-6 py-2 rounded-full bg-black text-white font-semibold hover:bg-gray-900 transition text-base shadow-sm"
-                      onClick={() => setSelectedTab('overview')}
-                    >
-                      Take a Typing Test
-                    </button>
-                  </div>
-                ) : (
-                  <>
-                    {/* Export/Download Section */}
-                    <div className="w-full max-w-3xl flex flex-row gap-4 items-center justify-end mb-4">
+              <div className="w-full bg-white rounded-2xl shadow p-6 md:p-10 border border-gray-100 flex flex-col gap-10 min-h-[300px]">
+                {/* Top Title and Sub-navigation */}
+                <div className="w-full flex flex-col gap-4">
+                  <h1 className="text-3xl font-extrabold text-black mb-2 text-left" style={{fontFamily:'Inter, SF Pro, system-ui, sans-serif'}}>Advanced Analytics</h1>
+                  {/* Sub-navigation Tabs */}
+                  <div
+                    className="flex flex-row gap-4 border-b border-gray-200 mb-6 overflow-x-auto flex-nowrap -mx-4 px-4 scrollbar-hide"
+                    style={{ WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                  >
+                    {['Speed Trends', 'Accuracy', 'Time Insights', 'Consistency', 'Category Breakdown'].map(tab => (
                       <button
-                        className="px-4 py-2 rounded-lg bg-black text-white font-semibold hover:bg-gray-800 transition text-sm shadow-sm border border-black"
-                        onClick={async () => {
-                          // Export analytics as PDF using jsPDF
-                          const pdf = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' });
-                          pdf.setFontSize(18);
-                          pdf.text('ProType Advanced Analytics', 40, 40);
-                          pdf.setFontSize(12);
-                          let y = 70;
-                          pdf.text('WPM Trend:', 40, y);
-                          filteredHistory.forEach((h, i) => {
-                            pdf.text(`${h.timestamp ? new Date(h.timestamp).toLocaleDateString() : i + 1}: ${h.wpm || 0} WPM`, 60, y + 18 + i * 16);
-                          });
-                          y += 18 + filteredHistory.length * 16 + 10;
-                          pdf.text('Accuracy Trend:', 40, y);
-                          filteredHistory.forEach((h, i) => {
-                            pdf.text(`${h.timestamp ? new Date(h.timestamp).toLocaleDateString() : i + 1}: ${h.accuracy || 0}%`, 60, y + 18 + i * 16);
-                          });
-                          y += 18 + filteredHistory.length * 16 + 10;
-                          pdf.text('Error Rate Trend:', 40, y);
-                          filteredHistory.forEach((h, i) => {
-                            const errorRate = h.errorRate !== undefined ? h.errorRate : (h.errors && h.charsTyped ? Math.round((h.errors / h.charsTyped) * 100) : 0);
-                            pdf.text(`${h.timestamp ? new Date(h.timestamp).toLocaleDateString() : i + 1}: ${errorRate}%`, 60, y + 18 + i * 16);
-                          });
-                          pdf.save('ProType-Advanced-Analytics.pdf');
-                        }}
+                        key={tab}
+                        className={`px-4 py-2 text-base font-medium rounded-t-lg focus:outline-none transition-colors duration-150 whitespace-nowrap ${activeAnalyticsTab === tab ? 'bg-black text-white' : 'bg-gray-100 text-gray-700'}`}
+                        onClick={() => setActiveAnalyticsTab(tab)}
+                        style={{fontFamily:'Inter, SF Pro, system-ui, sans-serif'}}
                       >
-                        Export PDF
-                      </button>
-                      <button
-                        className="px-4 py-2 rounded-lg bg-black text-white font-semibold hover:bg-gray-800 transition text-sm shadow-sm border border-black"
-                        onClick={() => {
-                          // Export analytics as CSV
-                          let csv = 'Date,WPM,Accuracy,Error Rate\n';
-                          filteredHistory.forEach((h, i) => {
-                            const date = h.timestamp ? new Date(h.timestamp).toLocaleDateString() : i + 1;
-                            const wpm = h.wpm || 0;
-                            const acc = h.accuracy || 0;
-                            const errorRate = h.errorRate !== undefined ? h.errorRate : (h.errors && h.charsTyped ? Math.round((h.errors / h.charsTyped) * 100) : 0);
-                            csv += `${date},${wpm},${acc},${errorRate}\n`;
-                          });
-                          const blob = new Blob([csv], { type: 'text/csv' });
-                          const url = URL.createObjectURL(blob);
-                          const a = document.createElement('a');
-                          a.href = url;
-                          a.download = 'ProType-Advanced-Analytics.csv';
-                          document.body.appendChild(a);
-                          a.click();
-                          document.body.removeChild(a);
-                          URL.revokeObjectURL(url);
-                        }}
-                      >
-                        Export CSV
-                      </button>
-                    </div>
-                    {/* Trend Charts Section */}
-                    <div className="w-full max-w-3xl mb-8">
-                      <div className="text-lg font-bold text-gray-800 mb-1">Trend Charts</div>
-                      <div className="text-sm text-gray-500 mb-4">Track your WPM, accuracy, and error rate over time. Use the filter to view different time ranges.</div>
-                      <div className="flex flex-wrap gap-2 items-center mb-4">
-                        {ranges.map(r => (
-                          <button
-                            key={r.value}
-                            className={`px-4 py-2 rounded-lg text-sm font-semibold border border-gray-200 bg-white text-gray-700 hover:bg-gray-100 transition-all duration-150 ${selectedRange === r.value ? 'bg-blue-100 text-blue-700 border-blue-300' : ''}`}
-                            onClick={() => setSelectedRange(r.value)}
-                          >
-                            {r.label}
+                        {tab}
                           </button>
                         ))}
                       </div>
-                      <div className="w-full h-56 bg-white rounded-xl shadow border border-gray-100 flex flex-col items-center justify-center">
-                        {filteredHistory.length > 1 ? (
-                          <Line
-                            data={{
-                              labels: filteredHistory.map((h, i) => h.timestamp ? new Date(h.timestamp).toLocaleDateString() : i + 1),
-                              datasets: [
-                                {
-                                  label: 'WPM',
-                                  data: filteredHistory.map(h => h.wpm || 0),
-                                  borderColor: '#6366f1',
-                                  backgroundColor: 'rgba(99,102,241,0.08)',
-                                  fill: true,
-                                  tension: 0.4,
-                                  pointRadius: 2,
-                                  borderWidth: 2,
-                                },
-                                {
-                                  label: 'Accuracy',
-                                  data: filteredHistory.map(h => h.accuracy || 0),
-                                  borderColor: '#10b981',
-                                  backgroundColor: 'rgba(16,185,129,0.08)',
-                                  fill: true,
-                                  tension: 0.4,
-                                  pointRadius: 2,
-                                  borderWidth: 2,
-                                },
-                                {
-                                  label: 'Error Rate',
-                                  data: filteredHistory.map(h => h.errorRate !== undefined ? h.errorRate : (h.errors && h.charsTyped ? Math.round((h.errors / h.charsTyped) * 100) : 0)),
-                                  borderColor: '#ef4444',
-                                  backgroundColor: 'rgba(239,68,68,0.08)',
-                                  fill: true,
-                                  tension: 0.4,
-                                  pointRadius: 2,
-                                  borderWidth: 2,
-                                },
-                              ],
-                            }}
-                            options={{
-                              responsive: true,
-                              maintainAspectRatio: false,
-                              plugins: { legend: { display: true }, tooltip: { enabled: true } },
-                              scales: {
-                                x: { display: true, title: { display: true, text: 'Test' }, ticks: { color: '#bdbdbd', font: { size: 12 } } },
-                                y: { display: true, min: 0, max: 100, title: { display: true, text: 'Value' }, ticks: { color: '#bdbdbd', font: { size: 12 } } },
-                              },
-                              elements: { line: { borderWidth: 2 } },
-                            }}
-                            style={{ width: '100%', height: 200 }}
-                          />
-                        ) : (
-                          <span className="text-gray-400 text-sm flex items-center justify-center h-full">Not enough data to show trend charts</span>
-                        )}
-                      </div>
-                    </div>
-                    {/* Global Comparison Section */}
-                    <div className="w-full max-w-3xl mb-8">
-                      <div className="text-lg font-bold text-gray-900 mb-1">Global Comparison</div>
-                      <div className="text-sm text-gray-500 mb-4">See how you stack up against global averages and top performers.</div>
-                      {(() => {
-                        const globalWpm = 52;
-                        const globalAccuracy = 93;
-                        const globalErrorRate = 7;
-                        const userWpm = wpm;
-                        const userAccuracy = accuracy;
-                        const userErrorRate = 100 - accuracy;
-                        // Mock percentiles
-                        const wpmPercentile = userWpm >= globalWpm ? 85 : 45;
-                        const accuracyPercentile = userAccuracy >= globalAccuracy ? 80 : 40;
-                        return (
-                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 w-full">
-                            <div className="bg-white rounded-2xl shadow-md p-6 flex flex-col items-center justify-center border border-gray-200">
-                              <div className="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">WPM</div>
-                              <div className="text-2xl font-bold text-gray-900 mb-1">{userWpm}</div>
-                              <div className="text-sm text-gray-500">Global Avg: <span className="font-semibold text-gray-700">{globalWpm}</span></div>
-                              <div className="text-xs text-gray-600 mt-1">Faster than {wpmPercentile}% of users</div>
-                            </div>
-                            <div className="bg-white rounded-2xl shadow-md p-6 flex flex-col items-center justify-center border border-gray-200">
-                              <div className="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">Accuracy</div>
-                              <div className="text-2xl font-bold text-gray-900 mb-1">{userAccuracy}%</div>
-                              <div className="text-sm text-gray-500">Global Avg: <span className="font-semibold text-gray-700">{globalAccuracy}%</span></div>
-                              <div className="text-xs text-gray-600 mt-1">More accurate than {accuracyPercentile}% of users</div>
-                            </div>
-                            <div className="bg-white rounded-2xl shadow-md p-6 flex flex-col items-center justify-center border border-gray-200">
-                              <div className="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">Error Rate</div>
-                              <div className="text-2xl font-bold text-gray-900 mb-1">{userErrorRate}%</div>
-                              <div className="text-sm text-gray-500">Global Avg: <span className="font-semibold text-gray-700">{globalErrorRate}%</span></div>
-                            </div>
-                          </div>
-                        );
-                      })()}
-                    </div>
-                    {/* Achievements & Milestones Section */}
-                    <div className="w-full max-w-3xl mb-8">
-                      <div className="text-lg font-bold text-gray-900 mb-1">Achievements & Milestones</div>
-                      <div className="text-sm text-gray-500 mb-4">Celebrate your progress and unlock new milestones as you improve!</div>
-                      <div className="flex flex-wrap gap-4 items-center justify-center">
-                        {/* Longest Streak */}
-                        <div className="flex flex-col items-center bg-gray-100 rounded-xl p-6 shadow border border-gray-200 min-w-[120px]">
-                          <span className="text-2xl font-bold text-gray-900 mb-1">{streak}</span>
-                          <span className="text-xs font-semibold text-gray-700 uppercase">Day Streak</span>
-                        </div>
-                        {/* Best WPM */}
-                        <div className="flex flex-col items-center bg-gray-100 rounded-xl p-6 shadow border border-gray-200 min-w-[120px]">
-                          <span className="text-2xl font-bold text-gray-900 mb-1">{bestWpm}</span>
-                          <span className="text-xs font-semibold text-gray-700 uppercase">Best WPM</span>
-                        </div>
-                        {/* Best Accuracy */}
-                        <div className="flex flex-col items-center bg-gray-100 rounded-xl p-6 shadow border border-gray-200 min-w-[120px]">
-                          <span className="text-2xl font-bold text-gray-900 mb-1">{bestAccuracy}%</span>
-                          <span className="text-xs font-semibold text-gray-700 uppercase">Best Accuracy</span>
-                        </div>
-                        {/* Most Improved */}
-                        {filteredHistory.length > 3 && (() => {
-                          const first = filteredHistory[0];
-                          const last = filteredHistory[filteredHistory.length - 1];
-                          const wpmDiff = (last.wpm || 0) - (first.wpm || 0);
-                          const accDiff = (last.accuracy || 0) - (first.accuracy || 0);
-                          if (wpmDiff > 10 || accDiff > 5) {
-                            return (
-                              <div className="flex flex-col items-center bg-gray-100 rounded-xl p-6 shadow border border-gray-200 min-w-[120px]">
-                                <span className="text-2xl font-bold text-gray-900 mb-1">+{wpmDiff > 10 ? wpmDiff : accDiff}%</span>
-                                <span className="text-xs font-semibold text-gray-700 uppercase">Most Improved</span>
-                              </div>
-                            );
-                          }
-                          return null;
-                        })()}
-                        {/* Consistency */}
-                        {filteredHistory.length > 4 && (() => {
-                          const last5 = filteredHistory.slice(-5);
-                          const accs = last5.map(h => h.accuracy || 0);
-                          const minAcc = Math.min(...accs);
-                          if (minAcc > 95) {
-                            return (
-                              <div className="flex flex-col items-center bg-gray-100 rounded-xl p-6 shadow border border-gray-200 min-w-[120px]">
-                                <span className="text-2xl font-bold text-gray-900 mb-1">{minAcc}%+</span>
-                                <span className="text-xs font-semibold text-gray-700 uppercase">Consistent Accuracy</span>
-                              </div>
-                            );
-                          }
-                          return null;
-                        })()}
-                      </div>
-                    </div>
-                {/* Error Heatmap Section */}
-                    <div className="w-full max-w-3xl mb-8 overflow-x-auto scrollbar-hide">
-                      <div className="text-lg font-bold text-gray-900 mb-1">Error Heatmap</div>
-                  <div className="text-sm text-gray-500 mb-4">See which keys you mistype most often across all your tests.</div>
-                      <div className="min-w-[340px] flex justify-center">
-                        <KeyboardHeatmap
-                          keyStats={errorKeyStats}
-                          title="Key Error Heatmap"
-                          minimal={true}
-                        />
-                      </div>
                 </div>
-                {/* Per-Finger Analysis Section */}
-                <div className="w-full max-w-2xl mb-8">
-                      <div className="text-lg font-bold text-gray-900 mb-1">Per-Finger Error Analysis</div>
-                  <div className="text-sm text-gray-500 mb-4">See which fingers make the most and fewest errors.</div>
-                      <div className="overflow-x-auto scrollbar-hide">
-                        <div className="flex flex-row items-end gap-2 sm:gap-4 h-32 w-full px-1 sm:px-2 min-w-[340px]">
-                          {fingerOrder.map(finger => {
-                            const value = fingerErrorStats[finger] || 0;
-                            const max = Math.max(...fingerOrder.map(f => fingerErrorStats[f] || 0), 1);
-                            const min = 0;
-                            const factor = (value - min) / (max - min);
-                            const color = `rgb(${230 - factor * 120},${230 - factor * 120},${230 - factor * 120})`;
-                            return (
-                      <div key={finger} className="flex flex-col items-center flex-1">
-                                <div className="w-6 sm:w-9 h-full flex items-end">
-                                  <div
-                                    className="rounded-t-lg"
-                                    style={{ height: `${value * 3 + 8}px`, minHeight: 8, width: '100%', background: color }}
-                                    title={`${finger}: ${value} errors`}
-                                    aria-label={`${finger}: ${value} errors`}
-                          ></div>
-                        </div>
-                        <div className="text-xs text-gray-600 mt-1 text-center whitespace-nowrap">{finger.replace(' ', '\n')}</div>
-                                <div className="text-xs text-gray-400">{value}</div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-                      <div className="mt-4 text-sm text-gray-700 text-center"></div>
-                </div>
-                {/* Actionable Insights Section */}
-                <div className="w-full max-w-2xl mb-2">
-                      <div className="text-lg font-bold text-gray-900 mb-1">Personalized Actionable Tips</div>
-                  <div className="flex flex-col gap-2 mt-2">
-                        {(() => {
-                          const tips: string[] = [...insights];
-                          if (filteredHistory.length > 3) {
-                            const last3 = filteredHistory.slice(-3);
-                            const wpmTrend = last3.map(h => h.wpm || 0);
-                            if (wpmTrend[2] > wpmTrend[0] + 5) {
-                              tips.push('Your WPM is improving! Keep up the great work and try more advanced texts.');
-                            } else if (wpmTrend[2] < wpmTrend[0] - 5) {
-                              tips.push('Your WPM has dropped recently. Consider reviewing your technique or taking a short break.');
-                            }
-                            const accTrend = last3.map(h => h.accuracy || 0);
-                            if (accTrend[2] > accTrend[0] + 3) {
-                              tips.push('Your accuracy is on the rise. Focus on maintaining this consistency.');
-                            } else if (accTrend[2] < accTrend[0] - 3) {
-                              tips.push('Accuracy has dipped. Slow down a bit and focus on precision.');
-                            }
-                          }
-                          if (wpm > 52) tips.push('You are above the global average WPM. Challenge yourself with longer or more difficult tests!');
-                          if (accuracy > 93) tips.push('Your accuracy is excellent. Try to maintain this while increasing speed.');
-                          if (mostErrorFinger && fingerErrorStats[mostErrorFinger] > 5) {
-                            tips.push(`Practice exercises that target your ${mostErrorFinger} to reduce errors.`);
-                          }
-                          if (streak >= 5) tips.push('Great streak! Consistency is key to improvement.');
-                          if (tips.length === 0) tips.push('Not enough data for insights yet. Complete more tests!');
-                          return tips.map((tip, i) => (
-                            <div key={i} className="bg-gray-100 rounded-lg px-4 py-2 text-gray-900 text-sm shadow-sm border border-gray-200 font-medium">{tip}</div>
-                          ));
-                        })()}
+                {/* Key Metrics Grid */}
+                <div className="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 mt-2">
+                  <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 flex flex-col items-start">
+                    <span className="text-xs text-gray-500 mb-1">Best WPM</span>
+                    <span className="text-2xl font-bold text-black">{bestWpm}</span>
+                  </div>
+                  <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 flex flex-col items-start">
+                    <span className="text-xs text-gray-500 mb-1">Lowest Accuracy</span>
+                    <span className="text-2xl font-bold text-black">{Math.min(...filteredHistory.map(h => h.accuracy || 100))}%</span>
+                  </div>
+                  <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 flex flex-col items-start">
+                    <span className="text-xs text-gray-500 mb-1">Total Tests</span>
+                    <span className="text-2xl font-bold text-black">{filteredHistory.length}</span>
+                  </div>
+                  <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 flex flex-col items-start">
+                    <span className="text-xs text-gray-500 mb-1">Total Errors</span>
+                    <span className="text-2xl font-bold text-black">{filteredHistory.reduce((sum, h) => sum + (h.errors || 0), 0)}</span>
+                  </div>
+                  <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 flex flex-col items-start">
+                    <span className="text-xs text-gray-500 mb-1">Consistency Score</span>
+                    <span className="text-2xl font-bold text-black">{consistency === '-' ? '-' : `${consistency}%`}</span>
+                  </div>
+                  <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 flex flex-col items-start">
+                    <span className="text-xs text-gray-500 mb-1">Time Spent Typing</span>
+                    <span className="text-2xl font-bold text-black">{formatTime(totalTime)}</span>
                   </div>
                 </div>
-                    {/* Placeholder for future enhancements: trend charts, export, comparison, etc. */}
-                    <div className="w-full max-w-2xl mt-6 flex flex-col items-center gap-4">
-                      {/* Future: Trend charts, export/download, comparison, achievements */}
+                {/* Tab Content */}
+                <div className="w-full mt-8">
+                  {activeAnalyticsTab === 'Speed Trends' && (
+                    <section className="w-full flex flex-col gap-6">
+                      <h2 className="text-xl font-bold text-black mb-2">Speed Trends</h2>
+                      <div className="w-full h-72 bg-white rounded-xl border border-gray-200 flex items-center justify-center">
+                        {/* Line chart: WPM & Accuracy over time (black/gray lines) */}
+                        {filteredHistory.length > 1 ? (
+                          <Line data={chartData} options={{...chartOptions, elements: { line: { borderColor: '#111' }, point: { backgroundColor: '#333' } }, plugins: { legend: { labels: { color: '#222' } } }}} style={{ width: '100%', height: 260 }} />
+                        ) : (
+                          <span className="text-gray-400 text-sm">Not enough data to show trends</span>
+                        )}
+                      </div>
+                    </section>
+                  )}
+                  {activeAnalyticsTab === 'Accuracy' && (
+                    <section className="w-full flex flex-col gap-6">
+                      <h2 className="text-xl font-bold text-black mb-2">Accuracy</h2>
+                      <div className="w-full h-72 bg-white rounded-xl border border-gray-200 flex items-center justify-center">
+                        {errorCharLabels.length > 0 ? (
+                          <Bar data={errorCharChartData} options={errorCharChartOptions} style={{ width: '100%', height: 260 }} />
+                        ) : (
+                          <span className="text-gray-400 text-sm">No error data to show</span>
+                        )}
                     </div>
-                  </>
-                )}
+                    </section>
+                  )}
+                  {activeAnalyticsTab === 'Time Insights' && (
+                    <section className="w-full flex flex-col gap-6">
+                      <h2 className="text-xl font-bold text-black mb-2">Time Insights</h2>
+                      <div className="w-full h-72 bg-white rounded-xl border border-gray-200 flex items-center justify-center relative overflow-hidden">
+                        {sessionTimes.length > 0 ? (
+                          <Line data={sessionTimeChartData} options={sessionTimeChartOptions} style={{ width: '100%', height: '100%' }} />
+                        ) : (
+                          <span className="text-gray-400 text-sm">No session time data to show</span>
+                        )}
+                            </div>
+                    </section>
+                  )}
+                  {activeAnalyticsTab === 'Consistency' && (
+                    <section className="w-full flex flex-col gap-6">
+                      <h2 className="text-xl font-bold text-black mb-2">Consistency</h2>
+                      <div className="w-full h-72 bg-white rounded-xl border border-gray-200 flex items-center justify-center">
+                        {wpmVarianceData.length > 1 ? (
+                          <Line data={wpmVarianceChartData} options={wpmVarianceChartOptions} style={{ width: '100%', height: 260 }} />
+                        ) : (
+                          <span className="text-gray-400 text-sm">Not enough data to show consistency</span>
+                        )}
+                      </div>
+                      <div className="mt-4 text-lg font-semibold text-black">Consistency Score: {consistency === '-' ? '-' : `${consistency}%`}</div>
+                    </section>
+                  )}
+                  {activeAnalyticsTab === 'Category Breakdown' && (
+                    <section className="w-full flex flex-col gap-6">
+                      <h2 className="text-xl font-bold text-black mb-2">Category Breakdown</h2>
+                      <div className="w-full h-72 bg-white rounded-xl border border-gray-200 flex items-center justify-center">
+                        {categoryLabels.length > 0 ? (
+                          <Bar data={categoryChartData} options={categoryChartOptions} style={{ width: '100%', height: 260 }} />
+                        ) : (
+                          <span className="text-gray-400 text-sm">No category data to show</span>
+                        )}
+                      </div>
+                      <div className="w-full mt-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                        {categoryLabels.map((cat, i) => (
+                          <div key={cat} className="bg-white border border-gray-200 rounded-xl p-4 flex flex-col">
+                            <span className="text-xs text-gray-500 mb-1">{cat}</span>
+                            <span className="text-lg font-bold text-black">{categoryWpmData[i]} WPM</span>
+                </div>
+                        ))}
+                      </div>
+                    </section>
+                  )}
+                </div>
               </div>
             )}
           </div>

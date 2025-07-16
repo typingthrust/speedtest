@@ -35,7 +35,7 @@ function MinimalLeaderboardOverlay({ open, onClose, children }: { open: boolean;
     >
       <div
         ref={overlayRef}
-        className="relative w-full max-w-2xl mx-auto bg-white/90 rounded-3xl border border-white/30 shadow-xl flex flex-col items-center min-h-[40vh] max-h-[95vh] min-w-[320px] p-0"
+        className="relative w-full max-w-2xl mx-auto bg-white/90 rounded-3xl border border-white/30 shadow-xl flex flex-col items-center min-h-[60vh] max-h-[95vh] min-w-[90vw] sm:min-w-[320px] px-4 p-0"
         style={{ boxShadow: '0 4px 32px 0 rgba(0,0,0,0.08)', border: '1px solid rgba(255,255,255,0.3)' }}
       >
         {/* X Close Button absolutely positioned, not in header */}

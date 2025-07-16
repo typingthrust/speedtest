@@ -50,6 +50,12 @@ const KeyboardHeatmap = ({ keyStats }: { keyStats: Record<string, number> }) => 
     if (count < maxCount * 0.9) return '#333333'; // dark grey
     return '#000000'; // black
   };
+  const getTextColor = (bg: string) => {
+    // If background is dark grey or black, use white
+    if (bg === '#333333' || bg === '#000000') return '#fff';
+    // Otherwise, use dark grey for contrast
+    return '#111';
+  };
   // Color legend for black/grey
   const legend = [
     { label: 'Low', color: '#e5e7eb' },
@@ -58,7 +64,7 @@ const KeyboardHeatmap = ({ keyStats }: { keyStats: Record<string, number> }) => 
     { label: 'Most', color: '#000000' },
   ];
   return (
-    <div className="w-full max-w-2xl mx-auto mt-2 p-2 sm:p-4 bg-white rounded-2xl shadow flex flex-col items-center">
+    <div className="w-full max-w-2xl mx-auto mt-2 p-2 sm:p-4 bg-white rounded-2xl flex flex-col items-center">
       <div className="text-xs sm:text-sm font-semibold text-gray-500 mb-2">Key Press Heatmap</div>
       <div className="flex gap-2 sm:gap-4 mb-2 sm:mb-4 text-[10px] sm:text-xs text-gray-400 flex-wrap justify-center">
         {legend.map(l => (
@@ -76,7 +82,7 @@ const KeyboardHeatmap = ({ keyStats }: { keyStats: Record<string, number> }) => 
                   key={k}
                   title={`${k}: ${count} presses`}
                   className="w-7 h-8 sm:w-10 sm:h-12 flex items-center justify-center rounded-lg font-bold text-xs sm:text-lg shadow-sm border border-gray-200 transition-all"
-                  style={{ background: color, color: color === '#000000' ? '#fff' : (count ? '#111' : '#9ca3af') }}
+                  style={{ background: color, color: getTextColor(color) }}
                 >
                   {k}
                 </div>
@@ -159,6 +165,15 @@ function formatTime(seconds: number) {
   return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
+// Helper to display printable or special key names
+const getDisplayChar = (char: string) => {
+  if (char === ' ') return 'Space';
+  if (char === '') return '?';
+  if (/^\s+$/.test(char)) return 'Whitespace';
+  if (char.length === 1 && char.charCodeAt(0) >= 32 && char.charCodeAt(0) <= 126) return char;
+  return '?';
+};
+
 const ResultScreen: React.FC<ResultScreenProps> = ({
   wpm,
   accuracy,
@@ -219,51 +234,51 @@ const ResultScreen: React.FC<ResultScreenProps> = ({
       {
         label: 'WPM',
         data: wpmData,
-        borderColor: '#4a4a4a',
+        borderColor: '#111', // darker line
         backgroundColor: 'transparent',
         fill: false,
         tension: 0.4,
-        pointRadius: 0,
-        borderWidth: 2,
+        pointRadius: 2,
+        borderWidth: 2.5,
       },
       {
         label: 'Accuracy',
         data: accData,
-        borderColor: '#c4c4c4',
+        borderColor: '#888', // grey line
         backgroundColor: 'transparent',
         fill: false,
         tension: 0.4,
-        pointRadius: 0,
-        borderWidth: 2,
+        pointRadius: 2,
+        borderWidth: 2.5,
       },
     ],
   };
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
-    layout: { padding: { top: 32, bottom: 24, left: 32, right: 32 } }, // More padding to prevent overflow
+    layout: { padding: { top: 12, bottom: 12, left: 12, right: 12 } }, // less padding
     plugins: {
       legend: { display: false },
-      tooltip: { enabled: false },
+      tooltip: { enabled: true, backgroundColor: '#222', titleColor: '#fff', bodyColor: '#fff', borderColor: '#444', borderWidth: 1 },
       title: { display: false },
     },
     scales: {
       x: {
         grid: { display: false, drawBorder: false },
-        ticks: { color: '#bdbdbd', font: { size: 12 } },
-        title: { display: true, text: 'Time (s)', color: '#bdbdbd', font: { size: 12 } },
+        ticks: { color: '#888', font: { size: 12 } },
+        title: { display: true, text: 'Time (s)', color: '#888', font: { size: 12 } },
       },
       y: {
         grid: { display: false, drawBorder: false },
-        ticks: { color: '#bdbdbd', font: { size: 12 } },
-        title: { display: true, text: 'WPM / Accuracy', color: '#bdbdbd', font: { size: 12 } },
+        ticks: { color: '#888', font: { size: 12 } },
+        title: { display: true, text: 'WPM / Accuracy', color: '#888', font: { size: 12 } },
         min: yMin,
         max: yMax,
       },
     },
     elements: {
-      line: { borderWidth: 2 },
-      point: { radius: 0 },
+      line: { borderWidth: 2.5 },
+      point: { radius: 2 },
     },
   };
 
@@ -329,137 +344,126 @@ const ResultScreen: React.FC<ResultScreenProps> = ({
     progressFeedback = `Keep practicing to see your progress over time!`;
   }
 
-  // --- LAYOUT REFACTOR START ---
+  // Add a simple toast state for share feedback
+  const [showToast, setShowToast] = useState(false);
+
+  // In the ResultScreen component, define the share handler
+  const handleShare = () => {
+    const summary = `Typing Test Result:\nWPM: ${wpm}\nAccuracy: ${accuracy}%\nErrors: ${errors}\nTime: ${formatTime(time)}\nConsistency: ${consistencyDisplay}`;
+    navigator.clipboard.writeText(summary).then(() => {
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 2000);
+    });
+  };
+
   return (
     <div className="min-h-screen bg-white text-gray-900 flex flex-col items-center justify-between p-0 transition-colors">
       <Navbar />
       {/* Main Content */}
-      <main className="flex flex-col items-center justify-center w-full flex-1 px-1 sm:px-2 max-w-6xl mx-auto overflow-hidden">
-        {/* Stats Card */}
-        <div className="w-full flex justify-center mt-4 mb-4 sm:mt-8 sm:mb-6">
-          <div className="bg-white rounded-2xl shadow border border-gray-200 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8 max-w-2xl w-full p-4 sm:p-6">
-            <div className="flex flex-col items-center flex-1">
-              <span className="uppercase text-gray-500 text-xs font-bold tracking-widest mb-1">wpm</span>
-              <span className="text-2xl sm:text-3xl font-extrabold text-gray-900 leading-none">{wpm}</span>
+      <main className="w-full max-w-5xl mx-auto flex flex-col gap-3 px-1 sm:px-4 py-4">
+        {/* Key Stats */}
+        <section className="grid grid-cols-2 sm:grid-cols-5 gap-1 sm:gap-2 bg-white rounded-xl shadow border border-gray-100 p-3 text-center">
+          <div>
+            <div className="text-xs uppercase text-gray-500 font-bold tracking-widest mb-1">WPM</div>
+            <div className="text-2xl font-extrabold text-gray-900">{wpm}</div>
             </div>
-            <div className="flex flex-col items-center flex-1">
-              <span className="uppercase text-gray-500 text-xs font-bold tracking-widest mb-1">accuracy</span>
-              <span className="text-xl sm:text-2xl font-extrabold text-gray-900 leading-none">{accuracy}%</span>
+          <div>
+            <div className="text-xs uppercase text-gray-500 font-bold tracking-widest mb-1">Accuracy</div>
+            <div className="text-2xl font-extrabold text-gray-900">{accuracy}%</div>
             </div>
-            <div className="flex flex-col items-center flex-1">
-              <span className="uppercase text-gray-500 text-xs font-bold tracking-widest mb-1">errors</span>
-              <span className="text-xl sm:text-2xl font-extrabold text-gray-900 leading-none">{errors}</span>
+          <div>
+            <div className="text-xs uppercase text-gray-500 font-bold tracking-widest mb-1">Errors</div>
+            <div className="text-2xl font-extrabold text-gray-900">{errors}</div>
             </div>
-            <div className="flex flex-col items-center flex-1">
-              <span className="uppercase text-gray-500 text-xs font-bold tracking-widest mb-1">time</span>
-              <span className="text-xl sm:text-2xl font-extrabold text-gray-900 leading-none">{formatTime(time)}</span>
+          <div>
+            <div className="text-xs uppercase text-gray-500 font-bold tracking-widest mb-1">Time</div>
+            <div className="text-2xl font-extrabold text-gray-900">{formatTime(time)}</div>
             </div>
-            <div className="flex flex-col items-center flex-1">
-              <span className="uppercase text-gray-500 text-xs font-bold tracking-widest mb-1">consistency</span>
-              <span className="text-xl sm:text-2xl font-extrabold text-gray-900 leading-none">{consistencyDisplay}</span>
-            </div>
+          <div>
+            <div className="text-xs uppercase text-gray-500 font-bold tracking-widest mb-1">Consistency</div>
+            <div className="text-2xl font-extrabold text-gray-900">{consistencyDisplay}</div>
           </div>
-        </div>
-        {/* Chart and Analysis */}
-        <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-4 sm:mb-6">
-          {/* Chart Section */}
-          <div className="bg-white rounded-2xl shadow border border-gray-200 flex flex-col items-center justify-center p-0 min-w-0 min-h-[180px] sm:min-h-[240px]">
-            <div className="w-full h-40 sm:h-60 flex items-center justify-center" style={{padding: 0, margin: 0}}>
+        </section>
+
+        {/* Chart & AI Analysis */}
+        <section className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div className="flex-1 bg-white rounded-xl shadow border border-gray-100 p-4 flex flex-col items-center min-h-[180px]">
+            <div className="w-full h-32 sm:h-40 flex items-center justify-center">
               {timeGraphData && timeGraphData.length >= 2 ? (
-                <Line data={chartData} options={chartOptions} style={{width: '100%', height: '150px', maxHeight: '220px'}} />
+                <Line data={chartData} options={chartOptions} style={{width: '100%', height: '100%'}} />
               ) : (
                 <span className="text-gray-400 text-sm">No data</span>
               )}
             </div>
           </div>
-          {/* AI Analysis Section (redesigned) */}
-          <div className="bg-white rounded-2xl shadow border border-gray-200 flex flex-col items-start justify-center p-4 sm:p-6 min-w-0 w-full animate-fade-in min-h-[180px] sm:min-h-[260px]">
-            <div className="w-full mb-2">
-              <span className="text-lg sm:text-xl font-bold text-gray-900 block mb-1">AI Analysis</span>
+          <div className="flex-1 bg-white rounded-xl shadow border border-gray-100 p-4 flex flex-col min-h-[180px]">
+            <div className="text-base font-bold text-gray-900 mb-1">AI Insights</div>
               {progressFeedback && (
-                <div className="text-sm sm:text-base text-gray-800 font-semibold mb-2">{progressFeedback}</div>
+              <div className="text-sm text-gray-800 font-semibold mb-2">{progressFeedback}</div>
               )}
               {aiFeedback.suggestions.length > 0 && (
-                <ul className="space-y-1 sm:space-y-2 mt-2">
+              <ul className="space-y-1 mt-2">
                   {aiFeedback.suggestions.slice(0, 3).map((s, i) => (
-                    <li key={i} className="text-gray-700 text-xs sm:text-sm pl-2 border-l-4 border-gray-200">{s}</li>
+                  <li key={i} className="text-gray-700 text-xs pl-2 border-l-4 border-gray-200">{s}</li>
                   ))}
                 </ul>
               )}
               {aiFeedback.mistypedWords.length > 0 && (
-                <div className="mt-2 sm:mt-4 text-xs text-gray-500">Most mistyped: <span className="font-mono text-gray-900">{aiFeedback.mistypedWords.join(', ')}</span></div>
+              <div className="mt-2 text-xs text-gray-500">Most mistyped: <span className="font-mono text-gray-900">{aiFeedback.mistypedWords.join(', ')}</span></div>
               )}
               {aiFeedback.errorSummary.length > 0 && (
                 <div className="text-xs text-gray-500 mt-1">Most errors: <span className="text-gray-900">{aiFeedback.errorSummary[0]}</span></div>
               )}
             </div>
-          </div>
-        </div>
-      </main>
-      {/* Heatmap and Error Breakdown below, side by side on desktop */}
-      <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-4 px-1 sm:px-2 max-w-6xl mx-auto">
-        {/* Keyboard Heatmap Section (single border) */}
+        </section>
+
+        {/* Heatmap & Error Breakdown */}
+        <section className="grid grid-cols-1 md:grid-cols-3 gap-3">
         {keystrokeStats && keystrokeStats.keyCounts && Object.keys(keystrokeStats.keyCounts).length > 0 && (
-          <div className="col-span-1">
-            <div className="bg-white rounded-2xl shadow p-2 sm:p-4 flex flex-col items-center">
+            <div className="md:col-span-2 flex-1 bg-white rounded-xl shadow border border-gray-100 p-4 flex flex-col items-center">
               <KeyboardHeatmap keyStats={keystrokeStats.keyCounts} />
-            </div>
           </div>
         )}
         {errorTypes && (
-          <div className="col-span-1">
-            <div className="bg-white rounded-2xl shadow border border-gray-200 flex flex-col items-center p-2 sm:p-4">
-              <div className="text-xs sm:text-sm font-semibold text-gray-900 mb-2">Error Breakdown</div>
-              {/* Error Type Bars */}
-              <div className="flex flex-col xs:flex-row gap-2 xs:gap-6 text-xs sm:text-base w-full justify-center mb-2 sm:mb-4">
+            <div className="flex-1 bg-white rounded-xl shadow border border-gray-100 p-4 flex flex-col items-center">
+              <div className="text-xs font-semibold text-gray-900 mb-2">Error Breakdown</div>
+              <div className="flex flex-row flex-wrap gap-2 w-full justify-center mb-2">
                 <div className="flex flex-col items-center">
-                  <span className="text-base sm:text-lg font-bold text-red-500">{errorTypes.punctuation || 0}</span>
+                  <span className="text-base font-bold text-gray-900">{errorTypes.punctuation || 0}</span>
                   <span className="text-xs text-gray-500">Punctuation</span>
-                  <div className="w-10 sm:w-12 h-2 bg-gray-100 rounded-full mt-1">
-                    <div className="h-2 bg-red-400 rounded-full" style={{width: `${Math.min(100, (errorTypes.punctuation || 0) * 4)}%`}} />
-                  </div>
                 </div>
                 <div className="flex flex-col items-center">
-                  <span className="text-base sm:text-lg font-bold text-blue-500">{errorTypes.case || 0}</span>
+                  <span className="text-base font-bold text-gray-900">{errorTypes.case || 0}</span>
                   <span className="text-xs text-gray-500">Case</span>
-                  <div className="w-10 sm:w-12 h-2 bg-gray-100 rounded-full mt-1">
-                    <div className="h-2 bg-blue-400 rounded-full" style={{width: `${Math.min(100, (errorTypes.case || 0) * 4)}%`}} />
-                  </div>
                 </div>
                 <div className="flex flex-col items-center">
-                  <span className="text-base sm:text-lg font-bold text-green-500">{errorTypes.number || 0}</span>
+                  <span className="text-base font-bold text-gray-900">{errorTypes.number || 0}</span>
                   <span className="text-xs text-gray-500">Number</span>
-                  <div className="w-10 sm:w-12 h-2 bg-gray-100 rounded-full mt-1">
-                    <div className="h-2 bg-green-400 rounded-full" style={{width: `${Math.min(100, (errorTypes.number || 0) * 4)}%`}} />
-                  </div>
                 </div>
                 <div className="flex flex-col items-center">
-                  <span className="text-base sm:text-lg font-bold text-gray-900">{errorTypes.other || 0}</span>
+                  <span className="text-base font-bold text-gray-900">{errorTypes.other || 0}</span>
                   <span className="text-xs text-gray-500">Other</span>
-                  <div className="w-10 sm:w-12 h-2 bg-gray-100 rounded-full mt-1">
-                    <div className="h-2 bg-gray-400 rounded-full" style={{width: `${Math.min(100, (errorTypes.other || 0) * 4)}%`}} />
-                  </div>
                 </div>
               </div>
-              {/* Most Mistyped Characters/Words Table */}
               {keystrokeStats && keystrokeStats.keyCounts && Object.keys(keystrokeStats.keyCounts).length > 0 && (
                 <div className="w-full mt-2">
                   <div className="text-xs text-gray-500 mb-1">Most Mistyped Characters</div>
                   <div className="overflow-x-auto w-full">
                     <table className="min-w-full text-[11px] sm:text-xs text-gray-900">
                       <thead>
-                        <tr className="bg-gray-50">
+                        <tr className="bg-gray-100 border-b border-gray-200">
                           <th className="px-2 py-1 text-left font-semibold">Char</th>
                           <th className="px-2 py-1 text-left font-semibold">Mistypes</th>
                         </tr>
                       </thead>
                       <tbody>
                         {Object.entries(keystrokeStats.keyCounts)
+                          .filter(([char]) => char && char.trim() && char.charCodeAt(0) >= 32 && char.charCodeAt(0) <= 126)
                           .sort((a, b) => (b[1] as number) - (a[1] as number))
                           .slice(0, 8)
-                          .map(([char, count]) => (
-                            <tr key={char} className="border-b border-gray-100">
-                              <td className="px-2 py-1 font-mono">{char}</td>
+                          .map(([char, count], idx) => (
+                            <tr key={char} className={idx % 2 === 0 ? 'bg-gray-50' : ''}>
+                              <td className="px-2 py-1 font-mono">{getDisplayChar(char)}</td>
                               <td className="px-2 py-1">{count}</td>
                             </tr>
                           ))}
@@ -468,39 +472,31 @@ const ResultScreen: React.FC<ResultScreenProps> = ({
                   </div>
                 </div>
               )}
-            </div>
           </div>
         )}
-      </div>
+        </section>
+
       {/* Action Buttons */}
-      <div className="flex flex-wrap gap-2 sm:gap-4 justify-center mt-4 sm:mt-6 mb-2 w-full px-1">
+        <section className="flex flex-row flex-wrap gap-2 sm:gap-4 justify-center mt-4 mb-2 w-full">
         <button
           onClick={onRetry}
-          className="bg-gray-900 text-white hover:bg-gray-700 px-6 sm:px-8 py-2 sm:py-3 rounded-xl font-bold transition-all duration-200 shadow-md focus:outline-none focus:ring-2 focus:ring-gray-400 text-sm sm:text-base"
+            className="bg-gray-900 text-white hover:bg-gray-700 px-6 sm:px-8 py-2 sm:py-3 rounded-xl font-bold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-400 text-sm sm:text-base"
           aria-label="Try Again"
         >
           Try Again
         </button>
-        {onShare && (
           <button
-            onClick={onShare}
-            className="bg-white text-gray-900 hover:bg-gray-100 px-6 sm:px-8 py-2 sm:py-3 rounded-xl font-bold transition-all duration-200 shadow-md border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400 text-sm sm:text-base"
+            onClick={handleShare}
+            className="bg-white text-gray-900 hover:bg-gray-100 px-6 sm:px-8 py-2 sm:py-3 rounded-xl font-bold transition-all duration-200 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400 text-sm sm:text-base"
             aria-label="Share"
           >
             Share
           </button>
+        </section>
+        {showToast && (
+          <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-4 py-2 rounded-xl shadow-lg z-50 text-sm font-semibold transition-all">Result copied to clipboard!</div>
         )}
-        {onSave && (
-          <button
-            onClick={onSave}
-            className="bg-white text-gray-900 hover:bg-gray-100 px-6 sm:px-8 py-2 sm:py-3 rounded-xl font-bold transition-all duration-200 shadow-md border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400 text-sm sm:text-base"
-            aria-label="Save"
-          >
-            Save
-          </button>
-        )}
-      </div>
-      <ResultFooter />
+      </main>
       <Footer />
     </div>
   );

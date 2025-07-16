@@ -13,6 +13,8 @@ import { Switch } from '../components/ui/switch'; // If not present, use a simpl
 import { useGamification } from '../components/GamificationProvider';
 import Footer from '../components/Footer';
 import Navbar from '../components/Navbar';
+import { useAuth } from '../components/AuthProvider';
+import { supabase } from '../lib/supabaseClient';
 
 // Add this style block at the top-level of the file (or in App.css if preferred)
 // For popover fade/slide animation and backdrop
@@ -990,8 +992,8 @@ const Index = () => {
   useEffect(() => {
     // Only update currentText if not in custom mode
     if (currentMode !== 'custom') {
-      const newText = generateNewText(currentMode, difficulty, language);
-      setCurrentText(newText);
+    const newText = generateNewText(currentMode, difficulty, language);
+    setCurrentText(newText);
     }
     // Optionally reset userInput, errors, etc. here if desired
   }, [language, difficulty, currentMode]);
@@ -1020,16 +1022,21 @@ const Index = () => {
     };
   }, [isTyping, currentMode, timeLeft]);
 
-  // Calculate WPM and accuracy
+  // Calculate WPM and accuracy (correct logic)
   const calculateStats = useCallback(() => {
     if (!startTime) return;
     const timeElapsed = (Date.now() - startTime) / 1000 / 60; // minutes
-    const charsTyped = userInput.length;
-    const currentWpm = timeElapsed > 0 ? Math.round((charsTyped / 5) / timeElapsed) : 0;
-    const currentAccuracy = Math.round(((userInput.length - errors) / userInput.length) * 100) || 100;
+    // Count correct characters only
+    let correctChars = 0;
+    for (let i = 0; i < userInput.length; i++) {
+      if (userInput[i] === currentText[i]) correctChars++;
+    }
+    const totalTyped = userInput.length;
+    const currentWpm = timeElapsed > 0 ? Math.round((correctChars / 5) / timeElapsed) : 0;
+    const currentAccuracy = totalTyped > 0 ? Math.round((correctChars / totalTyped) * 100) : 100;
     setWpm(currentWpm);
     setAccuracy(currentAccuracy);
-  }, [userInput, errors, startTime]);
+  }, [userInput, currentText, startTime]);
 
   // Enhanced handleInputChange to track keystrokes and error types
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -1139,9 +1146,14 @@ const Index = () => {
     if (wpmIntervalRef.current) clearInterval(wpmIntervalRef.current);
     if (startTime) {
       const timeElapsed = (Date.now() - startTime) / 1000 / 60;
-      const charsTyped = userInput.length;
-      const finalWpm = timeElapsed > 0 ? Math.round((charsTyped / 5) / timeElapsed) : 0;
-      const finalAcc = userInput.length > 0 ? Math.round(((userInput.length - errors) / userInput.length) * 100) : 100;
+      // Count correct characters only
+      let correctChars = 0;
+      for (let i = 0; i < userInput.length; i++) {
+        if (userInput[i] === currentText[i]) correctChars++;
+      }
+      const totalTyped = userInput.length;
+      const finalWpm = timeElapsed > 0 ? Math.round((correctChars / 5) / timeElapsed) : 0;
+      const finalAcc = totalTyped > 0 ? Math.round((correctChars / totalTyped) * 100) : 100;
       // Compute final chart data
       const finalChartData = [...chartData];
       if (finalChartData.length === 0 || finalChartData[finalChartData.length - 1].x !== userInput.length) {
@@ -1171,7 +1183,7 @@ const Index = () => {
       // --- Gamification logic ---
       if (gamificationEnabled) {
         // Award XP: 1 XP per word, bonus for high accuracy/speed
-        let xpEarned = Math.round(charsTyped / 5) + (finalAcc >= 98 ? 10 : 0) + (finalWpm >= 60 ? 10 : 0);
+        let xpEarned = Math.round(correctChars / 5) + (finalAcc >= 98 ? 10 : 0) + (finalWpm >= 60 ? 10 : 0);
         addXP(xpEarned);
         // Streak: increment if accuracy >= 90, else reset
         if (finalAcc >= 90) {
@@ -1493,6 +1505,35 @@ const Index = () => {
 
   const [godModeIndex, setGodModeIndex] = useState(0);
 
+  const { user } = useAuth();
+
+  async function saveTestResultToSupabase({
+    userId,
+    wpm,
+    accuracy,
+    errors,
+    time,
+    consistency,
+    keystrokeStats,
+    errorTypes,
+  }) {
+    const { error } = await supabase.from('test_results').insert([
+      {
+        user_id: userId,
+        wpm,
+        accuracy,
+        errors,
+        time,
+        consistency,
+        keystroke_stats: keystrokeStats,
+        error_types: errorTypes,
+      },
+    ]);
+    if (error) {
+      console.error('Failed to save test result:', error);
+    }
+  }
+
   if (open === 'content-library') {
     return <ContentLibraryOverlay onContentSelect={handleContentSelect} />;
   }
@@ -1522,17 +1563,13 @@ const Index = () => {
       {/* Main Content */}
       <div className="flex-1 flex flex-col items-center justify-center space-y-4" style={{ marginTop: '-10rem', marginBottom: 0 }}>
         {/* Ultra-Minimal Settings Summary Bar - Modern Mode Tabs */}
-        <div className="w-full flex justify-center mt-0">
+        <div className="w-full flex justify-center mt-0 px-2 sm:px-0">
           <motion.div
             layout
             transition={{ type: 'spring', stiffness: 400, damping: 32 }}
             className="inline-flex flex-row flex-nowrap items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-2xl bg-white/80 border border-gray-200 shadow-md backdrop-blur-md select-none relative transition-all duration-300 mx-auto overflow-x-auto scrollbar-hide"
             style={{ width: 'fit-content', minWidth: 0, maxWidth: '100vw' }}
           >
-            {/* Left gradient fade for scroll hint */}
-            <div className="pointer-events-none absolute left-0 top-0 h-full w-8 z-20" style={{background: 'linear-gradient(to right, rgba(255,255,255,0.95) 80%, rgba(255,255,255,0))'}} />
-            {/* Right gradient fade for scroll hint */}
-            <div className="pointer-events-none absolute right-0 top-0 h-full w-8 z-20" style={{background: 'linear-gradient(to left, rgba(255,255,255,0.95) 80%, rgba(255,255,255,0))'}} />
             {/* Category Headings with Inline Sub-options */}
             {[
               {
@@ -1590,7 +1627,7 @@ const Index = () => {
                     )}
                   </button>
                   {isOpen && (
-                    <div className="flex flex-row gap-1 w-full justify-center mt-2 mb-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl shadow-sm">
+                    <div className="flex flex-row gap-1 w-full justify-center mt-2 mb-1 px-3 py-2" style={{background:'transparent',border:'none',boxShadow:'none'}}>
                       {cat.sub.map((item) => {
                         const isActive = currentMode === item.value;
                         return (

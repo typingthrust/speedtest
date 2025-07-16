@@ -21,6 +21,9 @@ import Widget from "./pages/Widget";
 import Profile from "./pages/Profile";
 import SignIn from "./pages/SignIn";
 import { ClerkProvider } from '@clerk/clerk-react';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsOfService from './pages/TermsOfService';
+import Contact from './pages/Contact';
 
 const queryClient = new QueryClient();
 
@@ -33,6 +36,9 @@ const AppContent = () => {
         <Route path="/widget" element={<Widget />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/signin" element={<SignIn />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/terms-of-service" element={<TermsOfService />} />
+        <Route path="/contact" element={<Contact />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>

@@ -60,10 +60,13 @@ export const PersonalizationProvider = ({ children }: { children: ReactNode }) =
             ...prev,
             stats: { ...defaultStats, ...data.stats },
           }));
-        } else {
-          // No stats yet, initialize
+        } else if (!error && !data) {
+          // No row exists for this user, initialize
           await supabase.from('user_stats').upsert({ user_id: user.id, stats: defaultStats });
           setState(prev => ({ ...prev, stats: defaultStats }));
+        } else {
+          // For any other error, do NOT overwrite stats, just log or handle gracefully
+          console.error('Failed to load user stats:', error);
         }
       } else {
         // Guest: load from localStorage
