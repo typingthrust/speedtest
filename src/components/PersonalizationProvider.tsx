@@ -1,0 +1,166 @@
+import React, { createContext, useContext, useState, ReactNode } from 'react';
+import { useAuth } from './AuthProvider';
+import { supabase } from '../lib/supabaseClient';
+
+// Types for tracked stats and personalization
+export interface TypingStats {
+  wpm: number;
+  accuracy: number;
+  errorTypes: Record<string, number>; // e.g., { 'punctuation': 3, 'case': 2 }
+  fingerUsage: Record<string, number>; // e.g., { 'left-pinky': 10 }
+  keystrokeStats: { keyCounts: Record<string, number> };
+  history: Array<{ wpm: number; accuracy: number; timestamp: number }>;
+}
+
+export interface PersonalizationState {
+  stats: TypingStats;
+  suggestedDifficulty: string;
+  suggestedContentType: string;
+}
+
+const defaultStats: TypingStats = {
+  wpm: 0,
+  accuracy: 100,
+  errorTypes: {},
+  fingerUsage: {},
+  keystrokeStats: { keyCounts: {} },
+  history: [],
+};
+
+const PersonalizationContext = createContext<{
+  state: PersonalizationState;
+  updateStats: (stats: Partial<TypingStats>) => void;
+  suggestDifficulty: () => string;
+  suggestContentType: () => string;
+} | undefined>(undefined);
+
+// --- Supabase table schema (if not present) ---
+// Table: user_stats
+// Columns: user_id (uuid, primary key), stats (jsonb)
+
+export const PersonalizationProvider = ({ children }: { children: ReactNode }) => {
+  const { user } = useAuth();
+  const [state, setState] = useState<PersonalizationState>({
+    stats: defaultStats,
+    suggestedDifficulty: 'medium',
+    suggestedContentType: 'words',
+  });
+  // Load stats from Supabase or localStorage on mount or user change
+  React.useEffect(() => {
+    async function loadStats() {
+      if (user && user.id && user.id !== 'guest') {
+        // Logged-in: fetch from Supabase
+        const { data, error } = await supabase
+          .from('user_stats')
+          .select('stats')
+          .eq('user_id', user.id)
+          .single();
+        if (!error && data && data.stats) {
+          setState(prev => ({
+            ...prev,
+            stats: { ...defaultStats, ...data.stats },
+          }));
+        } else {
+          // No stats yet, initialize
+          await supabase.from('user_stats').upsert({ user_id: user.id, stats: defaultStats });
+          setState(prev => ({ ...prev, stats: defaultStats }));
+        }
+      } else {
+        // Guest: load from localStorage
+        const local = localStorage.getItem('protype_stats');
+        if (local) {
+          setState(prev => ({ ...prev, stats: { ...defaultStats, ...JSON.parse(local) } }));
+        } else {
+          setState(prev => ({ ...prev, stats: defaultStats }));
+        }
+      }
+    }
+    loadStats();
+    // eslint-disable-next-line
+  }, [user && user.id]);
+
+  // Save stats to Supabase or localStorage on update
+  const persistStats = async (stats: TypingStats) => {
+    if (user && user.id && user.id !== 'guest') {
+      await supabase.from('user_stats').upsert({ user_id: user.id, stats });
+    } else {
+      localStorage.setItem('protype_stats', JSON.stringify(stats));
+    }
+  };
+
+  // Update stats and recalculate suggestions
+  const updateStats = (stats: Partial<TypingStats>) => {
+    setState(prev => {
+      // Add new test to history
+      const now = Date.now();
+      const prevHistory = prev.stats.history || [];
+      const newEntry = {
+        wpm: stats.wpm ?? prev.stats.wpm,
+        accuracy: stats.accuracy ?? prev.stats.accuracy,
+        timestamp: now,
+      };
+      const updatedHistory = [...prevHistory, newEntry];
+      // Calculate averages
+      const avgWpm = Math.round(updatedHistory.reduce((sum, t) => sum + t.wpm, 0) / updatedHistory.length);
+      const avgAccuracy = Math.round(updatedHistory.reduce((sum, t) => sum + t.accuracy, 0) / updatedHistory.length);
+      // Merge errorTypes and fingerUsage (sum all)
+      const mergeCounts = (arr: Record<string, number>[]) => {
+        const result: Record<string, number> = {};
+        arr.forEach(obj => {
+          Object.entries(obj).forEach(([k, v]) => {
+            result[k] = (result[k] || 0) + v;
+          });
+        });
+        return result;
+      };
+      const allErrorTypes = [prev.stats.errorTypes, stats.errorTypes || {}];
+      const allFingerUsage = [prev.stats.fingerUsage, stats.fingerUsage || {}];
+      const mergedErrorTypes = mergeCounts(allErrorTypes);
+      const mergedFingerUsage = mergeCounts(allFingerUsage);
+      // Merge keystrokeStats.keyCounts
+      const allKeyCounts = [prev.stats.keystrokeStats.keyCounts, (stats.keystrokeStats && stats.keystrokeStats.keyCounts) || {}];
+      const mergedKeyCounts = mergeCounts(allKeyCounts);
+      const newStats: TypingStats = {
+        wpm: avgWpm,
+        accuracy: avgAccuracy,
+        errorTypes: mergedErrorTypes,
+        fingerUsage: mergedFingerUsage,
+        keystrokeStats: { keyCounts: mergedKeyCounts },
+        history: updatedHistory,
+      };
+      // Persist to backend or localStorage
+      persistStats(newStats);
+      return {
+        ...prev,
+        stats: newStats,
+        suggestedDifficulty: suggestDifficulty(newStats),
+        suggestedContentType: suggestContentType(newStats),
+      };
+    });
+  };
+
+  // Example suggestion logic (expandable)
+  const suggestDifficulty = (stats: TypingStats = state.stats) => {
+    if (stats.wpm > 80 && stats.accuracy > 97) return 'long';
+    if (stats.wpm > 60 && stats.accuracy > 95) return 'medium';
+    if (stats.wpm < 40 || stats.accuracy < 90) return 'short';
+    return 'medium';
+  };
+  const suggestContentType = (stats: TypingStats = state.stats) => {
+    if ((stats.errorTypes['punctuation'] || 0) > 3) return 'punctuation';
+    if ((stats.errorTypes['numbers'] || 0) > 3) return 'numbers';
+    return 'words';
+  };
+
+  return (
+    <PersonalizationContext.Provider value={{ state, updateStats, suggestDifficulty, suggestContentType }}>
+      {children}
+    </PersonalizationContext.Provider>
+  );
+};
+
+export function usePersonalization() {
+  const ctx = useContext(PersonalizationContext);
+  if (!ctx) throw new Error('usePersonalization must be used within PersonalizationProvider');
+  return ctx;
+} 
