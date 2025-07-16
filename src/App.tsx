@@ -17,10 +17,10 @@ import { ZenModeProvider } from './components/ZenModeProvider';
 import { AuthProvider } from './components/AuthProvider';
 import AuthOverlay from './components/overlays/AuthOverlay';
 import GrowthToolsOverlay from './components/overlays/GrowthToolsOverlay';
-import ThemeToggle from './components/ThemeToggle';
 import Widget from "./pages/Widget";
 import Profile from "./pages/Profile";
 import SignIn from "./pages/SignIn";
+import { ClerkProvider } from '@clerk/clerk-react';
 
 const queryClient = new QueryClient();
 
@@ -40,34 +40,36 @@ const AppContent = () => {
       <LeaderboardOverlay />
       <AuthOverlay />
       <GrowthToolsOverlay />
-      <ThemeToggle />
     </BrowserRouter>
   );
 };
 
+const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || 'YOUR_CLERK_PUBLISHABLE_KEY';
 const App = () => {
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <OverlayProvider>
-          <AuthProvider>
-            <PersonalizationProvider>
-              <GamificationProvider>
-                <LeaderboardProvider>
-                  <ContentLibraryProvider>
-                    <ZenModeProvider>
-                      <AppContent />
-                    </ZenModeProvider>
-                  </ContentLibraryProvider>
-                </LeaderboardProvider>
-              </GamificationProvider>
-            </PersonalizationProvider>
-          </AuthProvider>
-        </OverlayProvider>
-      </TooltipProvider>
-    </QueryClientProvider>
+    <ClerkProvider publishableKey={clerkPubKey}>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <OverlayProvider>
+            <AuthProvider>
+              <PersonalizationProvider>
+                <GamificationProvider>
+                  <LeaderboardProvider>
+                    <ContentLibraryProvider>
+                      <ZenModeProvider>
+                        <AppContent />
+                      </ZenModeProvider>
+                    </ContentLibraryProvider>
+                  </LeaderboardProvider>
+                </GamificationProvider>
+              </PersonalizationProvider>
+            </AuthProvider>
+          </OverlayProvider>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </ClerkProvider>
   );
 };
 

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { supabase } from '../lib/supabaseClient';
+import { ClerkProvider, useUser, useClerk, useSignIn, useSignUp } from '@clerk/clerk-react';
 
 export interface UserProfile {
   id: string;
@@ -21,53 +21,23 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const session = supabase.auth.getSession().then(({ data }) => {
-      if (data.session?.user) {
-        setUser({ id: data.session.user.id, email: data.session.user.email });
-      }
-      setLoading(false);
-    });
-    const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session?.user) {
-        setUser({ id: session.user.id, email: session.user.email });
-      } else {
-        setUser(null);
-      }
-    });
-    return () => {
-      listener?.subscription.unsubscribe();
-    };
-  }, []);
-
-  const loginWithGoogle = async () => {
-    setLoading(true);
-    await supabase.auth.signInWithOAuth({ provider: 'google' });
-    setLoading(false);
-  };
-
-  const loginWithPassword = async (email: string, password: string) => {
-    setLoading(true);
-    await supabase.auth.signInWithPassword({ email, password });
-    setLoading(false);
-  };
-
-  const loginAsGuest = () => {
-    setUser({ id: 'guest', email: null });
-  };
-
-  const logout = async () => {
-    setLoading(true);
-    await supabase.auth.signOut();
-    setUser(null);
-    setLoading(false);
-  };
-
+  // Clerk hooks
+  const { user: clerkUser, isLoaded } = useUser();
+  const { signOut } = useClerk();
+  // Map Clerk user to UserProfile shape
+  const user = clerkUser && isLoaded ? {
+    id: clerkUser.id,
+    email: clerkUser.primaryEmailAddress?.emailAddress || null,
+    username: clerkUser.username || undefined,
+    avatar_url: clerkUser.imageUrl || undefined,
+  } : null;
+  // Provide dummy methods for compatibility (can be expanded for custom flows)
+  const loginWithGoogle = async () => { window.location.href = '/sign-in'; };
+  const loginWithPassword = async () => { window.location.href = '/sign-in'; };
+  const loginAsGuest = () => { window.location.href = '/sign-in'; };
+  const logout = async () => { await signOut(); };
   return (
-    <AuthContext.Provider value={{ user, loading, loginWithGoogle, loginWithPassword, loginAsGuest, logout }}>
+    <AuthContext.Provider value={{ user, loading: !isLoaded, loginWithGoogle, loginWithPassword, loginAsGuest, logout }}>
       {children}
     </AuthContext.Provider>
   );

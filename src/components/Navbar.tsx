@@ -23,7 +23,7 @@ const Navbar: React.FC = () => {
   const { openOverlay } = useOverlay();
   const { state, setGamificationEnabled } = useGamification();
   return (
-    <nav className="w-full flex flex-wrap md:flex-nowrap justify-between items-center py-4 md:py-7 bg-white border-b border-gray-100 sticky top-0 z-40 px-2 md:px-0">
+    <nav className="w-full flex flex-wrap md:flex-nowrap justify-between items-center py-0 md:py-7 bg-white sticky top-0 z-40 px-2 md:px-0">
       <div className="flex items-center gap-2 align-middle flex-shrink-0 min-w-0">
         <Link to="/" className="flex items-center gap-2 align-middle focus:outline-none" aria-label="Go to home page">
           <img

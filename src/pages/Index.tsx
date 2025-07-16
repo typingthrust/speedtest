@@ -11,8 +11,8 @@ import { Link } from 'react-router-dom';
 import GraphemeSplitter from 'grapheme-splitter';
 import { Switch } from '../components/ui/switch'; // If not present, use a simple custom switch inline
 import { useGamification } from '../components/GamificationProvider';
-import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import Navbar from '../components/Navbar';
 
 // Add this style block at the top-level of the file (or in App.css if preferred)
 // For popover fade/slide animation and backdrop
@@ -664,7 +664,7 @@ const MemoChar = memo(function MemoChar({ char, index, userInput, currentIndex }
     if (userInput[index] === char) {
       className += 'text-gray-600 transform scale-105';
     } else {
-      className += 'text-red-500 bg-red-100 transform scale-110';
+      className += 'text-red-500 bg-red-100'; // Incorrect - red, no pulse
     }
   } else if (index === userInput.length) {
     return (
@@ -1316,7 +1316,7 @@ const Index = () => {
       if (userInput[index] === char) {
         className += 'text-gray-600 transform scale-105'; // Correct - slight scale up
       } else {
-        className += 'text-red-500 bg-red-100 transform scale-110'; // Incorrect - red, no pulse
+        className += 'text-red-500 bg-red-100'; // Incorrect - red, no pulse
       }
     } else if (index === userInput.length) {
       // Current character (caret)
@@ -1520,9 +1520,9 @@ const Index = () => {
     <div className="min-h-screen bg-white flex flex-col">
       <Navbar />
       {/* Main Content */}
-      <div className="flex-1 flex flex-col items-center justify-center p-6 space-y-12">
+      <div className="flex-1 flex flex-col items-center justify-center space-y-4" style={{ marginTop: '-10rem', marginBottom: 0 }}>
         {/* Ultra-Minimal Settings Summary Bar - Modern Mode Tabs */}
-        <div className="w-full flex justify-center mt-8 mb-6">
+        <div className="w-full flex justify-center mt-0">
           <motion.div
             layout
             transition={{ type: 'spring', stiffness: 400, damping: 32 }}

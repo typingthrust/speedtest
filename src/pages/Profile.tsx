@@ -5,7 +5,6 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Keyboard, Bell, User as UserIcon, Award, Users, BookOpen, Rocket } from 'lucide-react';
 import { ExpandableTabs } from '../components/ui/expandable-tabs';
 import type { OverlayType } from '../components/OverlayProvider';
-import ThemeToggle from '../components/ThemeToggle';
 import { Line } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -442,7 +441,7 @@ export default function Profile() {
                     <span className="text-gray-500 text-base mb-6 text-center">Unlock deep-dive stats like per-finger analysis, error heatmaps, and actionable insights by completing your first typing tests.</span>
                     <span className="text-gray-400 text-sm mb-4 text-center">Complete at least 2 tests to view your advanced analytics.</span>
                     <button
-                      className="px-6 py-2 rounded-full bg-blue-600 text-white font-semibold hover:bg-blue-700 transition text-base shadow-sm"
+                      className="px-6 py-2 rounded-full bg-black text-white font-semibold hover:bg-gray-900 transition text-base shadow-sm"
                       onClick={() => setSelectedTab('overview')}
                     >
                       Take a Typing Test

@@ -42,25 +42,32 @@ const KeyboardHeatmap = ({ keyStats }: { keyStats: Record<string, number> }) => 
   ];
   // Find max count for gradient
   const maxCount = Math.max(1, ...Object.values(keyStats));
+  // Black/grey gradient: light grey (#f3f4f6), medium grey (#bdbdbd), dark grey (#333), black (#000)
   const getColor = (count: number) => {
-    if (!count) return '#f3f4f6';
-    if (count < maxCount * 0.3) return '#fef9c3';
-    if (count < maxCount * 0.6) return '#fde047';
-    if (count < maxCount * 0.9) return '#f59e42';
-    return '#dc2626';
+    if (!count) return '#f3f4f6'; // lightest
+    if (count < maxCount * 0.3) return '#e5e7eb'; // light grey
+    if (count < maxCount * 0.6) return '#bdbdbd'; // medium grey
+    if (count < maxCount * 0.9) return '#333333'; // dark grey
+    return '#000000'; // black
   };
+  // Color legend for black/grey
+  const legend = [
+    { label: 'Low', color: '#e5e7eb' },
+    { label: 'Medium', color: '#bdbdbd' },
+    { label: 'High', color: '#333333' },
+    { label: 'Most', color: '#000000' },
+  ];
   return (
-    <div className="w-full max-w-2xl mx-auto mt-2 p-4 bg-white rounded-2xl shadow flex flex-col items-center">
-      <div className="text-sm font-semibold text-gray-500 mb-2">Key Press Heatmap</div>
-      <div className="flex gap-4 mb-4 text-xs text-gray-400">
-        <span className="flex items-center"><span className="inline-block w-4 h-4 rounded mr-1" style={{background:'#fef9c3'}}></span>Low</span>
-        <span className="flex items-center"><span className="inline-block w-4 h-4 rounded mr-1" style={{background:'#fde047'}}></span>Medium</span>
-        <span className="flex items-center"><span className="inline-block w-4 h-4 rounded mr-1" style={{background:'#f59e42'}}></span>High</span>
-        <span className="flex items-center"><span className="inline-block w-4 h-4 rounded mr-1" style={{background:'#dc2626'}}></span>Most</span>
+    <div className="w-full max-w-2xl mx-auto mt-2 p-2 sm:p-4 bg-white rounded-2xl shadow flex flex-col items-center">
+      <div className="text-xs sm:text-sm font-semibold text-gray-500 mb-2">Key Press Heatmap</div>
+      <div className="flex gap-2 sm:gap-4 mb-2 sm:mb-4 text-[10px] sm:text-xs text-gray-400 flex-wrap justify-center">
+        {legend.map(l => (
+          <span key={l.label} className="flex items-center"><span className="inline-block w-3 h-3 sm:w-4 sm:h-4 rounded mr-1" style={{background:l.color}}></span>{l.label}</span>
+        ))}
       </div>
-      <div className="space-y-2">
+      <div className="space-y-1 sm:space-y-2 w-full">
         {keys.map((row, i) => (
-          <div key={i} className="flex justify-center gap-3">
+          <div key={i} className="flex justify-center gap-1 sm:gap-3 w-full">
             {row.map(k => {
               const count = keyStats[k] || 0;
               const color = getColor(count);
@@ -68,8 +75,8 @@ const KeyboardHeatmap = ({ keyStats }: { keyStats: Record<string, number> }) => 
                 <div
                   key={k}
                   title={`${k}: ${count} presses`}
-                  className="w-10 h-12 flex items-center justify-center rounded-lg font-bold text-lg shadow-sm border border-gray-200 transition-all"
-                  style={{ background: color, color: count ? '#b45309' : '#9ca3af' }}
+                  className="w-7 h-8 sm:w-10 sm:h-12 flex items-center justify-center rounded-lg font-bold text-xs sm:text-lg shadow-sm border border-gray-200 transition-all"
+                  style={{ background: color, color: color === '#000000' ? '#fff' : (count ? '#111' : '#9ca3af') }}
                 >
                   {k}
                 </div>
@@ -327,60 +334,60 @@ const ResultScreen: React.FC<ResultScreenProps> = ({
     <div className="min-h-screen bg-white text-gray-900 flex flex-col items-center justify-between p-0 transition-colors">
       <Navbar />
       {/* Main Content */}
-      <main className="flex flex-col items-center justify-center w-full flex-1 px-2 max-w-6xl mx-auto overflow-hidden">
+      <main className="flex flex-col items-center justify-center w-full flex-1 px-1 sm:px-2 max-w-6xl mx-auto overflow-hidden">
         {/* Stats Card */}
-        <div className="w-full flex justify-center mt-8 mb-6">
-          <div className="bg-white rounded-2xl shadow border border-gray-200 flex flex-row items-center justify-center gap-8 max-w-2xl w-full p-6">
+        <div className="w-full flex justify-center mt-4 mb-4 sm:mt-8 sm:mb-6">
+          <div className="bg-white rounded-2xl shadow border border-gray-200 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8 max-w-2xl w-full p-4 sm:p-6">
             <div className="flex flex-col items-center flex-1">
               <span className="uppercase text-gray-500 text-xs font-bold tracking-widest mb-1">wpm</span>
-              <span className="text-3xl font-extrabold text-gray-900 leading-none">{wpm}</span>
+              <span className="text-2xl sm:text-3xl font-extrabold text-gray-900 leading-none">{wpm}</span>
             </div>
             <div className="flex flex-col items-center flex-1">
               <span className="uppercase text-gray-500 text-xs font-bold tracking-widest mb-1">accuracy</span>
-              <span className="text-2xl font-extrabold text-gray-900 leading-none">{accuracy}%</span>
+              <span className="text-xl sm:text-2xl font-extrabold text-gray-900 leading-none">{accuracy}%</span>
             </div>
             <div className="flex flex-col items-center flex-1">
               <span className="uppercase text-gray-500 text-xs font-bold tracking-widest mb-1">errors</span>
-              <span className="text-2xl font-extrabold text-gray-900 leading-none">{errors}</span>
+              <span className="text-xl sm:text-2xl font-extrabold text-gray-900 leading-none">{errors}</span>
             </div>
             <div className="flex flex-col items-center flex-1">
               <span className="uppercase text-gray-500 text-xs font-bold tracking-widest mb-1">time</span>
-              <span className="text-2xl font-extrabold text-gray-900 leading-none">{formatTime(time)}</span>
+              <span className="text-xl sm:text-2xl font-extrabold text-gray-900 leading-none">{formatTime(time)}</span>
             </div>
             <div className="flex flex-col items-center flex-1">
               <span className="uppercase text-gray-500 text-xs font-bold tracking-widest mb-1">consistency</span>
-              <span className="text-2xl font-extrabold text-gray-900 leading-none">{consistencyDisplay}</span>
+              <span className="text-xl sm:text-2xl font-extrabold text-gray-900 leading-none">{consistencyDisplay}</span>
             </div>
           </div>
         </div>
         {/* Chart and Analysis */}
-        <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-4 sm:mb-6">
           {/* Chart Section */}
-          <div className="bg-white rounded-2xl shadow border border-gray-200 flex flex-col items-center justify-center p-0 min-w-0" style={{minHeight: 240}}>
-            <div className="w-full h-60 flex items-center justify-center" style={{padding: 0, margin: 0}}>
+          <div className="bg-white rounded-2xl shadow border border-gray-200 flex flex-col items-center justify-center p-0 min-w-0 min-h-[180px] sm:min-h-[240px]">
+            <div className="w-full h-40 sm:h-60 flex items-center justify-center" style={{padding: 0, margin: 0}}>
               {timeGraphData && timeGraphData.length >= 2 ? (
-                <Line data={chartData} options={chartOptions} style={{width: '100%', height: '220px'}} />
+                <Line data={chartData} options={chartOptions} style={{width: '100%', height: '150px', maxHeight: '220px'}} />
               ) : (
                 <span className="text-gray-400 text-sm">No data</span>
               )}
             </div>
           </div>
           {/* AI Analysis Section (redesigned) */}
-          <div className="bg-white rounded-2xl shadow border border-gray-200 flex flex-col items-start justify-center p-6 min-w-0 w-full animate-fade-in" style={{minHeight: 260}}>
+          <div className="bg-white rounded-2xl shadow border border-gray-200 flex flex-col items-start justify-center p-4 sm:p-6 min-w-0 w-full animate-fade-in min-h-[180px] sm:min-h-[260px]">
             <div className="w-full mb-2">
-              <span className="text-xl font-bold text-gray-900 block mb-1">AI Analysis</span>
+              <span className="text-lg sm:text-xl font-bold text-gray-900 block mb-1">AI Analysis</span>
               {progressFeedback && (
-                <div className="text-base text-gray-800 font-semibold mb-2">{progressFeedback}</div>
+                <div className="text-sm sm:text-base text-gray-800 font-semibold mb-2">{progressFeedback}</div>
               )}
               {aiFeedback.suggestions.length > 0 && (
-                <ul className="space-y-2 mt-2">
+                <ul className="space-y-1 sm:space-y-2 mt-2">
                   {aiFeedback.suggestions.slice(0, 3).map((s, i) => (
-                    <li key={i} className="text-gray-700 text-sm pl-2 border-l-4 border-gray-200">{s}</li>
+                    <li key={i} className="text-gray-700 text-xs sm:text-sm pl-2 border-l-4 border-gray-200">{s}</li>
                   ))}
                 </ul>
               )}
               {aiFeedback.mistypedWords.length > 0 && (
-                <div className="mt-4 text-xs text-gray-500">Most mistyped: <span className="font-mono text-gray-900">{aiFeedback.mistypedWords.join(', ')}</span></div>
+                <div className="mt-2 sm:mt-4 text-xs text-gray-500">Most mistyped: <span className="font-mono text-gray-900">{aiFeedback.mistypedWords.join(', ')}</span></div>
               )}
               {aiFeedback.errorSummary.length > 0 && (
                 <div className="text-xs text-gray-500 mt-1">Most errors: <span className="text-gray-900">{aiFeedback.errorSummary[0]}</span></div>
@@ -390,46 +397,46 @@ const ResultScreen: React.FC<ResultScreenProps> = ({
         </div>
       </main>
       {/* Heatmap and Error Breakdown below, side by side on desktop */}
-      <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-6 mb-4 px-2 max-w-6xl mx-auto">
+      <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-4 px-1 sm:px-2 max-w-6xl mx-auto">
         {/* Keyboard Heatmap Section (single border) */}
         {keystrokeStats && keystrokeStats.keyCounts && Object.keys(keystrokeStats.keyCounts).length > 0 && (
           <div className="col-span-1">
-            <div className="bg-white rounded-2xl shadow p-4 flex flex-col items-center">
+            <div className="bg-white rounded-2xl shadow p-2 sm:p-4 flex flex-col items-center">
               <KeyboardHeatmap keyStats={keystrokeStats.keyCounts} />
             </div>
           </div>
         )}
         {errorTypes && (
           <div className="col-span-1">
-            <div className="bg-white rounded-2xl shadow border border-gray-200 flex flex-col items-center p-4">
-              <div className="text-sm font-semibold text-gray-900 mb-2">Error Breakdown</div>
+            <div className="bg-white rounded-2xl shadow border border-gray-200 flex flex-col items-center p-2 sm:p-4">
+              <div className="text-xs sm:text-sm font-semibold text-gray-900 mb-2">Error Breakdown</div>
               {/* Error Type Bars */}
-              <div className="flex gap-6 text-base w-full justify-center mb-4">
+              <div className="flex flex-col xs:flex-row gap-2 xs:gap-6 text-xs sm:text-base w-full justify-center mb-2 sm:mb-4">
                 <div className="flex flex-col items-center">
-                  <span className="text-lg font-bold text-red-500">{errorTypes.punctuation || 0}</span>
+                  <span className="text-base sm:text-lg font-bold text-red-500">{errorTypes.punctuation || 0}</span>
                   <span className="text-xs text-gray-500">Punctuation</span>
-                  <div className="w-12 h-2 bg-gray-100 rounded-full mt-1">
+                  <div className="w-10 sm:w-12 h-2 bg-gray-100 rounded-full mt-1">
                     <div className="h-2 bg-red-400 rounded-full" style={{width: `${Math.min(100, (errorTypes.punctuation || 0) * 4)}%`}} />
                   </div>
                 </div>
                 <div className="flex flex-col items-center">
-                  <span className="text-lg font-bold text-blue-500">{errorTypes.case || 0}</span>
+                  <span className="text-base sm:text-lg font-bold text-blue-500">{errorTypes.case || 0}</span>
                   <span className="text-xs text-gray-500">Case</span>
-                  <div className="w-12 h-2 bg-gray-100 rounded-full mt-1">
+                  <div className="w-10 sm:w-12 h-2 bg-gray-100 rounded-full mt-1">
                     <div className="h-2 bg-blue-400 rounded-full" style={{width: `${Math.min(100, (errorTypes.case || 0) * 4)}%`}} />
                   </div>
                 </div>
                 <div className="flex flex-col items-center">
-                  <span className="text-lg font-bold text-green-500">{errorTypes.number || 0}</span>
+                  <span className="text-base sm:text-lg font-bold text-green-500">{errorTypes.number || 0}</span>
                   <span className="text-xs text-gray-500">Number</span>
-                  <div className="w-12 h-2 bg-gray-100 rounded-full mt-1">
+                  <div className="w-10 sm:w-12 h-2 bg-gray-100 rounded-full mt-1">
                     <div className="h-2 bg-green-400 rounded-full" style={{width: `${Math.min(100, (errorTypes.number || 0) * 4)}%`}} />
                   </div>
                 </div>
                 <div className="flex flex-col items-center">
-                  <span className="text-lg font-bold text-gray-900">{errorTypes.other || 0}</span>
+                  <span className="text-base sm:text-lg font-bold text-gray-900">{errorTypes.other || 0}</span>
                   <span className="text-xs text-gray-500">Other</span>
-                  <div className="w-12 h-2 bg-gray-100 rounded-full mt-1">
+                  <div className="w-10 sm:w-12 h-2 bg-gray-100 rounded-full mt-1">
                     <div className="h-2 bg-gray-400 rounded-full" style={{width: `${Math.min(100, (errorTypes.other || 0) * 4)}%`}} />
                   </div>
                 </div>
@@ -439,7 +446,7 @@ const ResultScreen: React.FC<ResultScreenProps> = ({
                 <div className="w-full mt-2">
                   <div className="text-xs text-gray-500 mb-1">Most Mistyped Characters</div>
                   <div className="overflow-x-auto w-full">
-                    <table className="min-w-full text-xs text-gray-900">
+                    <table className="min-w-full text-[11px] sm:text-xs text-gray-900">
                       <thead>
                         <tr className="bg-gray-50">
                           <th className="px-2 py-1 text-left font-semibold">Char</th>
@@ -466,10 +473,10 @@ const ResultScreen: React.FC<ResultScreenProps> = ({
         )}
       </div>
       {/* Action Buttons */}
-      <div className="flex flex-wrap gap-4 justify-center mt-6 mb-2 w-full">
+      <div className="flex flex-wrap gap-2 sm:gap-4 justify-center mt-4 sm:mt-6 mb-2 w-full px-1">
         <button
           onClick={onRetry}
-          className="bg-gray-900 text-white hover:bg-gray-700 px-8 py-3 rounded-xl font-bold transition-all duration-200 shadow-md focus:outline-none focus:ring-2 focus:ring-gray-400"
+          className="bg-gray-900 text-white hover:bg-gray-700 px-6 sm:px-8 py-2 sm:py-3 rounded-xl font-bold transition-all duration-200 shadow-md focus:outline-none focus:ring-2 focus:ring-gray-400 text-sm sm:text-base"
           aria-label="Try Again"
         >
           Try Again
@@ -477,7 +484,7 @@ const ResultScreen: React.FC<ResultScreenProps> = ({
         {onShare && (
           <button
             onClick={onShare}
-            className="bg-white text-gray-900 hover:bg-gray-100 px-8 py-3 rounded-xl font-bold transition-all duration-200 shadow-md border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400"
+            className="bg-white text-gray-900 hover:bg-gray-100 px-6 sm:px-8 py-2 sm:py-3 rounded-xl font-bold transition-all duration-200 shadow-md border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400 text-sm sm:text-base"
             aria-label="Share"
           >
             Share
@@ -486,7 +493,7 @@ const ResultScreen: React.FC<ResultScreenProps> = ({
         {onSave && (
           <button
             onClick={onSave}
-            className="bg-white text-gray-900 hover:bg-gray-100 px-8 py-3 rounded-xl font-bold transition-all duration-200 shadow-md border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400"
+            className="bg-white text-gray-900 hover:bg-gray-100 px-6 sm:px-8 py-2 sm:py-3 rounded-xl font-bold transition-all duration-200 shadow-md border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400 text-sm sm:text-base"
             aria-label="Save"
           >
             Save
