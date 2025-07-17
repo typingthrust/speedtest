@@ -4,6 +4,7 @@ import { useAuth } from '../AuthProvider';
 import React, { useState, useEffect } from 'react';
 import { usePersonalization } from '../PersonalizationProvider';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '../../lib/supabaseClient';
 
 export default function AuthOverlay() {
   const { open, closeOverlay } = useOverlay();
@@ -13,6 +14,8 @@ export default function AuthOverlay() {
   const [password, setPassword] = useState('');
   const [signup, setSignup] = useState(false);
   const [error, setError] = useState('');
+  const [resetSent, setResetSent] = useState(false);
+  const [resetError, setResetError] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -40,6 +43,24 @@ export default function AuthOverlay() {
       setSignup(false);
     } catch (err: any) {
       setError(err.message || 'Signup failed');
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    setResetError('');
+    setResetSent(false);
+    if (!email) {
+      setResetError('Enter your email above first.');
+      return;
+    }
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: 'https://your-production-domain.com/reset-password', // <-- set to your real prod URL
+      });
+      if (error) throw error;
+      setResetSent(true);
+    } catch (err: any) {
+      setResetError(err.message || 'Failed to send reset email');
     }
   };
 
@@ -117,6 +138,21 @@ export default function AuthOverlay() {
                   {signup ? 'Sign up with Email' : 'Sign in with Email'}
                 </button>
                 {error && <div className="text-red-500 text-xs mt-1">{error}</div>}
+                {/* Forgot password link */}
+                {!signup && (
+                  <div className="flex justify-end mt-1">
+                    <button
+                      type="button"
+                      className="text-xs text-gray-500 hover:underline hover:text-black font-medium"
+                      onClick={handleForgotPassword}
+                      disabled={loading}
+                    >
+                      Forgot password?
+                    </button>
+                  </div>
+                )}
+                {resetSent && <div className="text-green-600 text-xs mt-1">Check your email for a reset link.</div>}
+                {resetError && <div className="text-red-500 text-xs mt-1">{resetError}</div>}
               </form>
               <div className="flex justify-between mt-2 items-center">
                 <button
