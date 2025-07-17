@@ -36,10 +36,17 @@ export const GamificationProvider = ({ children }: { children: ReactNode }) => {
   const [state, setState] = useState<GamificationState>(defaultState);
   const [loading, setLoading] = useState(true);
 
+  // Utility to clear all gamification data from both storages
+  const clearAllGamificationStorage = () => {
+    localStorage.removeItem('tt_gamification');
+    sessionStorage.removeItem('tt_gamification');
+  };
+
   // Load gamification data on mount or user change, but only after auth is done loading
   useEffect(() => {
     if (authLoading) return; // Wait for auth to finish
     async function loadGamification() {
+      clearAllGamificationStorage(); // Always clear on user change for isolation
       if (user && user.id && user.id !== 'guest') {
         const { data, error } = await supabase
           .from('user_gamification')
@@ -62,10 +69,10 @@ export const GamificationProvider = ({ children }: { children: ReactNode }) => {
           console.error('Error loading gamification data:', error);
         }
       } else {
-        // Guest: load from localStorage
-        const local = localStorage.getItem('tt_gamification');
-        if (local) {
-          setState(prev => ({ ...prev, ...JSON.parse(local) }));
+        // Guest: load from sessionStorage
+        const session = sessionStorage.getItem('tt_gamification');
+        if (session) {
+          setState(prev => ({ ...prev, ...JSON.parse(session) }));
         } else {
           setState(defaultState);
         }
@@ -73,9 +80,10 @@ export const GamificationProvider = ({ children }: { children: ReactNode }) => {
       setLoading(false);
     }
     loadGamification();
+    // eslint-disable-next-line
   }, [user && user.id, authLoading]);
 
-  // Persist to Supabase/localStorage on state change (except loading)
+  // Persist to Supabase/sessionStorage on state change (except loading)
   useEffect(() => {
     if (loading || authLoading) return; // Don't persist until initial load and auth are done
     async function persist() {
@@ -91,7 +99,7 @@ export const GamificationProvider = ({ children }: { children: ReactNode }) => {
           console.error('Error saving gamification data:', error);
         }
       } else {
-        localStorage.setItem('tt_gamification', JSON.stringify({
+        sessionStorage.setItem('tt_gamification', JSON.stringify({
           xp: state.xp,
           level: state.level,
           badges: state.badges,
@@ -100,6 +108,7 @@ export const GamificationProvider = ({ children }: { children: ReactNode }) => {
       }
     }
     persist();
+    // eslint-disable-next-line
   }, [state.xp, state.level, state.badges, state.streak, user && user.id, loading, authLoading]);
 
   const addXP = (amount: number) => {

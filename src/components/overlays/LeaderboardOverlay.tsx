@@ -105,8 +105,8 @@ export default function LeaderboardOverlay() {
   const currentUserEmail = user?.email;
 
   // Debug log: print all leaderboard entries and current user info
-  console.log('Leaderboard entries from backend:', state.entries);
-  console.log('Current userId:', currentUserId, 'Current userEmail:', currentUserEmail);
+  // console.log('Leaderboard entries from backend:', state.entries);
+  // console.log('Current userId:', currentUserId, 'Current userEmail:', currentUserEmail);
   // Filter out any entry matching the current user's id or email (robust)
   const filteredEntries = state.entries.filter(e => e.user_id !== currentUserId && e.email !== currentUserEmail);
   // Use filteredEntries for all rendering below

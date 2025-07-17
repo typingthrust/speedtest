@@ -43,6 +43,12 @@ const PersonalizationContext = createContext<{
 const isHardReset = () => typeof window !== 'undefined' && (window as any).__HARD_RESET_STATS;
 const setHardReset = (v: boolean) => { if (typeof window !== 'undefined') (window as any).__HARD_RESET_STATS = v; };
 
+// Utility to clear all stats from both storages
+const clearAllStatsStorage = () => {
+  localStorage.removeItem('protype_stats');
+  sessionStorage.removeItem('protype_stats');
+};
+
 export const PersonalizationProvider = ({ children }: { children: ReactNode }) => {
   const { user } = useAuth();
   const [state, setState] = useState<PersonalizationState>({
@@ -50,13 +56,14 @@ export const PersonalizationProvider = ({ children }: { children: ReactNode }) =
     suggestedDifficulty: 'medium',
     suggestedContentType: 'words',
   });
-  // Load stats from Supabase or localStorage on mount or user change
+  // Load stats from Supabase or sessionStorage on mount or user change
   React.useEffect(() => {
     if (isHardReset()) {
       setState(prev => ({ ...prev, stats: defaultStats }));
       return;
     }
     async function loadStats() {
+      clearAllStatsStorage(); // Always clear on user change for isolation
       if (user && user.id && user.id !== 'guest') {
         // Logged-in: fetch from Supabase
         const { data, error } = await supabase
@@ -78,10 +85,10 @@ export const PersonalizationProvider = ({ children }: { children: ReactNode }) =
           console.error('Failed to load user stats:', error);
         }
       } else {
-        // Guest: load from localStorage
-        const local = localStorage.getItem('protype_stats');
-        if (local) {
-          setState(prev => ({ ...prev, stats: { ...defaultStats, ...JSON.parse(local) } }));
+        // Guest: load from sessionStorage
+        const session = sessionStorage.getItem('protype_stats');
+        if (session) {
+          setState(prev => ({ ...prev, stats: { ...defaultStats, ...JSON.parse(session) } }));
         } else {
           setState(prev => ({ ...prev, stats: defaultStats }));
         }
@@ -91,12 +98,12 @@ export const PersonalizationProvider = ({ children }: { children: ReactNode }) =
     // eslint-disable-next-line
   }, [user && user.id]);
 
-  // Save stats to Supabase or localStorage on update
+  // Save stats to Supabase or sessionStorage on update
   const persistStats = async (stats: TypingStats) => {
     if (user && user.id && user.id !== 'guest') {
       await supabase.from('user_stats').upsert({ user_id: user.id, stats });
     } else {
-      localStorage.setItem('protype_stats', JSON.stringify(stats));
+      sessionStorage.setItem('protype_stats', JSON.stringify(stats));
     }
   };
 
@@ -140,7 +147,7 @@ export const PersonalizationProvider = ({ children }: { children: ReactNode }) =
         keystrokeStats: { keyCounts: mergedKeyCounts },
         history: updatedHistory,
       };
-      // Persist to backend or localStorage
+      // Persist to backend or sessionStorage
       persistStats(newStats);
       return {
         ...prev,
@@ -151,12 +158,12 @@ export const PersonalizationProvider = ({ children }: { children: ReactNode }) =
     });
   };
 
-  // Add a function to hard-clear stats from localStorage
-  const clearStatsFromLocalStorage = () => {
-    localStorage.removeItem('protype_stats');
+  // Add a function to hard-clear stats from sessionStorage
+  const clearStatsFromSessionStorage = () => {
+    sessionStorage.removeItem('protype_stats');
   };
 
-  // Update resetStats to also clear localStorage and set hard reset flag
+  // Update resetStats to also clear sessionStorage and set hard reset flag
   const resetStats = async () => {
     setHardReset(true);
     setState(prev => ({
@@ -166,8 +173,8 @@ export const PersonalizationProvider = ({ children }: { children: ReactNode }) =
     if (user && user.id && user.id !== 'guest') {
       await supabase.from('user_stats').upsert({ user_id: user.id, stats: defaultStats });
     } else {
-      clearStatsFromLocalStorage();
-      localStorage.setItem('protype_stats', JSON.stringify(defaultStats));
+      clearAllStatsStorage();
+      sessionStorage.setItem('protype_stats', JSON.stringify(defaultStats));
     }
     // After a short delay, clear the flag and reload the page
     setTimeout(() => {
