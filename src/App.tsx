@@ -19,8 +19,6 @@ import AuthOverlay from './components/overlays/AuthOverlay';
 import GrowthToolsOverlay from './components/overlays/GrowthToolsOverlay';
 import Widget from "./pages/Widget";
 import Profile from "./pages/Profile";
-import SignIn from "./pages/SignIn";
-import { ClerkProvider } from '@clerk/clerk-react';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
 import Contact from './pages/Contact';
@@ -35,7 +33,6 @@ const AppContent = () => {
         <Route path="/" element={<Index />} />
         <Route path="/widget" element={<Widget />} />
         <Route path="/profile" element={<Profile />} />
-        <Route path="/signin" element={<SignIn />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/terms-of-service" element={<TermsOfService />} />
         <Route path="/contact" element={<Contact />} />
@@ -50,32 +47,29 @@ const AppContent = () => {
   );
 };
 
-const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || 'YOUR_CLERK_PUBLISHABLE_KEY';
 const App = () => {
   return (
-    <ClerkProvider publishableKey={clerkPubKey}>
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <OverlayProvider>
-            <AuthProvider>
-              <PersonalizationProvider>
-                <GamificationProvider>
-                  <LeaderboardProvider>
-                    <ContentLibraryProvider>
-                      <ZenModeProvider>
-                        <AppContent />
-                      </ZenModeProvider>
-                    </ContentLibraryProvider>
-                  </LeaderboardProvider>
-                </GamificationProvider>
-              </PersonalizationProvider>
-            </AuthProvider>
-          </OverlayProvider>
-        </TooltipProvider>
-      </QueryClientProvider>
-    </ClerkProvider>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <OverlayProvider>
+          <AuthProvider>
+            <PersonalizationProvider>
+              <GamificationProvider>
+                <LeaderboardProvider>
+                  <ContentLibraryProvider>
+                    <ZenModeProvider>
+                      <AppContent />
+                    </ZenModeProvider>
+                  </ContentLibraryProvider>
+                </LeaderboardProvider>
+              </GamificationProvider>
+            </PersonalizationProvider>
+          </AuthProvider>
+        </OverlayProvider>
+      </TooltipProvider>
+    </QueryClientProvider>
   );
 };
 

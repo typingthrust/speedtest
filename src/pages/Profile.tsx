@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../components/AuthProvider';
 import { usePersonalization } from '../components/PersonalizationProvider';
 import { useNavigate, Link } from 'react-router-dom';
@@ -26,8 +26,9 @@ import jsPDF from 'jspdf';
 import KeyboardHeatmap from '../components/KeyboardHeatmap';
 import Footer from '../components/Footer';
 import { supabase } from '../lib/supabaseClient';
-import { useUser } from '@clerk/clerk-react';
 import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '../components/ui/alert-dialog';
+import { useGamification } from '../components/GamificationProvider';
+import { useLeaderboard } from '../components/LeaderboardProvider';
 
 interface Stats {
   wpm?: number;
@@ -147,9 +148,10 @@ function filterHistory(history: any[], duration: string, range: string) {
 
 export default function Profile() {
   const { user, loading, logout } = useAuth();
-  const { state } = usePersonalization();
+  const { resetStats } = usePersonalization();
+  const { state: gamificationState, setLeaderboard, setGamificationEnabled } = useGamification();
+  const { refreshLeaderboard } = useLeaderboard();
   const navigate = useNavigate();
-  const clerkUser = useUser().user;
   // Filter state
   const [selectedDuration, setSelectedDuration] = useState('all');
   const [selectedRange, setSelectedRange] = useState('all');
@@ -161,43 +163,69 @@ export default function Profile() {
   const [deleting, setDeleting] = useState(false);
   // Add state for advanced analytics tab
   const [activeAnalyticsTab, setActiveAnalyticsTab] = useState('Speed Trends');
+  // --- New: State for real per-test results ---
+  const [testResults, setTestResults] = useState<any[]>([]);
+  const [resultsLoading, setResultsLoading] = useState(true);
 
-  // Redirect to /signin if not authenticated, but only after loading is complete
-  React.useEffect(() => {
+  // Fetch all per-test results from Supabase on mount/user change
+  useEffect(() => {
+    async function fetchResults() {
+      if (!user || !user.id) return;
+      setResultsLoading(true);
+      const { data, error } = await supabase.from('test_results').select('*').eq('user_id', user.id).order('created_at', { ascending: true });
+      if (!error && data) {
+        setTestResults(data);
+      } else {
+        setTestResults([]);
+      }
+      setResultsLoading(false);
+    }
+    if (user && user.id) fetchResults();
+  }, [user && user.id]);
+
+  // Redirect to home if not authenticated, but only after loading is complete
+  useEffect(() => {
     if (!loading && !user) {
-      navigate('/signin', { replace: true });
+      navigate('/', { replace: true });
     }
   }, [user, loading, navigate]);
 
-  if (loading) return null;
+  if (loading || resultsLoading) return <div className="min-h-screen flex items-center justify-center"><span className="text-lg text-gray-500">Loading your analytics...</span></div>;
   if (!user) {
     // Optionally, render nothing while redirecting
     return null;
   }
+  if (deleting) return <div className="min-h-screen flex items-center justify-center"><span className="text-lg text-gray-500">Resetting your data...</span></div>;
 
-  const stats = (state?.stats || {}) as Stats;
-  const history = stats.history || [];
-  const level = stats.level ?? 1;
-  const progress = stats.progress ?? 0;
-
-  // Use filtered history for all stats and chart
+  // Use testResults as the only source for analytics
+  const history = testResults;
+  // --- Use gamification state for level, XP, progress, streak, badges ---
+  const level = gamificationState.level;
+  const xp = gamificationState.xp;
+  const progress = Math.min(100, Math.round((xp % 100)));
+  const streak = gamificationState.streak;
+  const badges = gamificationState.badges;
+  // Restore filteredHistory for analytics and charts
   const filteredHistory = filterHistory(history, selectedDuration, selectedRange);
-  const wpm = filteredHistory.length > 0 ? Math.round(filteredHistory.reduce((sum, h) => sum + (h.wpm || 0), 0) / filteredHistory.length) : 0;
-  const accuracy = filteredHistory.length > 0 ? Math.round(filteredHistory.reduce((sum, h) => sum + (h.accuracy || 0), 0) / filteredHistory.length) : 100;
-  const testsTaken = filteredHistory.length;
-  const timeTyping = filteredHistory.reduce((sum, h) => sum + (h.time || 0), 0);
-  const testsStarted = filteredHistory.length;
-  const testsCompleted = filteredHistory.filter(h => h.completed).length;
-  const avgTestDuration = getAvgTestDuration(filteredHistory);
+  // --- Use gamification state for level, XP, progress, streak, badges ---
   const bestWpm = getBestWpm(filteredHistory);
   const bestAccuracy = getBestAccuracy(filteredHistory);
-  const totalTime = filteredHistory.reduce((sum, h) => sum + (h.time || 0), 0);
-  const mostActiveDay = getMostActiveDay(filteredHistory);
-  const streak = getTypingStreak(filteredHistory);
-  const totalWords = getTotalWords(filteredHistory);
+  const avgWpm = getAvgTestDuration(filteredHistory);
+  const totalTime = filteredHistory.reduce((sum: number, h: any) => sum + (h.time || 0), 0);
+  const totalWords = filteredHistory.reduce((sum: number, h: any) => {
+    if (h.wordCount) return sum + h.wordCount;
+    if (h.userInput) return sum + Math.round(h.userInput.length / 5);
+    return sum;
+  }, 0);
+  const mostActiveDay = filteredHistory.length > 0 ? getMostActiveDay(filteredHistory) : 'N/A';
   const topCategory = getTopCategory(filteredHistory);
-  const avgWpm = filteredHistory.length > 0 ? Math.round(filteredHistory.reduce((sum, h) => sum + (h.wpm || 0), 0) / filteredHistory.length) : 0;
   const typingRank = getTypingRank(avgWpm);
+  // Robust stats for overview
+  const testsStarted = history.length;
+  const testsCompleted = filteredHistory.length;
+  const totalWordsTyped = totalWords;
+  const totalTimeTyping = totalTime;
+
   // Chart data for WPM/accuracy over time (filtered)
   const chartLabels = filteredHistory.map((h, i) => i + 1);
   const wpmData = filteredHistory.map(h => h.wpm || 0);
@@ -335,18 +363,31 @@ export default function Profile() {
   async function handleDeleteProgress() {
     if (!user) return;
     setDeleting(true);
-    await supabase.from('user_stats').delete().eq('user_id', user.id);
-    await supabase.from('test_results').delete().eq('user_id', user.id);
-    await supabase.from('user_gamification').delete().eq('user_id', user.id);
-    setDeleting(false);
-    window.location.reload();
+    // --- Immediately reset all frontend state ---
+    await resetStats();
+    if (window.localStorage) {
+      window.localStorage.setItem('tt_gamification', JSON.stringify({ xp: 0, level: 1, badges: [], streak: 0 }));
+    }
+    if (setLeaderboard) setLeaderboard([]);
+    if (setGamificationEnabled) setGamificationEnabled(false);
+    // Show a blank state/loading spinner while backend deletes
+    setTimeout(async () => {
+      await supabase.from('user_stats').delete().eq('user_id', user.id);
+      await supabase.from('test_results').delete().eq('user_id', user.id);
+      await supabase.from('user_gamification').delete().eq('user_id', user.id);
+      // Delete ALL leaderboard rows for this user (all timeframes)
+      await supabase.from('leaderboard').delete().eq('user_id', user.id);
+      if (refreshLeaderboard) await refreshLeaderboard();
+      setDeleting(false);
+      window.location.reload();
+    }, 0);
   }
 
   // Delete Account handler
   async function handleDeleteAccount() {
-    if (!user || !clerkUser) return;
+    if (!user) return;
     setDeleting(true);
-    // Call backend to delete Clerk account
+    // TODO: Call backend to delete Supabase account if needed
     try {
       const res = await fetch('/api/delete-account', {
         method: 'POST',
@@ -385,7 +426,17 @@ export default function Profile() {
   const errorCharCounts: Record<string, number> = {};
   for (const session of filteredHistory) {
     if (session.keystrokeStats && session.keystrokeStats.keyCounts) {
-      for (const [key, count] of Object.entries(session.keystrokeStats.keyCounts)) {
+      let keyCounts = session.keystrokeStats.keyCounts;
+      if (typeof keyCounts === 'string') {
+        try {
+          keyCounts = JSON.parse(keyCounts);
+        } catch (e) {
+          keyCounts = {};
+        }
+      }
+      // Debug print to inspect parsed keyCounts
+      console.log('Parsed keyCounts:', keyCounts);
+      for (const [key, count] of Object.entries(keyCounts)) {
         errorCharCounts[key] = (errorCharCounts[key] || 0) + Number(count);
       }
     }
@@ -485,6 +536,42 @@ export default function Profile() {
     scales: { x: { grid: { color: '#eee' }, ticks: { color: '#bbb' } }, y: { grid: { color: '#eee' }, ticks: { color: '#bbb' }, beginAtZero: true } },
   };
 
+  // Robust aggregation of key counts for production
+  const keyCharCounts: Record<string, number> = {};
+  if (filteredHistory.length > 0) {
+    for (const session of filteredHistory) {
+      if (session.keystrokeStats && session.keystrokeStats.keyCounts) {
+        let keyCounts = session.keystrokeStats.keyCounts;
+        if (typeof keyCounts === 'string') {
+          try {
+            keyCounts = JSON.parse(keyCounts);
+          } catch (e) {
+            keyCounts = {};
+          }
+        }
+        if (keyCounts && typeof keyCounts === 'object') {
+          for (const [key, count] of Object.entries(keyCounts)) {
+            keyCharCounts[key] = (keyCharCounts[key] || 0) + Number(count);
+          }
+        }
+      }
+    }
+  }
+  const keyCharLabels = Object.keys(keyCharCounts);
+  const keyCharData = Object.values(keyCharCounts);
+  const keyCharChartData = {
+    labels: keyCharLabels,
+    datasets: [
+      {
+        label: 'Key Presses',
+        data: keyCharData,
+        backgroundColor: '#bbb',
+        borderColor: '#111',
+        borderWidth: 1,
+      },
+    ],
+  };
+
   return (
     <div className="min-h-screen bg-white flex flex-col">
       {/* Main Dynamic Navbar */}
@@ -516,18 +603,30 @@ export default function Profile() {
                   <span className="text-xs text-gray-400">{progress}% to next</span>
                 </div>
                 <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
-                  <div className="h-2 bg-blue-500 rounded-full transition-all duration-500" style={{ width: `${progress}%` }} />
+                  <div className="h-2 bg-gray-600 rounded-full transition-all duration-500" style={{ width: `${progress}%` }} />
+                </div>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="text-xs text-gray-500">XP: <span className='text-gray-700'>{xp}</span></span>
+                  <span className="text-xs text-gray-500">Streak: {streak}</span>
                 </div>
               </div>
+              {/* Badges Row (optional, if you want to show) */}
+              {badges && badges.length > 0 && (
+                <div className="flex flex-row gap-2 mt-2">
+                  {badges.map(badge => (
+                    <span key={badge} className="px-2 py-1 bg-gray-200 rounded-full text-xs font-semibold text-gray-700">{badge}</span>
+                  ))}
+                </div>
+              )}
               <button
                 onClick={logout}
-                className="mt-4 px-6 py-2 rounded-full bg-gray-900 text-white font-semibold hover:bg-gray-700 transition text-base shadow-sm w-full"
+                className="mt-4 px-6 py-2 rounded-full bg-black text-white font-semibold hover:bg-gray-800 transition text-base shadow-sm w-full"
               >
                 Sign Out
               </button>
               <button
                 onClick={handleDownloadCertificate}
-                className="mt-2 px-6 py-2 rounded-full bg-gray-900 text-white font-semibold hover:bg-gray-700 transition text-base shadow-sm w-full"
+                className="mt-2 px-6 py-2 rounded-full bg-black text-white font-semibold hover:bg-gray-800 transition text-base shadow-sm w-full"
               >
                 Download Certificate
               </button>
@@ -648,8 +747,8 @@ export default function Profile() {
                 <div className="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mt-2">
                   <StatCard label="Tests Started" value={testsStarted} />
                   <StatCard label="Tests Completed" value={testsCompleted} />
-                  <StatCard label="Total Typing Time" value={formatTime(totalTime)} />
-                  <StatCard label="Total Words Typed" value={totalWords} />
+                  <StatCard label="Total Typing Time" value={formatTime(totalTimeTyping)} />
+                  <StatCard label="Total Words Typed" value={totalWordsTyped} />
                   <StatCard label="Most Active Day" value={mostActiveDay} />
                   <StatCard label="Top Typing Category" value={topCategory} />
                   <StatCard label="Typing Rank" value={typingRank} />
@@ -702,7 +801,7 @@ export default function Profile() {
                   </div>
                   <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 flex flex-col items-start">
                     <span className="text-xs text-gray-500 mb-1">Time Spent Typing</span>
-                    <span className="text-2xl font-bold text-black">{formatTime(totalTime)}</span>
+                    <span className="text-2xl font-bold text-black">{formatTime(totalTimeTyping)}</span>
                   </div>
                 </div>
                 {/* Tab Content */}
@@ -724,10 +823,12 @@ export default function Profile() {
                     <section className="w-full flex flex-col gap-6">
                       <h2 className="text-xl font-bold text-black mb-2">Accuracy</h2>
                       <div className="w-full h-72 bg-white rounded-xl border border-gray-200 flex items-center justify-center">
-                        {errorCharLabels.length > 0 ? (
-                          <Bar data={errorCharChartData} options={errorCharChartOptions} style={{ width: '100%', height: 260 }} />
+                        {filteredHistory.length === 0 ? (
+                          <span className="text-gray-400 text-sm">No tests in selected range. Try changing the filter above.</span>
+                        ) : keyCharLabels.length > 0 ? (
+                          <Bar data={keyCharChartData} options={errorCharChartOptions} style={{ width: '100%', height: 260 }} />
                         ) : (
-                          <span className="text-gray-400 text-sm">No error data to show</span>
+                          <span className="text-gray-400 text-sm">No key data to show for these tests.</span>
                         )}
                     </div>
                     </section>

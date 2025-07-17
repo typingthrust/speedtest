@@ -13,34 +13,34 @@ export default function Blog() {
   return (
     <div className="min-h-screen bg-white py-12 px-4 max-w-3xl mx-auto">
       <Head>
-        <title>ProType Blog & Learning Hub | Improve Typing Speed, Accuracy, and More</title>
-        <meta name="description" content="Tips, guides, and research to help you type faster, smarter, and healthier. ProType Blog & Learning Hub." />
-        <meta property="og:title" content="ProType Blog & Learning Hub" />
-        <meta property="og:description" content="Tips, guides, and research to help you type faster, smarter, and healthier." />
+        <title>Blog & Learning Hub | Typing Speed Test for Developers & Coders</title>
+        <meta name="description" content="Tips, guides, and research to help developers and coders type faster, smarter, and healthier. Blog & Learning Hub." />
+        <meta property="og:title" content="Blog & Learning Hub | Typing Speed Test for Developers & Coders" />
+        <meta property="og:description" content="Tips, guides, and research to help developers and coders type faster, smarter, and healthier." />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://protype.app/blog" />
-        <meta property="og:image" content="https://protype.app/og-image.png" />
-        <link rel="canonical" href="https://protype.app/blog" />
+        <meta property="og:url" content="https://yourdomain.com/blog" />
+        <meta property="og:image" content="/public/logo.png" />
+        <link rel="canonical" href="https://yourdomain.com/blog" />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
           '@context': 'https://schema.org',
           '@type': 'Blog',
-          'name': 'ProType Blog & Learning Hub',
-          'description': 'Tips, guides, and research to help you type faster, smarter, and healthier.',
-          'url': 'https://protype.app/blog',
+          'name': 'Blog & Learning Hub',
+          'description': 'Tips, guides, and research to help developers and coders type faster, smarter, and healthier.',
+          'url': 'https://yourdomain.com/blog',
           'publisher': {
             '@type': 'Organization',
-            'name': 'ProType',
-            'url': 'https://protype.app',
+            'name': 'Typing Speed Test for Developers & Coders',
+            'url': 'https://yourdomain.com',
             'logo': {
               '@type': 'ImageObject',
-              'url': 'https://protype.app/logo.png'
+              'url': '/public/logo.png'
             }
           }
         }) }} />
       </Head>
       <header className="mb-10 text-center">
-        <h1 className="text-4xl font-bold mb-2">ProType Blog & Learning Hub</h1>
-        <p className="text-gray-600">Tips, guides, and research to help you type faster, smarter, and healthier.</p>
+        <h1 className="text-4xl font-bold mb-2">Blog & Learning Hub</h1>
+        <p className="text-gray-600">Tips, guides, and research to help developers and coders type faster, smarter, and healthier.</p>
       </header>
       <main>
         <ul className="space-y-6">

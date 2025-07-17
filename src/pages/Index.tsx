@@ -15,6 +15,7 @@ import Footer from '../components/Footer';
 import Navbar from '../components/Navbar';
 import { useAuth } from '../components/AuthProvider';
 import { supabase } from '../lib/supabaseClient';
+import { useLeaderboard } from '../components/LeaderboardProvider';
 
 // Add this style block at the top-level of the file (or in App.css if preferred)
 // For popover fade/slide animation and backdrop
@@ -1058,15 +1059,14 @@ const Index = () => {
     setUserInput(value);
     setCurrentIndex(value.length);
     
-    // Check for errors and update stats immediately (lightweight operations)
-    if (value.length > userInput.length) {
-      const newChar = value[value.length - 1];
-      const expectedChar = currentText[value.length - 1];
-      if (newChar !== expectedChar) {
-        setErrors(prev => prev + 1);
-      }
+    // --- FIX: Recalculate errors and accuracy on every change ---
+    let errorCount = 0;
+    for (let i = 0; i < value.length; i++) {
+      if (value[i] !== currentText[i]) errorCount++;
     }
-    
+    setErrors(errorCount);
+    const currentAcc = value.length > 0 ? Math.round(((value.length - errorCount) / value.length) * 100) : 100;
+    setAccuracy(currentAcc);
     // Debounce the heavy calculations to prevent lag during fast typing
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => {
@@ -1074,14 +1074,11 @@ const Index = () => {
       const timeElapsed = startTime ? (Date.now() - startTime) / 1000 / 60 : 1/60;
       const wordsTyped = value.trim().split(' ').length;
       const currentWpm = Math.round(wordsTyped / timeElapsed);
-      const currentAcc = value.length > 0 ? Math.round(((value.length - errors) / value.length) * 100) : 100;
-      
       // Update chart data only when necessary
       setChartData(prev => {
         const newChartData = [...prev, { x: value.length, y: currentWpm, acc: currentAcc }];
         return newChartData;
       });
-      
       // Update keystroke stats (debounced to prevent lag)
       setKeystrokeStats(prev => {
         const keyCounts = { ...(prev.keyCounts || {}) };
@@ -1181,24 +1178,44 @@ const Index = () => {
         keystrokeStats: { keyCounts: { ...finalKeystrokeStats.keyCounts } },
       });
       // --- Gamification logic ---
-      if (gamificationEnabled) {
+      // Always award XP after a test, for both guests and signed-in users
+      if (gamificationEnabled && typeof addXP === 'function') {
         // Award XP: 1 XP per word, bonus for high accuracy/speed
         let xpEarned = Math.round(correctChars / 5) + (finalAcc >= 98 ? 10 : 0) + (finalWpm >= 60 ? 10 : 0);
-        addXP(xpEarned);
+        if (xpEarned > 0) addXP(xpEarned);
         // Streak: increment if accuracy >= 90, else reset
-        if (finalAcc >= 90) {
+        if (finalAcc >= 90 && typeof incrementStreak === 'function') {
           incrementStreak();
-        } else {
+        } else if (typeof resetStreak === 'function') {
           resetStreak();
         }
         // Badges: check and unlock
-        if (finalWpm >= 60) addBadge('Speedster');
-        if (finalAcc >= 98) addBadge('Accuracy Ace');
-        if (gamification.streak + 1 === 3) addBadge('Streak Starter');
-        if (gamification.streak + 1 === 5) addBadge('Consistency King');
+        if (finalWpm >= 60 && typeof addBadge === 'function') addBadge('Speedster');
+        if (finalAcc >= 98 && typeof addBadge === 'function') addBadge('Accuracy Ace');
+        if (gamification.streak + 1 === 3 && typeof addBadge === 'function') addBadge('Streak Starter');
+        if (gamification.streak + 1 === 5 && typeof addBadge === 'function') addBadge('Consistency King');
         // Add more badge logic as needed
       }
-      // ---
+      // --- Leaderboard upsert ---
+      if (user && user.id && user.id !== 'guest') {
+        const wordCount = userInput.trim().split(/\s+/).length;
+        // Save duration and timestamp for analytics filtering
+        const duration = currentMode === 'time' ? timeLimit : wordLimit;
+        const timestamp = new Date().toISOString();
+        saveTestResultToSupabase({
+          userId: user.id,
+          wpm: finalWpm,
+          accuracy: finalAcc,
+          errors,
+          time: currentMode === 'time' ? timeLimit - timeLeft : Math.floor((Date.now() - (startTime || 0)) / 1000),
+          consistency,
+          keystrokeStats: finalKeystrokeStats,
+          errorTypes: finalErrorTypes,
+          wordCount,
+          duration,
+          timestamp,
+        });
+      }
     }
   };
 
@@ -1218,6 +1235,7 @@ const Index = () => {
     setErrorTypes({ punctuation: 0, case: 0, number: 0, other: 0 });
     setConsistency(null);
     setChartData([{ x: 0, y: 0, acc: 100 }]);
+    setCurrentText(generateNewText(currentMode, difficulty, language));
     setTimeout(() => {
       if (inputRef.current) {
         inputRef.current.focus();
@@ -1393,6 +1411,7 @@ const Index = () => {
 
   const { state: gamification, addXP, incrementStreak, resetStreak, addBadge, setGamificationEnabled } = useGamification();
   const gamificationEnabled = gamification.gamificationEnabled;
+  const { state: leaderboardState } = useLeaderboard();
 
   // Helper: get a random sample from an object of arrays
   function getRandom(arr) {
@@ -1516,21 +1535,30 @@ const Index = () => {
     consistency,
     keystrokeStats,
     errorTypes,
+    wordCount,
+    duration,
+    timestamp,
   }) {
-    const { error } = await supabase.from('test_results').insert([
-      {
-        user_id: userId,
-        wpm,
-        accuracy,
-        errors,
-        time,
-        consistency,
-        keystroke_stats: keystrokeStats,
-        error_types: errorTypes,
-      },
-    ]);
+    const testResult = {
+      user_id: userId,
+      wpm,
+      accuracy,
+      errors,
+      time,
+      consistency,
+      keystroke_stats: keystrokeStats,
+      error_types: errorTypes,
+      wordCount,
+      duration,
+      timestamp,
+    };
+    // Debug print to inspect what is being saved
+    console.log('Saving test result:', testResult);
+    const { error, data } = await supabase.from('test_results').insert([testResult]);
     if (error) {
-      console.error('Failed to save test result:', error);
+      console.error('Supabase test_results insert error:', error);
+    } else {
+      console.log('Supabase test_results insert success:', data);
     }
   }
 
@@ -1556,18 +1584,17 @@ const Index = () => {
     );
   }
 
-  console.log('Render', timeLeft);
   return (
     <div className="min-h-screen bg-white flex flex-col">
       <Navbar />
       {/* Main Content */}
-      <div className="flex-1 flex flex-col items-center justify-center space-y-4" style={{ marginTop: '-10rem', marginBottom: 0 }}>
+      <div className="flex-1 flex flex-col items-center justify-center space-y-4 mt-0 lg:mt-[-10rem]" style={{ marginBottom: 0 }}>
         {/* Ultra-Minimal Settings Summary Bar - Modern Mode Tabs */}
         <div className="w-full flex justify-center mt-0 px-2 sm:px-0">
           <motion.div
             layout
             transition={{ type: 'spring', stiffness: 400, damping: 32 }}
-            className="inline-flex flex-row flex-nowrap items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-2xl bg-white/80 border border-gray-200 shadow-md backdrop-blur-md select-none relative transition-all duration-300 mx-auto overflow-x-auto scrollbar-hide"
+            className="inline-flex flex-row flex-nowrap items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-2xl bg-white/80 border border-gray-200 shadow-md backdrop-blur-md select-none relative transition-all duration-300 mx-auto overflow-x-auto flex-nowrap scrollbar-hide"
             style={{ width: 'fit-content', minWidth: 0, maxWidth: '100vw' }}
           >
             {/* Category Headings with Inline Sub-options */}
@@ -1614,10 +1641,11 @@ const Index = () => {
               },
             ].map((cat, i) => {
               const isOpen = openCategory === cat.heading;
+              const isSelected = cat.sub.some(item => currentMode === item.value);
               return (
                 <React.Fragment key={cat.heading}>
                   <button
-                    className={`text-base font-medium border-none bg-transparent outline-none whitespace-nowrap transition-colors duration-150 flex-shrink-0 px-2 py-1 ${isOpen ? 'text-yellow-600 underline underline-offset-4' : 'text-gray-500 hover:text-gray-900'}`}
+                    className={`text-base font-medium border-none bg-transparent outline-none whitespace-nowrap transition-colors duration-150 flex-shrink-0 px-2 py-1 ${(isOpen || isSelected) ? 'text-yellow-600 underline underline-offset-4' : 'text-gray-500 hover:text-gray-900'}`}
                     style={{ minWidth: 48, display: 'flex', alignItems: 'center' }}
                     onClick={() => setOpenCategory(isOpen ? null : cat.heading)}
                   >
@@ -1673,10 +1701,10 @@ const Index = () => {
                 Difficulty
               </button>
               {openSetting === 'difficulty' && [
-                { label: 'Short', value: 'short' },
-                { label: 'Medium', value: 'medium' },
-                { label: 'Long', value: 'long' },
-                { label: 'Thicc', value: 'thicc' },
+                { label: 'Easy', value: 'short' },
+                { label: 'Classic', value: 'medium' },
+                { label: 'Epic', value: 'long' },
+                { label: 'Ultra', value: 'thicc' },
               ].map(item => (
                 <button
                   key={item.value}
@@ -1722,7 +1750,6 @@ const Index = () => {
                 <div className="flex items-center px-6 py-4 border-b border-gray-100">
                   <svg xmlns='http://www.w3.org/2000/svg' className='h-5 w-5 text-gray-400 mr-2' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 3C7.03 3 3 7.03 3 12s4.03 9 9 9 9-4.03 9-9-4.03-9-9-9zm0 0c2.21 0 4 4.03 4 9s-1.79 9-4 9-4-4.03-4-9 1.79-9 4-9z' /></svg>
                   <input
-                    autoFocus
                     type="text"
                     placeholder="Language..."
                     className="flex-1 bg-transparent outline-none text-gray-700 text-base font-mono placeholder-gray-400"
@@ -1738,51 +1765,25 @@ const Index = () => {
                   {globalLanguages.filter(l => l.label.toLowerCase().includes(langSearch.toLowerCase())).map(l => (
                     <button
                       key={l.value}
-                      className={`w-full text-left px-6 py-2 text-gray-600 hover:bg-[#f3f4f6] focus:bg-[#e5e7eb] transition-all duration-100 lowercase rounded-lg focus:outline-none ${language === l.value ? 'font-bold text-blue-700 bg-blue-100' : ''}`}
+                      className={`w-full text-left px-6 py-2 text-gray-600 hover:bg-[#f3f4f6] focus:bg-[#e5e7eb] transition-all duration-100 lowercase rounded-lg focus:outline-none ${language === l.value ? 'font-bold text-black bg-gray-200' : ''}`}
                       onClick={() => { setLanguage(l.value); setCurrentMode('words'); setLangModalOpen(false); setShowIndian(false); setLangSearch(""); }}
                       tabIndex={0}
                     >
                       {l.label}
                     </button>
                   ))}
-                  {/* Indian Languages group */}
-                  {(
-                    "indian languages".includes(langSearch.toLowerCase()) ||
-                    indianLanguages.some(l => l.label.toLowerCase().includes(langSearch.toLowerCase()))
-                  ) ? (
-                    <>
-                      <button
-                        className="w-full text-left px-6 py-2 text-gray-800 hover:bg-[#f3f4f6] focus:bg-[#e5e7eb] transition-all duration-100 font-semibold flex items-center gap-2 rounded-lg focus:outline-none"
-                        onClick={() => setShowIndian(v => !v)}
-                        type="button"
-                        tabIndex={0}
-                        aria-expanded={showIndian}
-                        aria-controls="indian-languages-list"
-                      >
-                        <span>Indian Languages</span>
-                        <svg className={`h-4 w-4 transition-transform duration-200 ${showIndian ? 'rotate-90' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-                      </button>
-                      {showIndian && (
-                        <div className="pl-4" id="indian-languages-list">
-                          {(
-                            // If searching for 'ind' or 'indian languages', show all Indian languages
-                            "indian languages".includes(langSearch.toLowerCase()) && langSearch.trim().length > 0
-                              ? indianLanguages
-                              : indianLanguages.filter(l => l.label.toLowerCase().includes(langSearch.toLowerCase()))
-                          ).map(l => (
-                            <button
-                              key={l.value}
-                              className={`w-full text-left px-6 py-2 text-gray-600 hover:bg-[#f3f4f6] focus:bg-[#e5e7eb] transition-all duration-100 lowercase rounded-lg focus:outline-none ${language === l.value ? 'font-bold text-blue-700 bg-blue-100' : ''}`}
-                              onClick={() => { setLanguage(l.value); setCurrentMode('words'); setLangModalOpen(false); setShowIndian(false); setLangSearch(""); }}
-                              tabIndex={0}
-                            >
-                              {l.label}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </>
-                  ) : null}
+                  {/* Divider for Indian languages */}
+                  <div className="px-6 py-2 text-xs text-gray-400 uppercase tracking-wider">Indian Languages</div>
+                  {indianLanguages.filter(l => l.label.toLowerCase().includes(langSearch.toLowerCase())).map(l => (
+                    <button
+                      key={l.value}
+                      className={`w-full text-left px-6 py-2 text-gray-600 hover:bg-[#f3f4f6] focus:bg-[#e5e7eb] transition-all duration-100 lowercase rounded-lg focus:outline-none ${language === l.value ? 'font-bold text-black bg-gray-200' : ''}`}
+                      onClick={() => { setLanguage(l.value); setCurrentMode('words'); setLangModalOpen(false); setShowIndian(false); setLangSearch(""); }}
+                      tabIndex={0}
+                    >
+                      {l.label}
+                    </button>
+                  ))}
                 </div>
               </div>
             </div>
@@ -1840,7 +1841,6 @@ const Index = () => {
               rows={1}
             />
           </div>
-
           {/* Stats Display with XP and Streak inline */}
           <div className="flex justify-center gap-12 text-base w-full max-w-2xl mx-auto">
             <div className="text-center">
@@ -1876,7 +1876,7 @@ const Index = () => {
           {/* Reset Button */}
           <div className="mt-6 flex justify-center w-full">
             <button
-              onClick={resetTest}
+              onClick={() => resetTest()}
               className="flex items-center gap-3 px-6 py-3 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all duration-200 hover:scale-105 mx-auto"
               style={{ display: 'flex' }}
             >

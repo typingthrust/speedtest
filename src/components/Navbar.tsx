@@ -1,13 +1,14 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { NavigationMenu, NavigationMenuList, NavigationMenuItem, NavigationMenuLink } from './ui/navigation-menu';
-import { User, Keyboard, Award, Users, Bell, User as UserIcon, Menu } from 'lucide-react';
+import { User, Keyboard, Award, Users, User as UserIcon, Menu } from 'lucide-react';
 import { ExpandableTabs } from './ui/expandable-tabs';
 import { Switch } from './ui/switch';
 import { useGamification } from './GamificationProvider';
 import { useOverlay } from './OverlayProvider';
 import logo from '../../public/logo.png';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from './ui/dropdown-menu';
+import { useAuth } from './AuthProvider';
 
 const navLinks = [
   { label: 'Dashboard', to: '/' },
@@ -22,6 +23,7 @@ const Navbar: React.FC = () => {
   const location = useLocation();
   const { openOverlay } = useOverlay();
   const { state, setGamificationEnabled } = useGamification();
+  const { user } = useAuth();
   return (
     <nav className="w-full flex flex-wrap md:flex-nowrap justify-between items-center py-0 md:py-7 bg-white sticky top-0 z-40 px-2 md:px-0">
       <div className="flex items-center gap-2 align-middle flex-shrink-0 min-w-0">
@@ -59,12 +61,20 @@ const Navbar: React.FC = () => {
           <Users className="w-5 h-5" />
           <span className="hidden sm:inline">Leaderboard</span>
         </button>
-        <button className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all duration-200">
-          <Bell className="w-5 h-5" />
-        </button>
-        <Link to="/profile" className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all duration-200">
+        <button
+          className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all duration-200"
+          onClick={() => {
+            if (user) {
+              window.location.href = '/profile';
+            } else {
+              openOverlay('auth');
+            }
+          }}
+          type="button"
+          aria-label="Profile"
+        >
           <UserIcon className="w-5 h-5" />
-        </Link>
+        </button>
       </div>
       {/* Mobile Hamburger Dropdown */}
       <div className="flex md:hidden items-center ml-auto">
@@ -97,16 +107,20 @@ const Navbar: React.FC = () => {
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-              <button className="flex items-center gap-2 w-full text-gray-800" type="button">
-                <Bell className="w-5 h-5" />
-                <span>Notifications</span>
-              </button>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link to="/profile" className="flex items-center gap-2 w-full text-gray-800">
+              <button
+                className="flex items-center gap-2 w-full text-gray-800"
+                onClick={() => {
+                  if (user) {
+                    window.location.href = '/profile';
+                  } else {
+                    openOverlay('auth');
+                  }
+                }}
+                type="button"
+              >
                 <UserIcon className="w-5 h-5" />
                 <span>Profile</span>
-              </Link>
+              </button>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import { useOverlay } from '../OverlayProvider';
 import { X, Share2, User as UserIcon, Award } from 'lucide-react';
 import { useLeaderboard } from '../LeaderboardProvider';
+import { useAuth } from '../AuthProvider';
 
 const TIMEFRAMES = [
   { label: 'Weekly', value: 'weekly' },
@@ -85,17 +86,33 @@ function ShareModal({ open, onClose, link }: { open: boolean; onClose: () => voi
   );
 }
 
+// Helper to get display name
+function getDisplayName(entry: any) {
+  if (entry.email && entry.email !== 'NULL') return entry.email;
+  if (entry.user_id) return entry.user_id.slice(0, 6) + '...' + entry.user_id.slice(-4);
+  return 'User';
+}
+
 export default function LeaderboardOverlay() {
   const { open, closeOverlay } = useOverlay();
   const { state, setTimeframe } = useLeaderboard();
   const [shareOpen, setShareOpen] = useState(false);
-  const currentUser = 'You'; // TODO: Replace with real user from AuthProvider if available
+  const { user } = useAuth();
   const link = 'https://typingthrust.com/leaderboard';
 
-  // Already sorted by WPM, XP in provider
-  const sorted = state.entries;
-  const userIdx = sorted.findIndex(e => e.username === currentUser);
-  const userEntry = sorted[userIdx];
+  // Use real user ID/email for filtering
+  const currentUserId = user?.id;
+  const currentUserEmail = user?.email;
+
+  // Debug log: print all leaderboard entries and current user info
+  console.log('Leaderboard entries from backend:', state.entries);
+  console.log('Current userId:', currentUserId, 'Current userEmail:', currentUserEmail);
+  // Filter out any entry matching the current user's id or email (robust)
+  const filteredEntries = state.entries.filter(e => e.user_id !== currentUserId && e.email !== currentUserEmail);
+  // Use filteredEntries for all rendering below
+  const sorted = filteredEntries;
+  const userIdx = sorted.findIndex(e => e.user_id === currentUserId || e.email === currentUserEmail);
+  const userEntry = userIdx !== -1 ? sorted[userIdx] : null;
 
   return (
     <MinimalLeaderboardOverlay open={open === 'leaderboard'} onClose={closeOverlay}>
@@ -130,20 +147,15 @@ export default function LeaderboardOverlay() {
             <ul className="flex flex-col gap-2">
               {sorted.map((entry, i) => (
                 <li
-                  key={entry.username}
-                  className={`flex items-center gap-2 px-3 py-3 rounded-2xl shadow-sm border border-gray-100 bg-white/80 transition-all duration-200 ${
-                    entry.username === currentUser
-                      ? 'ring-2 ring-gray-900/80 font-bold scale-[1.03] bg-gray-900/5'
-                      : 'hover:bg-gray-100'
-                  }`}
+                  key={getDisplayName(entry)}
+                  className={`flex items-center gap-2 px-3 py-3 rounded-2xl shadow-sm border border-gray-100 bg-white/80 transition-all duration-200`}
                   style={{ minHeight: 56 }}
-                  aria-current={entry.username === currentUser ? 'true' : undefined }
                 >
                   <span className="w-8 text-center text-lg font-bold text-gray-400 select-none">{i + 1}</span>
                   <span className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden text-gray-500 font-bold text-base">
                     <UserIcon className="w-6 h-6" />
                   </span>
-                  <span className="flex-1 truncate text-gray-900 text-base font-medium">{entry.username}</span>
+                  <span className="flex-1 truncate text-gray-900 text-base font-medium">{getDisplayName(entry)}</span>
                   <span className="w-16 text-center text-gray-700 font-mono text-base">{entry.wpm} WPM</span>
                   <span className="w-14 text-center text-gray-500 font-mono text-sm">{entry.xp ?? 0} XP</span>
                 </li>
@@ -159,7 +171,7 @@ export default function LeaderboardOverlay() {
               <span className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden text-gray-500 font-bold text-base">
                 <UserIcon className="w-6 h-6" />
               </span>
-              <span className="flex-1 truncate text-gray-900 text-base font-medium">{userEntry.username}</span>
+              <span className="flex-1 truncate text-gray-900 text-base font-medium">{getDisplayName(userEntry)}</span>
               <span className="w-16 text-center text-gray-700 font-mono text-base">{userEntry.wpm} WPM</span>
               <span className="w-14 text-center text-gray-500 font-mono text-sm">{userEntry.xp ?? 0} XP</span>
             </div>

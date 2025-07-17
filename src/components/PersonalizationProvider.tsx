@@ -32,11 +32,16 @@ const PersonalizationContext = createContext<{
   updateStats: (stats: Partial<TypingStats>) => void;
   suggestDifficulty: () => string;
   suggestContentType: () => string;
+  resetStats: () => Promise<void>;
 } | undefined>(undefined);
 
 // --- Supabase table schema (if not present) ---
 // Table: user_stats
 // Columns: user_id (uuid, primary key), stats (jsonb)
+
+// Add a global hard reset flag
+const isHardReset = () => typeof window !== 'undefined' && (window as any).__HARD_RESET_STATS;
+const setHardReset = (v: boolean) => { if (typeof window !== 'undefined') (window as any).__HARD_RESET_STATS = v; };
 
 export const PersonalizationProvider = ({ children }: { children: ReactNode }) => {
   const { user } = useAuth();
@@ -47,6 +52,10 @@ export const PersonalizationProvider = ({ children }: { children: ReactNode }) =
   });
   // Load stats from Supabase or localStorage on mount or user change
   React.useEffect(() => {
+    if (isHardReset()) {
+      setState(prev => ({ ...prev, stats: defaultStats }));
+      return;
+    }
     async function loadStats() {
       if (user && user.id && user.id !== 'guest') {
         // Logged-in: fetch from Supabase
@@ -142,6 +151,31 @@ export const PersonalizationProvider = ({ children }: { children: ReactNode }) =
     });
   };
 
+  // Add a function to hard-clear stats from localStorage
+  const clearStatsFromLocalStorage = () => {
+    localStorage.removeItem('protype_stats');
+  };
+
+  // Update resetStats to also clear localStorage and set hard reset flag
+  const resetStats = async () => {
+    setHardReset(true);
+    setState(prev => ({
+      ...prev,
+      stats: defaultStats,
+    }));
+    if (user && user.id && user.id !== 'guest') {
+      await supabase.from('user_stats').upsert({ user_id: user.id, stats: defaultStats });
+    } else {
+      clearStatsFromLocalStorage();
+      localStorage.setItem('protype_stats', JSON.stringify(defaultStats));
+    }
+    // After a short delay, clear the flag and reload the page
+    setTimeout(() => {
+      setHardReset(false);
+      window.location.reload();
+    }, 300);
+  };
+
   // Example suggestion logic (expandable)
   const suggestDifficulty = (stats: TypingStats = state.stats) => {
     if (stats.wpm > 80 && stats.accuracy > 97) return 'long';
@@ -156,7 +190,7 @@ export const PersonalizationProvider = ({ children }: { children: ReactNode }) =
   };
 
   return (
-    <PersonalizationContext.Provider value={{ state, updateStats, suggestDifficulty, suggestContentType }}>
+    <PersonalizationContext.Provider value={{ state, updateStats, suggestDifficulty, suggestContentType, resetStats }}>
       {children}
     </PersonalizationContext.Provider>
   );

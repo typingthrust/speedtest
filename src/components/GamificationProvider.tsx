@@ -32,12 +32,13 @@ const GamificationContext = createContext<{
 } | undefined>(undefined);
 
 export const GamificationProvider = ({ children }: { children: ReactNode }) => {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [state, setState] = useState<GamificationState>(defaultState);
   const [loading, setLoading] = useState(true);
 
-  // Load gamification data on mount or user change
+  // Load gamification data on mount or user change, but only after auth is done loading
   useEffect(() => {
+    if (authLoading) return; // Wait for auth to finish
     async function loadGamification() {
       if (user && user.id && user.id !== 'guest') {
         const { data, error } = await supabase
@@ -53,10 +54,12 @@ export const GamificationProvider = ({ children }: { children: ReactNode }) => {
             badges: data.badges ?? [],
             streak: data.streak ?? 0,
           }));
-        } else {
+        } else if (!error && !data) {
           // No record yet, initialize
           await supabase.from('user_gamification').upsert({ user_id: user.id, xp: 0, level: 1, badges: [], streak: 0 });
           setState(prev => ({ ...prev, xp: 0, level: 1, badges: [], streak: 0 }));
+        } else if (error) {
+          console.error('Error loading gamification data:', error);
         }
       } else {
         // Guest: load from localStorage
@@ -70,20 +73,23 @@ export const GamificationProvider = ({ children }: { children: ReactNode }) => {
       setLoading(false);
     }
     loadGamification();
-  }, [user && user.id]);
+  }, [user && user.id, authLoading]);
 
   // Persist to Supabase/localStorage on state change (except loading)
   useEffect(() => {
-    if (loading) return;
+    if (loading || authLoading) return; // Don't persist until initial load and auth are done
     async function persist() {
       if (user && user.id && user.id !== 'guest') {
-        await supabase.from('user_gamification').upsert({
+        const { error } = await supabase.from('user_gamification').upsert({
           user_id: user.id,
           xp: state.xp,
           level: state.level,
           badges: state.badges,
           streak: state.streak,
         });
+        if (error) {
+          console.error('Error saving gamification data:', error);
+        }
       } else {
         localStorage.setItem('tt_gamification', JSON.stringify({
           xp: state.xp,
@@ -94,7 +100,7 @@ export const GamificationProvider = ({ children }: { children: ReactNode }) => {
       }
     }
     persist();
-  }, [state.xp, state.level, state.badges, state.streak, user && user.id, loading]);
+  }, [state.xp, state.level, state.badges, state.streak, user && user.id, loading, authLoading]);
 
   const addXP = (amount: number) => {
     setState(prev => {
@@ -103,8 +109,12 @@ export const GamificationProvider = ({ children }: { children: ReactNode }) => {
       return { ...prev, xp: newXP, level: newLevel };
     });
   };
+  // Prevent duplicate badges
   const addBadge = (badge: string) => {
-    setState(prev => ({ ...prev, badges: [...prev.badges, badge] }));
+    setState(prev => {
+      if (prev.badges.includes(badge)) return prev;
+      return { ...prev, badges: [...prev.badges, badge] };
+    });
   };
   const incrementStreak = () => {
     setState(prev => ({ ...prev, streak: prev.streak + 1 }));

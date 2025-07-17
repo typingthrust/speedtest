@@ -6,25 +6,25 @@ export default function Careers() {
   return (
     <div className="min-h-screen bg-white py-12 px-4 max-w-2xl mx-auto">
       <Head>
-        <title>Careers at ProType</title>
-        <meta name="description" content="Join our mission to make typing mastery accessible to everyone. See open roles below." />
-        <meta property="og:title" content="Careers at ProType" />
-        <meta property="og:description" content="Join our mission to make typing mastery accessible to everyone. See open roles below." />
+        <title>Careers | Typing Speed Test for Developers & Coders</title>
+        <meta name="description" content="Join our mission to help developers and coders improve their typing speed and accuracy. See open roles below." />
+        <meta property="og:title" content="Careers | Typing Speed Test for Developers & Coders" />
+        <meta property="og:description" content="Join our mission to help developers and coders improve their typing speed and accuracy. See open roles below." />
         <meta property="og:type" content="article" />
-        <meta property="og:url" content="https://protype.app/careers" />
-        <meta property="og:image" content="https://protype.app/og-image.png" />
-        <link rel="canonical" href="https://protype.app/careers" />
+        <meta property="og:url" content="https://yourdomain.com/careers" />
+        <meta property="og:image" content="/public/logo.png" />
+        <link rel="canonical" href="https://yourdomain.com/careers" />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
           '@context': 'https://schema.org',
           '@type': 'WebPage',
-          'name': 'Careers at ProType',
-          'description': 'Join our mission to make typing mastery accessible to everyone. See open roles below.',
-          'url': 'https://protype.app/careers'
+          'name': 'Careers',
+          'description': 'Join our mission to help developers and coders improve their typing speed and accuracy. See open roles below.',
+          'url': 'https://yourdomain.com/careers'
         }) }} />
       </Head>
       <header className="mb-10 text-center">
-        <h1 className="text-3xl font-bold mb-2">Careers at ProType</h1>
-        <p className="text-gray-600">Join our mission to make typing mastery accessible to everyone. See open roles below.</p>
+        <h1 className="text-3xl font-bold mb-2">Careers</h1>
+        <p className="text-gray-600">Join our mission to help developers and coders improve their typing speed and accuracy. See open roles below.</p>
       </header>
       <main>
         <ul className="space-y-4">
