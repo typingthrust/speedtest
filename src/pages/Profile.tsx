@@ -190,12 +190,28 @@ export default function Profile() {
     }
   }, [user, loading, navigate]);
 
-  if (loading || resultsLoading) return <div className="min-h-screen flex items-center justify-center"><span className="text-lg text-gray-500">Loading your analytics...</span></div>;
+  // Prevent profile data flash for non-logged-in users
+  if (loading) return null; // or a spinner if you prefer
   if (!user) {
-    // Optionally, render nothing while redirecting
-    return null;
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
+        <div className="bg-white p-8 rounded shadow-md text-center">
+          <h2 className="text-2xl font-bold mb-4">No Account Found</h2>
+          <p className="mb-6 text-gray-600">Please log in to access your profile and analytics.</p>
+          <button
+            className="bg-black text-white px-6 py-2 rounded font-semibold hover:bg-gray-800 transition"
+            onClick={() => {
+              // Try to open login modal if overlay system is available
+              if (window.openOverlay) window.openOverlay('auth');
+              else window.location.href = '/';
+            }}
+          >
+            Log In
+          </button>
+        </div>
+      </div>
+    );
   }
-  if (deleting) return <div className="min-h-screen flex items-center justify-center"><span className="text-lg text-gray-500">Resetting your data...</span></div>;
 
   // Use testResults as the only source for analytics
   const history = testResults;
