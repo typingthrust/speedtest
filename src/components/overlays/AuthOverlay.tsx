@@ -51,8 +51,10 @@ export default function AuthOverlay() {
       // Supabase error for existing user
       if (err.message && err.message.toLowerCase().includes('user already registered')) {
         setSignupExists(true);
+        setSignupSuccess(false); // Do not show verification message
         setError('Account already exists. Please sign in.');
       } else {
+        setSignupSuccess(false);
         setError(err.message || 'Signup failed');
       }
     }
