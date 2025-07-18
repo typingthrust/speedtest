@@ -57,7 +57,11 @@ const ResetPassword: React.FC = () => {
       setError(updateError.message);
     } else {
       setSuccess(true);
-      setTimeout(() => navigate('/'), 2000);
+      // Sign out the user and redirect to login after a short delay
+      setTimeout(async () => {
+        await supabase.auth.signOut();
+        navigate('/?showLogin=1'); // You can use this param to trigger the login modal
+      }, 2000);
     }
   };
 
@@ -70,7 +74,7 @@ const ResetPassword: React.FC = () => {
         ) : error ? (
           <div className="text-red-600 text-center">{error}</div>
         ) : success ? (
-          <div className="text-green-600 text-center">Password reset successful! Redirecting...</div>
+          <div className="text-green-600 text-center">Password reset successful! Please sign in with your new password.</div>
         ) : sessionSet ? (
           <form onSubmit={handleSubmit}>
             <label className="block mb-2 font-medium">New Password</label>
