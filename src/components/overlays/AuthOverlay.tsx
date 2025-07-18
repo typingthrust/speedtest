@@ -44,26 +44,30 @@ export default function AuthOverlay() {
     e.preventDefault();
     setError('');
     setSignupExists(false);
+    setSignupSuccess(false);
     try {
-      await signUpWithPassword(email, password);
-      setSignupSuccess(true);
-    } catch (err: any) {
-      // Check for Supabase error code or message for existing user
-      const msg = (err.message || '').toLowerCase();
-      const code = err.code || err.status || '';
-      if (
-        msg.includes('user already registered') ||
-        msg.includes('user already exists') ||
-        code === 'auth/user_already_exists' ||
-        code === 400 // Supabase returns 400 for existing user
-      ) {
-        setSignupExists(true);
-        setSignupSuccess(false); // Do not show verification message
-        setError('Account already exists. Please sign in.');
-      } else {
-        setSignupSuccess(false);
-        setError(err.message || 'Signup failed');
+      // Check if email already exists in auth.users
+      const { data: existing, error: checkError } = await supabase.rpc('check_user_exists', { email_to_check: email });
+      if (checkError) {
+        setError('Error checking email. Please try again.');
+        return;
       }
+      if (existing && existing.user_exists) {
+        setSignupExists(true);
+        setError('Email already registered. Please log in.');
+        return;
+      }
+      // Only call signUp if email does not exist
+      const { error } = await supabase.auth.signUp({ email, password });
+      if (error) {
+        setError(error.message || 'Signup failed');
+        setSignupSuccess(false);
+      } else {
+        setSignupSuccess(true);
+      }
+    } catch (err: any) {
+      setSignupSuccess(false);
+      setError(err.message || 'Signup failed');
     }
   };
 
