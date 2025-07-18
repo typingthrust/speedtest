@@ -161,7 +161,9 @@ export default function AuthOverlay() {
                   {signup ? 'Sign up with Email' : 'Sign in with Email'}
                 </button>
                 {signup && signupSuccess && !signupExists && (
-                  <div className="text-green-600 text-xs mt-1">Verification email sent! Please check your inbox and click the link to activate your account.</div>
+                  <div className="text-green-600 text-xs mt-1">
+                    If your email is not registered, you’ll receive a verification email. If you already have an account, please log in.
+                  </div>
                 )}
                 {signup && signupExists && (
                   <div className="text-blue-600 text-xs mt-1">Account already exists. <button className='underline' type='button' onClick={() => { setSignup(false); setSignupSuccess(false); setError(''); }}>Sign in?</button></div>
