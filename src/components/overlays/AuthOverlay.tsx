@@ -17,6 +17,8 @@ export default function AuthOverlay() {
   const [resetSent, setResetSent] = useState(false);
   const [resetError, setResetError] = useState('');
   const [signupSuccess, setSignupSuccess] = useState(false);
+  const [signupExists, setSignupExists] = useState(false);
+  const [loginAttempts, setLoginAttempts] = useState(0);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -31,7 +33,9 @@ export default function AuthOverlay() {
     setError('');
     try {
       await loginWithPassword(email, password);
+      setLoginAttempts(0); // reset on success
     } catch (err: any) {
+      setLoginAttempts(prev => prev + 1);
       setError(err.message || 'Login failed');
     }
   };
@@ -39,12 +43,18 @@ export default function AuthOverlay() {
   const handleEmailSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setSignupExists(false);
     try {
       await signUpWithPassword(email, password);
       setSignupSuccess(true);
-      // Do not switch to sign-in mode
     } catch (err: any) {
-      setError(err.message || 'Signup failed');
+      // Supabase error for existing user
+      if (err.message && err.message.toLowerCase().includes('user already registered')) {
+        setSignupExists(true);
+        setError('Account already exists. Please sign in.');
+      } else {
+        setError(err.message || 'Signup failed');
+      }
     }
   };
 
@@ -141,8 +151,11 @@ export default function AuthOverlay() {
                 >
                   {signup ? 'Sign up with Email' : 'Sign in with Email'}
                 </button>
-                {signup && signupSuccess && (
+                {signup && signupSuccess && !signupExists && (
                   <div className="text-green-600 text-xs mt-1">Verification email sent! Please check your inbox and click the link to activate your account.</div>
+                )}
+                {signup && signupExists && (
+                  <div className="text-blue-600 text-xs mt-1">Account already exists. <button className='underline' type='button' onClick={() => { setSignup(false); setSignupSuccess(false); setError(''); }}>Sign in?</button></div>
                 )}
                 {error && <div className="text-red-500 text-xs mt-1">{error}</div>}
                 {/* Forgot password link */}
@@ -157,6 +170,10 @@ export default function AuthOverlay() {
                       Forgot password?
                     </button>
                   </div>
+                )}
+                {/* Show forgot password suggestion after 3 failed attempts */}
+                {!signup && loginAttempts >= 3 && (
+                  <div className="text-yellow-600 text-xs mt-1">Having trouble? <button className='underline' type='button' onClick={handleForgotPassword}>Reset your password</button></div>
                 )}
                 {resetSent && <div className="text-green-600 text-xs mt-1">Check your email for a reset link.</div>}
                 {resetError && <div className="text-red-500 text-xs mt-1">{resetError}</div>}
