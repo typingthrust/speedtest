@@ -55,7 +55,7 @@ export default function AuthOverlay() {
     }
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: 'https://your-production-domain.com/reset-password', // <-- set to your real prod URL
+        redirectTo: 'https://typing-thrust.vercel.app/reset-password', // <-- set to your real prod URL
       });
       if (error) throw error;
       setResetSent(true);
