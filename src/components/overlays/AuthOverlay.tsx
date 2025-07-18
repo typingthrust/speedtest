@@ -16,6 +16,7 @@ export default function AuthOverlay() {
   const [error, setError] = useState('');
   const [resetSent, setResetSent] = useState(false);
   const [resetError, setResetError] = useState('');
+  const [signupSuccess, setSignupSuccess] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -40,7 +41,8 @@ export default function AuthOverlay() {
     setError('');
     try {
       await signUpWithPassword(email, password);
-      setSignup(false);
+      setSignupSuccess(true);
+      // Do not switch to sign-in mode
     } catch (err: any) {
       setError(err.message || 'Signup failed');
     }
@@ -120,6 +122,7 @@ export default function AuthOverlay() {
                   value={email}
                   onChange={e => setEmail(e.target.value)}
                   required
+                  disabled={signup && signupSuccess}
                 />
                 <input
                   type="password"
@@ -128,15 +131,19 @@ export default function AuthOverlay() {
                   value={password}
                   onChange={e => setPassword(e.target.value)}
                   required
+                  disabled={signup && signupSuccess}
                 />
                 <button
                   type="submit"
                   className="w-full bg-black hover:bg-gray-900 text-white rounded-lg px-4 py-2 font-semibold transition-all duration-150"
-                  disabled={loading}
+                  disabled={loading || (signup && signupSuccess)}
                   style={{ fontWeight: 600 }}
                 >
                   {signup ? 'Sign up with Email' : 'Sign in with Email'}
                 </button>
+                {signup && signupSuccess && (
+                  <div className="text-green-600 text-xs mt-1">Verification email sent! Please check your inbox and click the link to activate your account.</div>
+                )}
                 {error && <div className="text-red-500 text-xs mt-1">{error}</div>}
                 {/* Forgot password link */}
                 {!signup && (
