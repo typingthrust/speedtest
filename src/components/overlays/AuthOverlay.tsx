@@ -48,8 +48,15 @@ export default function AuthOverlay() {
       await signUpWithPassword(email, password);
       setSignupSuccess(true);
     } catch (err: any) {
-      // Supabase error for existing user
-      if (err.message && err.message.toLowerCase().includes('user already registered')) {
+      // Check for Supabase error code or message for existing user
+      const msg = (err.message || '').toLowerCase();
+      const code = err.code || err.status || '';
+      if (
+        msg.includes('user already registered') ||
+        msg.includes('user already exists') ||
+        code === 'auth/user_already_exists' ||
+        code === 400 // Supabase returns 400 for existing user
+      ) {
         setSignupExists(true);
         setSignupSuccess(false); // Do not show verification message
         setError('Account already exists. Please sign in.');
