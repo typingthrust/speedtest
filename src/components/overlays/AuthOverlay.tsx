@@ -46,21 +46,17 @@ export default function AuthOverlay() {
     setSignupExists(false);
     setSignupSuccess(false);
     try {
-      // Check if email already exists in auth.users
-      const { data: existing, error: checkError } = await supabase.rpc('check_user_exists', { email_to_check: email });
-      if (checkError) {
-        setError('Error checking email. Please try again.');
-        return;
-      }
-      if (existing && existing.user_exists) {
-        setSignupExists(true);
-        setError('Email already registered. Please log in.');
-        return;
-      }
-      // Only call signUp if email does not exist
       const { error } = await supabase.auth.signUp({ email, password });
       if (error) {
-        setError(error.message || 'Signup failed');
+        if (
+          error.status === 400 ||
+          (error.message && error.message.toLowerCase().includes('user already registered'))
+        ) {
+          setSignupExists(true);
+          setError('Email already registered. Please log in.');
+        } else {
+          setError(error.message || 'Signup failed');
+        }
         setSignupSuccess(false);
       } else {
         setSignupSuccess(true);
