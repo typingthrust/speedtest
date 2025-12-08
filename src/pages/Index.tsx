@@ -305,16 +305,16 @@ const TypingArea: React.FC<TypingAreaProps & { mode?: string; godModeIndex?: num
           if (isCurrent) {
             return (
               <span key={idx} ref={caretCharRef} className={className} style={{ position: 'relative' }}>
-                <span 
-                  className="monkey-caret"
-                  style={{
-                    position: 'absolute',
+          <span
+            className="monkey-caret"
+            style={{
+              position: 'absolute',
                     left: 0,
                     top: '0.1em',
                     width: '2px',
                     height: '0.9em',
                     background: 'hsl(48, 96%, 53%)',
-                    animation: 'monkey-blink 1s steps(1) infinite',
+              animation: 'monkey-blink 1s steps(1) infinite',
                     zIndex: 2,
                   }}
                 />
@@ -408,15 +408,15 @@ const TypingArea: React.FC<TypingAreaProps & { mode?: string; godModeIndex?: num
                     zIndex: 2,
                   }}
                 />
-                {char === ' ' ? '\u00A0' : char}
-              </span>
-            );
-          }
+          {char === ' ' ? '\u00A0' : char}
+        </span>
+      );
+    }
           
           return (
             <span key={idx} className={className}>
-              {char === ' ' ? '\u00A0' : char}
-            </span>
+        {char === ' ' ? '\u00A0' : char}
+      </span>
           );
         })}
         {/* Caret at end if all text typed */}
@@ -480,17 +480,17 @@ const TypingArea: React.FC<TypingAreaProps & { mode?: string; godModeIndex?: num
         if (isCurrent) {
           return (
             <span key={idx} ref={caretCharRef} className={className} style={{ position: 'relative' }}>
-              <span 
-                className="monkey-caret"
-                style={{
-                  position: 'absolute',
+        <span
+          className="monkey-caret"
+          style={{
+            position: 'absolute',
                   left: 0,
                   top: '0.15em',
                   width: '2px',
                   height: '0.85em',
                   background: 'hsl(48, 96%, 53%)', // Yellow caret like Monkeytype
                   borderRadius: '1px',
-                  animation: 'monkey-blink 1s steps(1) infinite',
+            animation: 'monkey-blink 1s steps(1) infinite',
                   zIndex: 2,
                 }}
               />
