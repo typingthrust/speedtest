@@ -29,6 +29,7 @@ import { supabase } from '../lib/supabaseClient';
 import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '../components/ui/alert-dialog';
 import { useGamification } from '../components/GamificationProvider';
 import { useLeaderboard } from '../components/LeaderboardProvider';
+import { useOverlay } from '../components/OverlayProvider';
 
 interface Stats {
   wpm?: number;
@@ -102,9 +103,9 @@ function getBestWpm(history: any[]) {
 function getBestAccuracy(history: any[]) {
   return history.length > 0 ? Math.max(...history.map((h: any) => h.accuracy || 0)) : 0;
 }
-function getAvgTestDuration(history: any[]) {
+function getAvgWpm(history: any[]) {
   if (!history.length) return 0;
-  const total = history.reduce((sum: number, h: any) => sum + (h.time || 0), 0);
+  const total = history.reduce((sum: number, h: any) => sum + (h.wpm || 0), 0);
   return Math.round(total / history.length);
 }
 function getTotalWords(history: any[]) {
@@ -152,6 +153,7 @@ export default function Profile() {
   const { resetStats } = usePersonalization();
   const { state: gamificationState, setLeaderboard, setGamificationEnabled } = useGamification();
   const { refreshLeaderboard } = useLeaderboard();
+  const { openOverlay } = useOverlay();
   const navigate = useNavigate();
   // Filter state
   const [selectedDuration, setSelectedDuration] = useState('all');
@@ -210,9 +212,7 @@ export default function Profile() {
           <button
             className="bg-cyan-500 text-slate-900 px-6 py-2 rounded font-semibold hover:bg-cyan-400 transition"
             onClick={() => {
-              // Try to open login modal if overlay system is available
-              if (window.openOverlay) window.openOverlay('auth');
-              else window.location.href = '/';
+              openOverlay('auth');
             }}
           >
             Log In
@@ -235,7 +235,7 @@ export default function Profile() {
   // --- Use gamification state for level, XP, progress, streak, badges ---
   const bestWpm = getBestWpm(filteredHistory);
   const bestAccuracy = getBestAccuracy(filteredHistory);
-  const avgWpm = getAvgTestDuration(filteredHistory);
+  const avgWpm = getAvgWpm(filteredHistory);
   const totalTime = filteredHistory.reduce((sum: number, h: any) => sum + (h.time || 0), 0);
   const totalWords = filteredHistory.reduce((sum: number, h: any) => {
     if (h.wordCount) return sum + h.wordCount;
@@ -556,20 +556,20 @@ export default function Profile() {
       {
         label: 'WPM',
         data: wpmVarianceData,
-        borderColor: '#111',
-        backgroundColor: 'rgba(34,34,34,0.08)',
+        borderColor: '#22d3ee', // cyan-400
+        backgroundColor: 'rgba(34, 211, 238, 0.1)', // cyan-400 with opacity
         fill: true,
         tension: 0.4,
         pointRadius: 2,
-        pointBackgroundColor: '#333',
+        pointBackgroundColor: '#22d3ee', // cyan-400
         borderWidth: 2,
       },
     ],
   };
   const wpmVarianceChartOptions = {
     responsive: true,
-    plugins: { legend: { display: false }, tooltip: { enabled: true, backgroundColor: '#222', titleColor: '#fff', bodyColor: '#fff' } },
-    scales: { x: { grid: { color: '#eee' }, ticks: { color: '#bbb' } }, y: { grid: { color: '#eee' }, ticks: { color: '#bbb' }, beginAtZero: true } },
+    plugins: { legend: { display: false }, tooltip: { enabled: true, backgroundColor: '#1e293b', titleColor: '#f1f5f9', bodyColor: '#f1f5f9', borderColor: '#475569', borderWidth: 1 } },
+    scales: { x: { grid: { color: '#475569' }, ticks: { color: '#94a3b8' } }, y: { grid: { color: '#475569' }, ticks: { color: '#94a3b8' }, beginAtZero: true } },
   };
   // Helper: Category breakdown
   const categoryStats: Record<string, { wpm: number[] }> = {};
@@ -590,16 +590,16 @@ export default function Profile() {
       {
         label: 'Avg WPM',
         data: categoryWpmData,
-        backgroundColor: '#bbb',
-        borderColor: '#111',
+        backgroundColor: '#22d3ee', // cyan-400
+        borderColor: '#06b6d4', // cyan-500
         borderWidth: 1,
       },
     ],
   };
   const categoryChartOptions = {
     responsive: true,
-    plugins: { legend: { display: false }, tooltip: { enabled: true, backgroundColor: '#222', titleColor: '#fff', bodyColor: '#fff' } },
-    scales: { x: { grid: { color: '#eee' }, ticks: { color: '#bbb' } }, y: { grid: { color: '#eee' }, ticks: { color: '#bbb' }, beginAtZero: true } },
+    plugins: { legend: { display: false }, tooltip: { enabled: true, backgroundColor: '#1e293b', titleColor: '#f1f5f9', bodyColor: '#f1f5f9', borderColor: '#475569', borderWidth: 1 } },
+    scales: { x: { grid: { color: '#475569' }, ticks: { color: '#94a3b8' } }, y: { grid: { color: '#475569' }, ticks: { color: '#94a3b8' }, beginAtZero: true } },
   };
 
   // Robust aggregation of key counts for production
@@ -633,8 +633,8 @@ export default function Profile() {
       {
         label: 'Key Presses',
         data: keyCharData,
-        backgroundColor: '#bbb',
-        borderColor: '#111',
+        backgroundColor: '#22d3ee', // cyan-400
+        borderColor: '#06b6d4', // cyan-500
         borderWidth: 1,
       },
     ],

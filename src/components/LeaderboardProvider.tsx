@@ -36,17 +36,21 @@ export const LeaderboardProvider = ({ children }: { children: ReactNode }) => {
   const setMultiplayerRoomId = (id: string | undefined) => setState(prev => ({ ...prev, multiplayerRoomId: id }));
 
   // --- Add manual refreshLeaderboard function ---
-  const refreshLeaderboard = async () => {
+  const refreshLeaderboard = async (timeframeOverride?: LeaderboardState['timeframe']) => {
+    const targetTimeframe = timeframeOverride ?? state.timeframe;
     let query = supabase
       .from('leaderboard')
       .select('user_id, wpm, xp, timeframe, email')
-      .eq('timeframe', state.timeframe);
+      .eq('timeframe', targetTimeframe);
     const { data, error } = await query;
     if (!error && data) {
       // Sort by WPM (desc), then XP (desc)
       const sorted = [...data].sort((a, b) => b.wpm - a.wpm || b.xp - a.xp);
       setEntries(sorted as LeaderboardEntry[]);
     } else {
+      if (error) {
+        console.error('Error fetching leaderboard:', error);
+      }
       setEntries([]);
     }
   };

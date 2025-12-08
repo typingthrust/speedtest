@@ -1196,8 +1196,14 @@ const Index = () => {
       if (userInput[i] === currentText[i]) correctChars++;
     }
     const totalTyped = userInput.length;
-    const currentWpm = timeElapsed > 0 ? Math.round((correctChars / 5) / timeElapsed) : 0;
-    const currentAccuracy = totalTyped > 0 ? Math.round((correctChars / totalTyped) * 100) : 100;
+    // WPM = (correct characters / 5) / time in minutes
+    // Cap WPM at 300 (world record is ~216 WPM, but allow some buffer for edge cases)
+    const calculatedWpm = timeElapsed > 0 ? (correctChars / 5) / timeElapsed : 0;
+    const currentWpm = Math.min(300, Math.max(0, Math.round(calculatedWpm)));
+    // Accuracy = (correct characters / total characters) * 100
+    // Ensure accuracy is between 0 and 100
+    const calculatedAccuracy = totalTyped > 0 ? (correctChars / totalTyped) * 100 : 100;
+    const currentAccuracy = Math.min(100, Math.max(0, Math.round(calculatedAccuracy)));
     setWpm(currentWpm);
     setAccuracy(currentAccuracy);
   }, [userInput, currentText, startTime]);
@@ -1319,9 +1325,12 @@ const Index = () => {
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => {
       // Calculate WPM and accuracy for this keystroke
-      const timeElapsed = startTime ? (Date.now() - startTime) / 1000 / 60 : 1/60;
-      const wordsTyped = value.trim().split(' ').length;
-      const currentWpm = Math.round(wordsTyped / timeElapsed);
+      // WPM = (correct characters / 5) / time in minutes
+      const timeElapsed = startTime ? (Date.now() - startTime) / 1000 / 60 : 0;
+      // Only count correct characters for WPM calculation
+      // Cap WPM at 300 (world record is ~216 WPM, but allow some buffer for edge cases)
+      const calculatedWpm = timeElapsed > 0 ? (correctChars / 5) / timeElapsed : 0;
+      const currentWpm = Math.min(300, Math.max(0, Math.round(calculatedWpm)));
       // Update chart data only when necessary
       setChartData(prev => {
         const newChartData = [...prev, { x: value.length, y: currentWpm, acc: currentAcc }];
@@ -1398,8 +1407,14 @@ const Index = () => {
         if (userInput[i] === currentText[i]) correctChars++;
       }
       const totalTyped = userInput.length;
-      const finalWpm = timeElapsed > 0 ? Math.round((correctChars / 5) / timeElapsed) : 0;
-      const finalAcc = totalTyped > 0 ? Math.round((correctChars / totalTyped) * 100) : 100;
+      // WPM = (correct characters / 5) / time in minutes
+      // Cap WPM at 300 (world record is ~216 WPM, but allow some buffer for edge cases)
+      const calculatedFinalWpm = timeElapsed > 0 ? (correctChars / 5) / timeElapsed : 0;
+      const finalWpm = Math.min(300, Math.max(0, Math.round(calculatedFinalWpm)));
+      // Accuracy = (correct characters / total characters) * 100
+      // Ensure accuracy is between 0 and 100
+      const calculatedFinalAcc = totalTyped > 0 ? (correctChars / totalTyped) * 100 : 100;
+      const finalAcc = Math.min(100, Math.max(0, Math.round(calculatedFinalAcc)));
       // Compute final chart data
       const finalChartData = [...chartData];
       if (finalChartData.length === 0 || finalChartData[finalChartData.length - 1].x !== userInput.length) {
@@ -1563,6 +1578,14 @@ const Index = () => {
     }
   }, []);
 
+  // Close dropdowns when typing starts
+  useEffect(() => {
+    if (isTyping) {
+      setOpenCategory(null);
+      setOpenSetting(null);
+    }
+  }, [isTyping]);
+
   // WPM history tracking effect (per second, always push a point)
   useEffect(() => {
     if (!isTyping) return;
@@ -1572,8 +1595,14 @@ const Index = () => {
       if (!startTime) return;
       const elapsed = Math.floor((Date.now() - startTime) / 1000);
       const elapsedMinutes = elapsed / 60;
-      const totalTyped = userInput.length;
-      const wpm = elapsedMinutes > 0 ? Math.round((totalTyped / 5) / elapsedMinutes) : 0;
+      // Count only correct characters for WPM
+      let correctChars = 0;
+      for (let i = 0; i < userInput.length; i++) {
+        if (userInput[i] === currentText[i]) correctChars++;
+      }
+      // Cap WPM at 300 (world record is ~216 WPM, but allow some buffer for edge cases)
+      const calculatedWpm = elapsedMinutes > 0 ? (correctChars / 5) / elapsedMinutes : 0;
+      const wpm = Math.min(300, Math.max(0, Math.round(calculatedWpm)));
       setChartData(prev => {
         // Only add new point if it's different from the last one
         if (prev.length === 0 || prev[prev.length - 1].y !== wpm) {
@@ -1584,7 +1613,7 @@ const Index = () => {
       tick++;
     }, 1000);
     return () => clearInterval(interval);
-  }, [isTyping, startTime, userInput]);
+  }, [isTyping, startTime, userInput, currentText]);
 
   // Add a handler to set the typing content from the content library
   const handleContentSelect = useCallback((content: string) => {
@@ -1916,7 +1945,7 @@ const Index = () => {
         .from('user_gamification')
         .select('xp')
         .eq('user_id', userId)
-        .single();
+        .maybeSingle();
       
       const xp = gamificationData?.xp || 0;
       
@@ -1927,7 +1956,7 @@ const Index = () => {
         .select('wpm')
         .eq('user_id', userId)
         .eq('timeframe', 'all')
-        .single();
+        .maybeSingle();
       
       const bestWpm = existingAll?.wpm ? Math.max(existingAll.wpm, wpm) : wpm;
       
@@ -1947,17 +1976,15 @@ const Index = () => {
         console.error('Error updating leaderboard (all):', allError);
       }
       
-      // Update weekly leaderboard (only if test was in last 7 days)
-      const weekAgo = new Date();
-      weekAgo.setDate(weekAgo.getDate() - 7);
-      const testDate = new Date();
-      if (testDate >= weekAgo) {
-        const { data: existingWeekly } = await supabase
-          .from('leaderboard')
-          .select('wpm')
-          .eq('user_id', userId)
-          .eq('timeframe', 'weekly')
-          .single();
+      // Update weekly leaderboard (always update - timeframe filtering is handled by the leaderboard query)
+      const { data: existingWeekly } = await supabase
+        .from('leaderboard')
+        .select('wpm')
+        .eq('user_id', userId)
+        .eq('timeframe', 'weekly')
+        .maybeSingle();
+      
+      if (true) { // Always update weekly leaderboard
         
         const bestWeeklyWpm = existingWeekly?.wpm ? Math.max(existingWeekly.wpm, wpm) : wpm;
         
@@ -1978,16 +2005,15 @@ const Index = () => {
         }
       }
       
-      // Update monthly leaderboard (only if test was in last 30 days)
-      const monthAgo = new Date();
-      monthAgo.setDate(monthAgo.getDate() - 30);
-      if (testDate >= monthAgo) {
-        const { data: existingMonthly } = await supabase
-          .from('leaderboard')
-          .select('wpm')
-          .eq('user_id', userId)
-          .eq('timeframe', 'monthly')
-          .single();
+      // Update monthly leaderboard (always update - timeframe filtering is handled by the leaderboard query)
+      const { data: existingMonthly } = await supabase
+        .from('leaderboard')
+        .select('wpm')
+        .eq('user_id', userId)
+        .eq('timeframe', 'monthly')
+        .maybeSingle();
+      
+      if (true) { // Always update monthly leaderboard
         
         const bestMonthlyWpm = existingMonthly?.wpm ? Math.max(existingMonthly.wpm, wpm) : wpm;
         
@@ -2008,16 +2034,15 @@ const Index = () => {
         }
       }
       
-      // Update yearly leaderboard (only if test was in last 365 days)
-      const yearAgo = new Date();
-      yearAgo.setFullYear(yearAgo.getFullYear() - 1);
-      if (testDate >= yearAgo) {
-        const { data: existingYearly } = await supabase
-          .from('leaderboard')
-          .select('wpm')
-          .eq('user_id', userId)
-          .eq('timeframe', 'yearly')
-          .single();
+      // Update yearly leaderboard (always update - timeframe filtering is handled by the leaderboard query)
+      const { data: existingYearly } = await supabase
+        .from('leaderboard')
+        .select('wpm')
+        .eq('user_id', userId)
+        .eq('timeframe', 'yearly')
+        .maybeSingle();
+      
+      if (true) { // Always update yearly leaderboard
         
         const bestYearlyWpm = existingYearly?.wpm ? Math.max(existingYearly.wpm, wpm) : wpm;
         
@@ -2059,8 +2084,6 @@ const Index = () => {
         errorTypes={errorTypes}
         timeGraphData={chartData}
         consistency={consistency}
-        onShare={() => {/* TODO: implement share logic */}}
-        onSave={() => {/* TODO: implement save logic */}}
       />
     );
   }
@@ -2149,7 +2172,10 @@ const Index = () => {
                   <button
                     className={`text-base font-medium border-none bg-transparent outline-none whitespace-nowrap transition-colors duration-150 flex-shrink-0 px-2 py-1 ${(isOpen || isSelected) ? 'text-cyan-400 underline underline-offset-4' : 'text-slate-400 hover:text-slate-200'}`}
                     style={{ minWidth: 48, display: 'flex', alignItems: 'center' }}
-                    onClick={() => setOpenCategory(isOpen ? null : cat.heading)}
+                    onClick={() => {
+                      setOpenCategory(isOpen ? null : cat.heading);
+                      setOpenSetting(null); // Close Duration/Difficulty when opening a category
+                    }}
                   >
                     {cat.heading}
                     {isOpen && (
@@ -2165,7 +2191,11 @@ const Index = () => {
                             key={item.value}
                             className={`px-3 py-1 rounded-lg font-medium text-sm transition-all duration-150 flex-shrink-0 whitespace-nowrap ${isActive ? 'bg-cyan-500 text-slate-900' : 'text-slate-300 hover:bg-slate-700'}`}
                             style={{ minWidth: 40 }}
-                            onClick={() => { handleModeChange(String(item.value)); setOpenCategory(null); }}
+                            onClick={() => { 
+                              handleModeChange(String(item.value)); 
+                              setOpenCategory(null); 
+                              setOpenSetting(null); // Also close Duration/Difficulty when selecting a mode
+                            }}
                           >
                             {item.label}
                           </button>
@@ -2180,7 +2210,10 @@ const Index = () => {
             <div className="flex flex-row items-center gap-1 ml-4">
               <button
                 className={`px-2 py-1 text-base font-medium border-none bg-transparent outline-none whitespace-nowrap transition-colors duration-150 flex-shrink-0 ${openSetting === 'duration' ? 'text-cyan-400 underline underline-offset-4' : 'text-slate-400 hover:text-slate-200'}`}
-                onClick={() => setOpenSetting(openSetting === 'duration' ? null : 'duration')}
+                onClick={() => {
+                  setOpenSetting(openSetting === 'duration' ? null : 'duration');
+                  setOpenCategory(null); // Close categories when opening Duration
+                }}
                 style={{ minWidth: 48 }}
               >
                 Duration
@@ -2197,7 +2230,10 @@ const Index = () => {
               ))}
               <button
                 className={`px-2 py-1 text-base font-medium border-none bg-transparent outline-none whitespace-nowrap transition-colors duration-150 flex-shrink-0 ${openSetting === 'difficulty' ? 'text-cyan-400 underline underline-offset-4' : 'text-slate-400 hover:text-slate-200'}`}
-                onClick={() => setOpenSetting(openSetting === 'difficulty' ? null : 'difficulty')}
+                onClick={() => {
+                  setOpenSetting(openSetting === 'difficulty' ? null : 'difficulty');
+                  setOpenCategory(null); // Close categories when opening Difficulty
+                }}
                 style={{ minWidth: 48 }}
               >
                 Difficulty

@@ -104,15 +104,15 @@ export default function LeaderboardOverlay() {
   const currentUserId = user?.id;
   const currentUserEmail = user?.email;
 
-  // Debug log: print all leaderboard entries and current user info
-  // console.log('Leaderboard entries from backend:', state.entries);
-  // console.log('Current userId:', currentUserId, 'Current userEmail:', currentUserEmail);
-  // Filter out any entry matching the current user's id or email (robust)
-  const filteredEntries = state.entries.filter(e => e.user_id !== currentUserId && e.email !== currentUserEmail);
-  // Use filteredEntries for all rendering below
-  const sorted = filteredEntries;
+  // Sort all entries by WPM (desc), then XP (desc)
+  const sorted = [...state.entries].sort((a, b) => b.wpm - a.wpm || b.xp - a.xp);
+  
+  // Find current user's entry and index
   const userIdx = sorted.findIndex(e => e.user_id === currentUserId || e.email === currentUserEmail);
   const userEntry = userIdx !== -1 ? sorted[userIdx] : null;
+  
+  // Filter out current user from the displayed list (show only top 5 others)
+  const filteredEntries = sorted.filter(e => e.user_id !== currentUserId && e.email !== currentUserEmail);
 
   return (
     <MinimalLeaderboardOverlay open={open === 'leaderboard'} onClose={closeOverlay}>
@@ -141,11 +141,11 @@ export default function LeaderboardOverlay() {
         </div>
         {/* Leaderboard List */}
         <section className="w-full flex flex-col gap-2">
-          {sorted.length === 0 ? (
+          {filteredEntries.length === 0 ? (
             <span className="text-slate-400">No leaderboard data</span>
           ) : (
             <ul className="flex flex-col gap-2">
-              {sorted.map((entry, i) => (
+              {filteredEntries.slice(0, 5).map((entry, i) => (
                 <li
                   key={getDisplayName(entry)}
                   className={`flex items-center gap-2 px-3 py-3 rounded-2xl shadow-sm border border-slate-600 bg-slate-700/80 transition-all duration-200`}
