@@ -7,7 +7,7 @@ import { useOverlay } from './OverlayProvider';
 import { useAuth } from './AuthProvider';
 import { Button } from './ui/button';
 
-const logo = '/logo.png';
+const logo = '/logonew.png';
 
 const Navbar: React.FC = () => {
   const navigate = useNavigate();
@@ -31,31 +31,28 @@ const Navbar: React.FC = () => {
   };
 
   return (
-    <nav className="w-full bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+    <nav className="w-full bg-slate-900 border-b border-slate-700 sticky top-0 z-50 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link 
             to="/" 
-            className="flex items-center gap-2 sm:gap-3 focus:outline-none focus:ring-2 focus:ring-gray-300 rounded-lg px-2 -ml-2"
+            className="flex items-center focus:outline-none focus:ring-2 focus:ring-cyan-500 rounded-lg px-2 -ml-2"
             aria-label="Go to home page"
           >
             <img
               src={logo}
               alt="TypingThrust Logo"
-              className="w-8 h-8 sm:w-10 sm:h-10 object-contain flex-shrink-0"
+              className="w-36 h-36 sm:w-40 sm:h-40 md:w-44 md:h-44 lg:w-48 lg:h-48 xl:w-52 xl:h-52 object-contain flex-shrink-0"
             />
-            <h1 className="text-lg sm:text-xl md:text-2xl font-extrabold tracking-tight text-gray-900 whitespace-nowrap">
-              TypingThrust
-            </h1>
           </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center gap-2">
             {/* Gamification Toggle */}
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-50 border border-gray-200">
-              <Award className="w-4 h-4 text-gray-600" />
-              <span className="text-sm font-medium text-gray-700">Gamification</span>
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700">
+              <Award className="w-4 h-4 text-cyan-400" />
+              <span className="text-sm font-medium text-slate-200">Gamification</span>
               <Switch 
                 checked={state.gamificationEnabled} 
                 onCheckedChange={setGamificationEnabled}
@@ -68,7 +65,7 @@ const Navbar: React.FC = () => {
               variant="ghost"
               size="sm"
               onClick={() => openOverlay('gamification')}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 text-slate-300 hover:text-slate-100 hover:bg-slate-800"
             >
               <Award className="w-4 h-4" />
               <span className="hidden xl:inline">Gamification</span>
@@ -79,7 +76,7 @@ const Navbar: React.FC = () => {
               variant="ghost"
               size="sm"
               onClick={() => openOverlay('leaderboard')}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 text-slate-300 hover:text-slate-100 hover:bg-slate-800"
             >
               <Users className="w-4 h-4" />
               <span className="hidden xl:inline">Leaderboard</span>
@@ -90,7 +87,7 @@ const Navbar: React.FC = () => {
               variant="ghost"
               size="sm"
               onClick={handleProfileClick}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 text-slate-300 hover:text-slate-100 hover:bg-slate-800"
             >
               <UserIcon className="w-4 h-4" />
               <span className="hidden xl:inline">
@@ -103,8 +100,8 @@ const Navbar: React.FC = () => {
           <div className="flex lg:hidden items-center gap-2">
             {/* Mobile Gamification Toggle - Only show if enabled */}
             {state.gamificationEnabled && (
-              <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-gray-50 border border-gray-200 mr-2">
-                <Award className="w-4 h-4 text-gray-600" />
+              <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-slate-800 border border-slate-700 mr-2">
+                <Award className="w-4 h-4 text-cyan-400" />
                 <Switch 
                   checked={state.gamificationEnabled} 
                   onCheckedChange={setGamificationEnabled}
@@ -115,14 +112,14 @@ const Navbar: React.FC = () => {
             
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-colors"
+              className="p-2 rounded-lg hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition-colors"
               aria-label="Toggle menu"
               aria-expanded={mobileMenuOpen}
             >
               {mobileMenuOpen ? (
-                <X className="w-6 h-6 text-gray-900" />
+                <X className="w-6 h-6 text-slate-100" />
               ) : (
-                <Menu className="w-6 h-6 text-gray-900" />
+                <Menu className="w-6 h-6 text-slate-100" />
               )}
             </button>
           </div>
@@ -130,15 +127,15 @@ const Navbar: React.FC = () => {
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="lg:hidden border-t border-gray-200 py-4 space-y-2">
+          <div className="lg:hidden border-t border-slate-700 py-4 space-y-2">
             <button
               onClick={() => {
                 openOverlay('gamification');
                 setMobileMenuOpen(false);
               }}
-              className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-slate-200 hover:bg-slate-800 rounded-lg transition-colors"
             >
-              <Award className="w-5 h-5 text-gray-600" />
+              <Award className="w-5 h-5 text-cyan-400" />
               <span className="font-medium">Gamification</span>
             </button>
 
@@ -147,19 +144,19 @@ const Navbar: React.FC = () => {
                 openOverlay('leaderboard');
                 setMobileMenuOpen(false);
               }}
-              className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-slate-200 hover:bg-slate-800 rounded-lg transition-colors"
             >
-              <Users className="w-5 h-5 text-gray-600" />
+              <Users className="w-5 h-5 text-cyan-400" />
               <span className="font-medium">Leaderboard</span>
             </button>
 
-            <div className="border-t border-gray-200 my-2"></div>
+            <div className="border-t border-slate-700 my-2"></div>
 
             <button
               onClick={handleProfileClick}
-              className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-slate-200 hover:bg-slate-800 rounded-lg transition-colors"
             >
-              <UserIcon className="w-5 h-5 text-gray-600" />
+              <UserIcon className="w-5 h-5 text-cyan-400" />
               <span className="font-medium">
                 {user && user.id !== 'guest' ? 'Profile' : 'Sign In'}
               </span>
@@ -168,7 +165,7 @@ const Navbar: React.FC = () => {
             {user && user.id !== 'guest' && (
               <button
                 onClick={handleLogout}
-                className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-red-400 hover:bg-slate-800 rounded-lg transition-colors"
               >
                 <span className="font-medium">Sign Out</span>
               </button>

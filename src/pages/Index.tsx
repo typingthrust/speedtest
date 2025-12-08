@@ -6,7 +6,7 @@ import type { OverlayType } from '../components/OverlayProvider';
 import { ExpandableTabs } from '../components/ui/expandable-tabs';
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePersonalization } from '../components/PersonalizationProvider';
-import ContentLibraryOverlay from '../components/overlays/ContentLibraryOverlay';
+import { useContentLibrary } from '../components/ContentLibraryProvider';
 import { Link } from 'react-router-dom';
 import GraphemeSplitter from 'grapheme-splitter';
 import { Switch } from '../components/ui/switch'; // If not present, use a simple custom switch inline
@@ -227,11 +227,11 @@ const TypingArea: React.FC<TypingAreaProps & { mode?: string; godModeIndex?: num
           const isIncorrect = isTyped && visibleText[idx] !== typed[idx];
           const isCurrent = idx === typed.length;
           
-          let className = 'text-gray-500';
+          let className = 'text-slate-400';
           
-          if (isCorrect) className = 'text-gray-800';
-          else if (isIncorrect) className = 'text-red-500'; // Just red, no background
-          else if (isCurrent) className = 'text-gray-800';
+          if (isCorrect) className = 'text-slate-100';
+          else if (isIncorrect) className = 'text-red-400'; // Soft red, no background
+          else if (isCurrent) className = 'text-slate-100';
           
           // Render caret for current character
           if (isCurrent) {
@@ -285,7 +285,7 @@ const TypingArea: React.FC<TypingAreaProps & { mode?: string; godModeIndex?: num
           fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace',
           lineHeight: '1.7',
           padding: '16px',
-          background: '#fafafa',
+          background: '#1e293b', // slate-800
           borderRadius: '8px',
         }}
       >
@@ -295,11 +295,11 @@ const TypingArea: React.FC<TypingAreaProps & { mode?: string; godModeIndex?: num
           const isIncorrect = isTyped && userInput[idx] !== char;
           const isCurrent = idx === userInput.length;
           
-          let className = 'text-gray-500';
+          let className = 'text-slate-400';
           
-          if (isCorrect) className = 'text-gray-800';
-          else if (isIncorrect) className = 'text-red-500'; // Just red, no background
-          else if (isCurrent) className = 'text-gray-800';
+          if (isCorrect) className = 'text-slate-100';
+          else if (isIncorrect) className = 'text-red-400'; // Soft red, no background
+          else if (isCurrent) className = 'text-slate-100';
           
           // Render the caret inline with the current character
           if (isCurrent) {
@@ -384,11 +384,11 @@ const TypingArea: React.FC<TypingAreaProps & { mode?: string; godModeIndex?: num
           const isIncorrect = isTyped && userInput[idx] !== char;
           const isCurrent = idx === userInput.length;
           
-          let className = 'text-gray-500';
+          let className = 'text-slate-400';
           
-          if (isCorrect) className = 'text-gray-800';
-          else if (isIncorrect) className = 'text-red-500'; // Just red, no background
-          else if (isCurrent) className = 'text-gray-800';
+          if (isCorrect) className = 'text-slate-100';
+          else if (isIncorrect) className = 'text-red-400'; // Soft red, no background
+          else if (isCurrent) className = 'text-slate-100';
           
           // Render the caret inline with the current character
           if (isCurrent) {
@@ -469,12 +469,12 @@ const TypingArea: React.FC<TypingAreaProps & { mode?: string; godModeIndex?: num
         const isIncorrect = isTyped && userInput[idx] !== char;
         const isCurrent = idx === userInput.length;
         
-        // Monkeytype-style colors: gray untyped, dark typed correct, red incorrect (no background)
-        let className = 'text-gray-500'; // Untyped - medium gray
+        // Professional dark theme colors: slate untyped, light typed correct, red incorrect
+        let className = 'text-slate-400'; // Untyped - medium slate
         
-        if (isCorrect) className = 'text-gray-800'; // Correct - dark
-        else if (isIncorrect) className = 'text-red-500'; // Wrong - just red, no background
-        else if (isCurrent) className = 'text-gray-800';
+        if (isCorrect) className = 'text-slate-100'; // Correct - light slate
+        else if (isIncorrect) className = 'text-red-400'; // Wrong - soft red, no background
+        else if (isCurrent) className = 'text-slate-100';
         
         // Render the caret inline with the current character
         if (isCurrent) {
@@ -488,7 +488,7 @@ const TypingArea: React.FC<TypingAreaProps & { mode?: string; godModeIndex?: num
                   top: '0.15em',
                   width: '2px',
                   height: '0.85em',
-                  background: 'hsl(48, 96%, 53%)', // Yellow caret like Monkeytype
+                  background: 'hsl(188, 94%, 60%)', // Cyan accent caret
                   borderRadius: '1px',
             animation: 'monkey-blink 1s steps(1) infinite',
                   zIndex: 2,
@@ -513,7 +513,7 @@ const TypingArea: React.FC<TypingAreaProps & { mode?: string; godModeIndex?: num
             display: 'inline-block',
             width: '2px',
             height: '0.85em',
-            background: 'hsl(48, 96%, 53%)',
+            background: 'hsl(180, 80%, 60%)', // cyan-400
             borderRadius: '1px',
             animation: 'monkey-blink 1s steps(1) infinite',
             verticalAlign: 'text-bottom',
@@ -534,7 +534,7 @@ function AnimatedUnderlineTabs({ tabs, activeIndex, onChange }: { tabs: string[]
           onClick={() => onChange(idx)}
           className={
             'relative bg-transparent border-none outline-none px-2 py-1 text-lg font-medium transition-colors duration-200 ' +
-            (activeIndex === idx ? 'text-gray-900 font-bold' : 'text-gray-400 hover:text-gray-700')
+            (activeIndex === idx ? 'text-cyan-400 font-bold' : 'text-slate-400 hover:text-slate-200')
           }
           style={{ background: 'none' }}
         >
@@ -543,7 +543,7 @@ function AnimatedUnderlineTabs({ tabs, activeIndex, onChange }: { tabs: string[]
             {activeIndex === idx && (
               <motion.div
                 layoutId="underline"
-                className="absolute left-0 right-0 -bottom-1 h-[2.5px] rounded-full bg-gray-900"
+                className="absolute left-0 right-0 -bottom-1 h-[2.5px] rounded-full bg-cyan-400"
                 initial={{ opacity: 0, y: 4 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 4 }}
@@ -564,9 +564,9 @@ const AnimatedChip = ({ selected, onClick, children }: { selected: boolean; onCl
     onClick={onClick}
     className={`relative px-6 py-2 rounded-xl font-semibold text-base transition-all duration-200
       ${selected
-        ? "bg-gray-900 text-white shadow-lg scale-105"
-        : "bg-gray-100 text-gray-700 hover:bg-gray-200 hover:scale-105"}
-      focus:outline-none focus:ring-2 focus:ring-gray-400`}
+        ? "bg-cyan-500 text-slate-900 shadow-lg scale-105"
+        : "bg-slate-700 text-slate-200 hover:bg-slate-600 hover:scale-105"}
+      focus:outline-none focus:ring-2 focus:ring-cyan-500`}
     whileTap={{ scale: 0.97 }}
     whileHover={{ scale: 1.07 }}
     transition={{ type: "spring", stiffness: 300, damping: 20 }}
@@ -576,7 +576,7 @@ const AnimatedChip = ({ selected, onClick, children }: { selected: boolean; onCl
     {selected && (
       <motion.div
         layoutId="chip-underline"
-        className="absolute left-3 right-3 bottom-1 h-1 rounded-b-xl bg-gray-800"
+        className="absolute left-3 right-3 bottom-1 h-1 rounded-b-xl bg-cyan-400"
         style={{ marginTop: 2 }}
       />
     )}
@@ -604,8 +604,8 @@ const AnimatedSettingsSection = ({
     style={{ outline: 'none' }}
   >
     <div
-      className={`text-lg font-bold text-gray-700 px-6 py-3 rounded-xl cursor-pointer transition-colors duration-200 ${
-        expanded ? 'bg-gray-100' : 'bg-white'
+      className={`text-lg font-bold text-slate-200 px-6 py-3 rounded-xl cursor-pointer transition-colors duration-200 ${
+        expanded ? 'bg-slate-800' : 'bg-slate-800/50'
       }`}
       style={{backdropFilter: expanded ? 'blur(4px)' : undefined, WebkitBackdropFilter: expanded ? 'blur(4px)' : undefined}}
     >
@@ -618,7 +618,7 @@ const AnimatedSettingsSection = ({
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -8, scale: 0.98 }}
           transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-          className="absolute left-0 right-0 z-10 mt-2 p-4 rounded-2xl bg-white/70 shadow-xl backdrop-blur-md border border-gray-200"
+          className="absolute left-0 right-0 z-10 mt-2 p-4 rounded-2xl bg-slate-800/90 shadow-xl backdrop-blur-md border border-slate-700"
         >
           {children}
         </motion.div>
@@ -651,8 +651,8 @@ const SettingsCard = ({
     transition={{ type: 'spring', stiffness: 300, damping: 30 }}
   >
     <div
-      className={`w-full px-4 py-4 rounded-2xl text-center font-semibold text-lg transition-colors duration-200 ${
-        expanded ? 'bg-white/80 backdrop-blur-md border border-gray-200' : 'bg-white border border-transparent'
+      className={`w-full px-4 py-4 rounded-2xl text-center font-semibold text-lg transition-colors duration-200 text-slate-200 ${
+        expanded ? 'bg-slate-800/90 backdrop-blur-md border border-slate-700' : 'bg-slate-800/50 border border-transparent'
       }`}
       style={{ minHeight: 56 }}
     >
@@ -665,7 +665,7 @@ const SettingsCard = ({
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -8 }}
           transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-          className="absolute left-0 right-0 top-full z-10 mt-2 p-4 rounded-2xl bg-white/80 shadow-xl backdrop-blur-md border border-gray-200 flex flex-col items-center"
+          className="absolute left-0 right-0 top-full z-10 mt-2 p-4 rounded-2xl bg-slate-800/90 shadow-xl backdrop-blur-md border border-slate-700 flex flex-col items-center"
         >
           {children}
         </motion.div>
@@ -826,7 +826,7 @@ const MemoChar = memo(function MemoChar({ char, index, userInput, currentIndex }
   let className = 'transition-all duration-150 ease-out inline-block ';
   if (index < userInput.length) {
     if (userInput[index] === char) {
-      className += 'text-gray-600 transform scale-105';
+      className += 'text-slate-100 transform scale-105';
     } else {
       className += 'text-red-500 bg-red-100'; // Incorrect - red, no pulse
     }
@@ -842,7 +842,7 @@ const MemoChar = memo(function MemoChar({ char, index, userInput, currentIndex }
         transition={{ duration: 0.06, ease: 'easeOut' }}
       >
         <motion.span
-          className="bg-gray-900 text-white transform scale-110"
+          className="bg-cyan-500 text-slate-900 transform scale-110"
           layoutId="caret-char"
           transition={{ duration: 0.06, ease: 'easeOut' }}
         >
@@ -856,7 +856,7 @@ const MemoChar = memo(function MemoChar({ char, index, userInput, currentIndex }
             top: 0,
             width: '2px',
             height: '100%',
-            background: 'white',
+            background: 'hsl(180, 80%, 60%)', // cyan-400
             display: 'inline-block',
             verticalAlign: 'middle',
           }}
@@ -869,7 +869,7 @@ const MemoChar = memo(function MemoChar({ char, index, userInput, currentIndex }
       </motion.span>
     );
   } else {
-    className += 'text-gray-400';
+    className += 'text-slate-400';
   }
   return (
     <span key={index} className={className}>
@@ -906,6 +906,7 @@ const Index = () => {
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const textDisplayRef = useRef<HTMLDivElement>(null);
+  const typingPauseTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [intervalActive, setIntervalActive] = useState(false);
   const [chartData, setChartData] = useState<Array<{ x: number; y: number; acc: number }>>([]);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -919,6 +920,7 @@ const Index = () => {
   // Allow openSetting to be a category heading string, 'duration', 'difficulty', or null
   const [openSetting, setOpenSetting] = useState<string | null>(null);
   const { updateStats } = usePersonalization();
+  const { state: contentLibraryState } = useContentLibrary();
 
   // Add language selector state
   const [language, setLanguage] = useState('english');
@@ -1269,11 +1271,30 @@ const Index = () => {
     // Update previous input reference
     previousInputRef.current = value;
     
+    // If input is cleared, stop typing immediately
+    if (value.length === 0) {
+      setIsTyping(false);
+      if (typingPauseTimeoutRef.current) {
+        clearTimeout(typingPauseTimeoutRef.current);
+      }
+    } else {
     // Start typing if not already started
     if (!isTyping && value.length > 0) {
       setIsTyping(true);
       setStartTime(Date.now());
       setChartData([{ x: 0, y: 0, acc: 100 }]);
+      }
+      
+      // Reset typing pause timeout on each keystroke
+      if (typingPauseTimeoutRef.current) {
+        clearTimeout(typingPauseTimeoutRef.current);
+      }
+      // Set isTyping to false after 2 seconds of inactivity (user paused)
+      if (isTyping && value.length > 0) {
+        typingPauseTimeoutRef.current = setTimeout(() => {
+          setIsTyping(false);
+        }, 2000);
+      }
     }
     
     // Update user input immediately for responsive typing
@@ -1367,6 +1388,7 @@ const Index = () => {
     calculateStats();
     setShowResults(true);
     if (timerRef.current) clearTimeout(timerRef.current);
+    if (typingPauseTimeoutRef.current) clearTimeout(typingPauseTimeoutRef.current);
     if (wpmIntervalRef.current) clearInterval(wpmIntervalRef.current);
     if (startTime) {
       const timeElapsed = (Date.now() - startTime) / 1000 / 60;
@@ -1492,6 +1514,7 @@ const Index = () => {
     // Clear any timers
     if (timerRef.current) clearTimeout(timerRef.current);
     if (wpmIntervalRef.current) clearInterval(wpmIntervalRef.current);
+    if (typingPauseTimeoutRef.current) clearTimeout(typingPauseTimeoutRef.current);
     setTimeout(() => {
       if (inputRef.current) {
         inputRef.current.focus();
@@ -1564,7 +1587,7 @@ const Index = () => {
   }, [isTyping, startTime, userInput]);
 
   // Add a handler to set the typing content from the content library
-  const handleContentSelect = (content: string) => {
+  const handleContentSelect = useCallback((content: string) => {
     setCurrentMode('custom');
     setCurrentText(content);
     setShowResults(false);
@@ -1577,6 +1600,7 @@ const Index = () => {
     setAccuracy(100);
     setWpmHistory([{ t: 0, wpm: 0 }]);
     setKeystrokeStats({ total: 0, correct: 0, incorrect: 0, extra: 0, keyCounts: {} });
+    if (typingPauseTimeoutRef.current) clearTimeout(typingPauseTimeoutRef.current);
     setErrorTypes({ punctuation: 0, case: 0, number: 0, other: 0 });
     setConsistency(null);
     setChartData([{ x: 0, y: 0, acc: 100 }]);
@@ -1586,7 +1610,14 @@ const Index = () => {
         inputRef.current.focus();
       }
     }, 100);
-  };
+  }, []);
+
+  // Listen to content library selection changes
+  useEffect(() => {
+    if (contentLibraryState.selected && contentLibraryState.selected.content) {
+      handleContentSelect(contentLibraryState.selected.content);
+    }
+  }, [contentLibraryState.selected, handleContentSelect]);
 
   // Scroll the text display to keep the current character in view
   useEffect(() => {
@@ -1611,7 +1642,7 @@ const Index = () => {
     if (index < userInput.length) {
       // Typed characters
       if (userInput[index] === char) {
-        className += 'text-gray-600 transform scale-105'; // Correct - slight scale up
+        className += 'text-slate-100 transform scale-105'; // Correct - slight scale up
       } else {
         className += 'text-red-500 bg-red-100'; // Incorrect - red, no pulse
       }
@@ -1628,7 +1659,7 @@ const Index = () => {
           transition={{ duration: 0.06, ease: 'easeOut' }}
         >
           <motion.span
-            className="bg-gray-900 text-white transform scale-110"
+            className="bg-cyan-500 text-slate-900 transform scale-110"
             layoutId="caret-char"
             transition={{ duration: 0.06, ease: 'easeOut' }}
           >
@@ -1642,7 +1673,7 @@ const Index = () => {
               top: 0,
               width: '2px',
               height: '100%',
-              background: 'white',
+              background: 'hsl(180, 80%, 60%)', // cyan-400
               display: 'inline-block',
               verticalAlign: 'middle',
             }}
@@ -1656,7 +1687,7 @@ const Index = () => {
       );
     } else {
       // Untyped characters
-      className += 'text-gray-400';
+      className += 'text-slate-400';
     }
     
     return (
@@ -1776,6 +1807,7 @@ const Index = () => {
     setConsistency(null);
     setChartData([{ x: 0, y: 0, acc: 100 }]);
     setGodModeIndex(0);
+    if (typingPauseTimeoutRef.current) clearTimeout(typingPauseTimeoutRef.current);
     const newText = generateNewText(newMode, difficulty, language);
     setCurrentText(newText);
     setTimeLeft(newMode === 'time' ? timeLimit : 0);
@@ -2015,10 +2047,6 @@ const Index = () => {
     }
   };
 
-  if (open === 'content-library') {
-    return <ContentLibraryOverlay onContentSelect={handleContentSelect} />;
-  }
-
   if (showResults) {
     return (
       <ResultScreen
@@ -2038,17 +2066,38 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className="min-h-screen bg-slate-900 flex flex-col">
+      {/* Navbar - Hides when typing */}
+      <AnimatePresence>
+        {!isTyping && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+          >
       <Navbar />
+          </motion.div>
+        )}
+      </AnimatePresence>
       {/* Main Content */}
-      <div className="flex-1 flex flex-col items-center justify-center space-y-4 mt-0 lg:mt-[-10rem]" style={{ marginBottom: 0 }}>
-        {/* Ultra-Minimal Settings Summary Bar - Modern Mode Tabs */}
-        <div className="w-full flex justify-center mt-0 px-2 sm:px-0">
+      <div className="flex-1 flex flex-col items-center justify-center space-y-4 w-full" style={{ paddingTop: '5rem', paddingBottom: '2rem', minHeight: 'calc(100vh - 200px)' }}>
+        {/* Ultra-Minimal Settings Summary Bar - Modern Mode Tabs - Hides when typing */}
+        <AnimatePresence>
+          {!isTyping && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3 }}
+              className="w-full flex justify-center mt-2 px-2 sm:px-0"
+              style={{ position: 'relative', zIndex: 10 }}
+            >
           <motion.div
             layout
             transition={{ type: 'spring', stiffness: 400, damping: 32 }}
-            className="inline-flex flex-row flex-nowrap items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-2xl bg-white/80 border border-gray-200 shadow-md backdrop-blur-md select-none relative transition-all duration-300 mx-auto overflow-x-auto flex-nowrap scrollbar-hide"
-            style={{ width: 'fit-content', minWidth: 0, maxWidth: '100vw' }}
+            className="inline-flex flex-row flex-nowrap items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-2xl bg-slate-800/90 border border-slate-700 shadow-md backdrop-blur-md select-none relative transition-all duration-300 mx-auto overflow-x-auto flex-nowrap scrollbar-hide"
+                style={{ width: 'fit-content', minWidth: 0, maxWidth: '100vw', position: 'relative', zIndex: 10 }}
           >
             {/* Category Headings with Inline Sub-options */}
             {[
@@ -2098,13 +2147,13 @@ const Index = () => {
               return (
                 <React.Fragment key={cat.heading}>
                   <button
-                    className={`text-base font-medium border-none bg-transparent outline-none whitespace-nowrap transition-colors duration-150 flex-shrink-0 px-2 py-1 ${(isOpen || isSelected) ? 'text-yellow-600 underline underline-offset-4' : 'text-gray-500 hover:text-gray-900'}`}
+                    className={`text-base font-medium border-none bg-transparent outline-none whitespace-nowrap transition-colors duration-150 flex-shrink-0 px-2 py-1 ${(isOpen || isSelected) ? 'text-cyan-400 underline underline-offset-4' : 'text-slate-400 hover:text-slate-200'}`}
                     style={{ minWidth: 48, display: 'flex', alignItems: 'center' }}
                     onClick={() => setOpenCategory(isOpen ? null : cat.heading)}
                   >
                     {cat.heading}
                     {isOpen && (
-                      <svg className="ml-1 w-4 h-4 text-yellow-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
+                      <svg className="ml-1 w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
                     )}
                   </button>
                   {isOpen && (
@@ -2114,7 +2163,7 @@ const Index = () => {
                         return (
                           <button
                             key={item.value}
-                            className={`px-3 py-1 rounded-lg font-medium text-sm transition-all duration-150 flex-shrink-0 whitespace-nowrap ${isActive ? 'bg-gray-900 text-white' : 'text-gray-700 hover:bg-gray-200'}`}
+                            className={`px-3 py-1 rounded-lg font-medium text-sm transition-all duration-150 flex-shrink-0 whitespace-nowrap ${isActive ? 'bg-cyan-500 text-slate-900' : 'text-slate-300 hover:bg-slate-700'}`}
                             style={{ minWidth: 40 }}
                             onClick={() => { handleModeChange(String(item.value)); setOpenCategory(null); }}
                           >
@@ -2130,7 +2179,7 @@ const Index = () => {
             {/* Duration and Difficulty controls remain untouched */}
             <div className="flex flex-row items-center gap-1 ml-4">
               <button
-                className={`px-2 py-1 text-base font-medium border-none bg-transparent outline-none whitespace-nowrap transition-colors duration-150 flex-shrink-0 ${openSetting === 'duration' ? 'text-yellow-600 underline underline-offset-4' : 'text-gray-500 hover:text-gray-900'}`}
+                className={`px-2 py-1 text-base font-medium border-none bg-transparent outline-none whitespace-nowrap transition-colors duration-150 flex-shrink-0 ${openSetting === 'duration' ? 'text-cyan-400 underline underline-offset-4' : 'text-slate-400 hover:text-slate-200'}`}
                 onClick={() => setOpenSetting(openSetting === 'duration' ? null : 'duration')}
                 style={{ minWidth: 48 }}
               >
@@ -2139,7 +2188,7 @@ const Index = () => {
               {openSetting === 'duration' && [15, 30, 60, 120].map(sec => (
                 <button
                   key={sec}
-                  className={`px-2 py-1 rounded-lg font-medium transition-all duration-150 flex-shrink-0 whitespace-nowrap ${timeLimit === Number(sec) ? 'bg-gray-900 text-white' : 'text-gray-700 hover:bg-gray-100'}`}
+                  className={`px-2 py-1 rounded-lg font-medium transition-all duration-150 flex-shrink-0 whitespace-nowrap ${timeLimit === Number(sec) ? 'bg-cyan-500 text-slate-900' : 'text-slate-300 hover:bg-slate-700'}`}
                   style={{ minWidth: 40 }}
                   onClick={() => { setTimeLimit(Number(sec)); resetTest(Number(sec)); setOpenSetting(null); }}
                 >
@@ -2147,7 +2196,7 @@ const Index = () => {
                 </button>
               ))}
               <button
-                className={`px-2 py-1 text-base font-medium border-none bg-transparent outline-none whitespace-nowrap transition-colors duration-150 flex-shrink-0 ${openSetting === 'difficulty' ? 'text-yellow-600 underline underline-offset-4' : 'text-gray-500 hover:text-gray-900'}`}
+                className={`px-2 py-1 text-base font-medium border-none bg-transparent outline-none whitespace-nowrap transition-colors duration-150 flex-shrink-0 ${openSetting === 'difficulty' ? 'text-cyan-400 underline underline-offset-4' : 'text-slate-400 hover:text-slate-200'}`}
                 onClick={() => setOpenSetting(openSetting === 'difficulty' ? null : 'difficulty')}
                 style={{ minWidth: 48 }}
               >
@@ -2161,7 +2210,7 @@ const Index = () => {
               ].map(item => (
                 <button
                   key={item.value}
-                  className={`px-2 py-1 rounded-lg font-medium transition-all duration-150 flex-shrink-0 whitespace-nowrap ${difficulty === String(item.value) ? 'bg-gray-900 text-white' : 'text-gray-700 hover:bg-gray-100'}`}
+                  className={`px-2 py-1 rounded-lg font-medium transition-all duration-150 flex-shrink-0 whitespace-nowrap ${difficulty === String(item.value) ? 'bg-cyan-500 text-slate-900' : 'text-slate-300 hover:bg-slate-700'}`}
                   style={{ minWidth: 40 }}
                   onClick={() => { setDifficulty(String(item.value)); resetTest(); setOpenSetting(null); }}
                 >
@@ -2170,12 +2219,14 @@ const Index = () => {
               ))}
             </div>
           </motion.div>
-        </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
         {/* Timer Display */}
         {currentMode === 'time' && (
           <div className="flex justify-center mt-8">
             <span
-              className={`text-6xl font-extrabold transition-all duration-300 ${isTyping ? 'text-gray-700' : 'text-gray-400 opacity-70'}`}
+              className={`text-6xl font-extrabold transition-all duration-300 ${isTyping ? 'text-cyan-400' : 'text-slate-500 opacity-70'}`}
               style={{ letterSpacing: '0.05em' }}
             >
             {timeLeft}
@@ -2185,31 +2236,41 @@ const Index = () => {
 
         {/* Typing Area - maximum width with responsive padding */}
         <div className="w-full px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24 2xl:px-32 flex flex-col items-center justify-center" style={{ maxWidth: '1800px' }}>
-          {/* Language Selector - centered above typing text, ultra-minimal */}
-          <div className="w-full flex justify-center mb-8">
+          {/* Language Selector - centered above typing text, ultra-minimal - Hides when typing */}
+          <AnimatePresence>
+            {!isTyping && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3 }}
+                className="w-full flex justify-center mb-8"
+              >
             <button
-              className="flex items-center gap-2 text-gray-600 hover:text-gray-900 text-base font-medium px-3 py-1 rounded-lg bg-white/80 border border-gray-200 shadow-sm transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-gray-300"
+                  className="flex items-center gap-2 text-slate-300 hover:text-slate-100 text-base font-medium px-3 py-1 rounded-lg bg-slate-800/80 border border-slate-700 shadow-sm transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-cyan-500"
               onClick={() => setLangModalOpen(true)}
               tabIndex={0}
               style={{ userSelect: 'none' }}
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3C7.03 3 3 7.03 3 12s4.03 9 9 9 9-4.03 9-9-4.03-9-9-9zm0 0c2.21 0 4 4.03 4 9s-1.79 9-4 9-4-4.03-4-9 1.79-9 4-9z" /></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3C7.03 3 3 7.03 3 12s4.03 9 9 9 9-4.03 9-9-4.03-9-9-9zm0 0c2.21 0 4 4.03 4 9s-1.79 9-4 9-4-4.03-4-9 1.79-9 4-9z" /></svg>
               <span className="tracking-wide">Language: <span className="font-semibold lowercase">{[...globalLanguages, ...indianLanguages].find(l => l.value === language)?.label || language}</span></span>
             </button>
-          </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
           {langModalOpen && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-              <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-auto p-0 relative animate-fade-in">
-                <div className="flex items-center px-6 py-4 border-b border-gray-100">
-                  <svg xmlns='http://www.w3.org/2000/svg' className='h-5 w-5 text-gray-400 mr-2' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 3C7.03 3 3 7.03 3 12s4.03 9 9 9 9-4.03 9-9-4.03-9-9-9zm0 0c2.21 0 4 4.03 4 9s-1.79 9-4 9-4-4.03-4-9 1.79-9 4-9z' /></svg>
+              <div className="bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md mx-auto p-0 relative animate-fade-in">
+                <div className="flex items-center px-6 py-4 border-b border-slate-700">
+                  <svg xmlns='http://www.w3.org/2000/svg' className='h-5 w-5 text-slate-400 mr-2' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 3C7.03 3 3 7.03 3 12s4.03 9 9 9 9-4.03 9-9-4.03-9-9-9zm0 0c2.21 0 4 4.03 4 9s-1.79 9-4 9-4-4.03-4-9 1.79-9 4-9z' /></svg>
                   <input
                     type="text"
                     placeholder="Language..."
-                    className="flex-1 bg-transparent outline-none text-gray-700 text-base font-mono placeholder-gray-400"
+                    className="flex-1 bg-transparent outline-none text-slate-200 text-base font-mono placeholder-slate-500"
                     value={langSearch}
                     onChange={e => setLangSearch(e.target.value)}
                   />
-                  <button className="ml-2 text-gray-400 hover:text-gray-700" onClick={() => setLangModalOpen(false)} aria-label="Close">
+                  <button className="ml-2 text-slate-400 hover:text-slate-200" onClick={() => setLangModalOpen(false)} aria-label="Close">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                   </button>
                 </div>
@@ -2218,7 +2279,7 @@ const Index = () => {
                   {globalLanguages.filter(l => l.label.toLowerCase().includes(langSearch.toLowerCase())).map(l => (
                     <button
                       key={l.value}
-                      className={`w-full text-left px-6 py-2 text-gray-600 hover:bg-[#f3f4f6] focus:bg-[#e5e7eb] transition-all duration-100 lowercase rounded-lg focus:outline-none ${language === l.value ? 'font-bold text-black bg-gray-200' : ''}`}
+                      className={`w-full text-left px-6 py-2 text-slate-300 hover:bg-slate-700 focus:bg-slate-700 transition-all duration-100 lowercase rounded-lg focus:outline-none ${language === l.value ? 'font-bold text-cyan-400 bg-slate-700' : ''}`}
                       onClick={() => { setLanguage(l.value); setCurrentMode('words'); setLangModalOpen(false); setShowIndian(false); setLangSearch(""); }}
                       tabIndex={0}
                     >
@@ -2226,11 +2287,11 @@ const Index = () => {
                     </button>
                   ))}
                   {/* Divider for Indian languages */}
-                  <div className="px-6 py-2 text-xs text-gray-400 uppercase tracking-wider">Indian Languages</div>
+                  <div className="px-6 py-2 text-xs text-slate-500 uppercase tracking-wider">Indian Languages</div>
                   {indianLanguages.filter(l => l.label.toLowerCase().includes(langSearch.toLowerCase())).map(l => (
                     <button
                       key={l.value}
-                      className={`w-full text-left px-6 py-2 text-gray-600 hover:bg-[#f3f4f6] focus:bg-[#e5e7eb] transition-all duration-100 lowercase rounded-lg focus:outline-none ${language === l.value ? 'font-bold text-black bg-gray-200' : ''}`}
+                      className={`w-full text-left px-6 py-2 text-slate-300 hover:bg-slate-700 focus:bg-slate-700 transition-all duration-100 lowercase rounded-lg focus:outline-none ${language === l.value ? 'font-bold text-cyan-400 bg-slate-700' : ''}`}
                       onClick={() => { setLanguage(l.value); setCurrentMode('words'); setLangModalOpen(false); setShowIndian(false); setLangSearch(""); }}
                       tabIndex={0}
                     >
@@ -2302,26 +2363,26 @@ const Index = () => {
           {/* Stats Display with XP and Streak inline */}
           <div className="flex justify-center gap-8 sm:gap-12 text-base w-full mx-auto flex-wrap">
             <div className="text-center">
-              <div className="text-2xl font-mono font-bold text-gray-800">{accuracy ?? 100}%</div>
-              <div className="text-sm text-gray-500">Accuracy</div>
+              <div className="text-2xl font-mono font-bold text-cyan-400">{accuracy ?? 100}%</div>
+              <div className="text-sm text-slate-400">Accuracy</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-mono font-bold text-gray-800">{errors ?? 0}</div>
-              <div className="text-sm text-gray-500">Errors</div>
+              <div className="text-2xl font-mono font-bold text-red-400">{errors ?? 0}</div>
+              <div className="text-sm text-slate-400">Errors</div>
             </div>
             {gamificationEnabled && gamification && (
               <div className="text-center">
-                <div className="text-2xl font-mono font-bold text-gray-800">{gamification.streak ?? 0}</div>
-                <div className="text-sm text-gray-500">Streak</div>
+                <div className="text-2xl font-mono font-bold text-cyan-400">{gamification.streak ?? 0}</div>
+                <div className="text-sm text-slate-400">Streak</div>
               </div>
             )}
             {gamificationEnabled && gamification && (
               <div className="text-center">
-                <div className="text-2xl font-mono font-bold text-gray-800">{(gamification.xp ?? 0) % 100}</div>
-                <div className="text-sm text-gray-500 flex items-center justify-center gap-1">XP
-                  <div className="w-12 h-1 bg-gray-200 rounded-full overflow-hidden ml-2">
+                <div className="text-2xl font-mono font-bold text-cyan-400">{(gamification.xp ?? 0) % 100}</div>
+                <div className="text-sm text-slate-400 flex items-center justify-center gap-1">XP
+                  <div className="w-12 h-1 bg-slate-700 rounded-full overflow-hidden ml-2">
                     <motion.div
-                      className="h-1 bg-gray-700 rounded-full"
+                      className="h-1 bg-cyan-400 rounded-full"
                       initial={false}
                       animate={{ width: `${Math.min(100, Math.max(0, ((gamification.xp ?? 0) % 100)))}%` }}
                       transition={{ type: 'spring', stiffness: 200, damping: 24 }}
@@ -2336,18 +2397,30 @@ const Index = () => {
             <button
               onClick={() => resetTest()}
               disabled={showResults}
-              className="flex items-center gap-3 px-6 py-3 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all duration-200 hover:scale-105 mx-auto disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+              className="flex items-center gap-3 px-6 py-3 text-slate-300 hover:text-slate-100 hover:bg-slate-800 rounded-lg transition-all duration-200 hover:scale-105 mx-auto disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
               style={{ display: 'flex' }}
               aria-label="Reset typing test"
             >
               <RotateCcw className="w-5 h-5" />
               <span className="font-medium">Reset Test</span>
-              <span className="text-sm text-gray-400">(Tab + Shift)</span>
+              <span className="text-sm text-slate-500">(Tab + Shift)</span>
             </button>
           </div>
         </div>
       </div>
+      {/* Footer - Hides when typing */}
+      <AnimatePresence>
+        {!isTyping && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            transition={{ duration: 0.3 }}
+          >
       <Footer />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

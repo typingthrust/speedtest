@@ -45,6 +45,7 @@ const AppContent = () => {
       <LeaderboardOverlay />
       <AuthOverlay />
       <GrowthToolsOverlay />
+      <ContentLibraryOverlay />
     </BrowserRouter>
   );
 };

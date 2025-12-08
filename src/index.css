@@ -50,41 +50,41 @@ All colors MUST be HSL.
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    --background: 222.2 47.4% 11.2%; /* slate-900 */
+    --foreground: 210 40% 98%; /* slate-100 */
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: 215 28% 16.9%; /* slate-800 */
+    --card-foreground: 210 40% 98%; /* slate-100 */
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 215 28% 16.9%; /* slate-800 */
+    --popover-foreground: 210 40% 98%; /* slate-100 */
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 180 80% 60%; /* cyan-400 */
+    --primary-foreground: 222.2 47.4% 11.2%; /* slate-900 */
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 215 25.9% 16.9%; /* slate-700 */
+    --secondary-foreground: 210 40% 98%; /* slate-100 */
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 215 25.9% 16.9%; /* slate-700 */
+    --muted-foreground: 215 16.3% 56.9%; /* slate-400 */
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 215 25.9% 16.9%; /* slate-700 */
+    --accent-foreground: 210 40% 98%; /* slate-100 */
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 72.2% 50.6%; /* red-500 */
+    --destructive-foreground: 210 40% 98%; /* slate-100 */
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --border: 215 25.9% 16.9%; /* slate-700 */
+    --input: 215 25.9% 16.9%; /* slate-700 */
+    --ring: 180 80% 60%; /* cyan-400 */
+    --sidebar-background: 222.2 47.4% 11.2%; /* slate-900 */
+    --sidebar-foreground: 210 40% 98%; /* slate-100 */
+    --sidebar-primary: 180 80% 60%; /* cyan-400 */
+    --sidebar-primary-foreground: 222.2 47.4% 11.2%; /* slate-900 */
+    --sidebar-accent: 215 28% 16.9%; /* slate-800 */
+    --sidebar-accent-foreground: 210 40% 98%; /* slate-100 */
+    --sidebar-border: 215 25.9% 16.9%; /* slate-700 */
+    --sidebar-ring: 180 80% 60%; /* cyan-400 */
   }
 }
 
@@ -93,13 +93,14 @@ All colors MUST be HSL.
     @apply border-border;
   }
 
-  body {
-    @apply bg-background text-foreground;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  html {
     overflow-x: hidden;
+    @apply dark; /* Force dark theme by default */
   }
 
-  html {
+  body {
+    @apply bg-slate-900 text-slate-100;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
     overflow-x: hidden;
   }
 }
@@ -189,7 +190,7 @@ All colors MUST be HSL.
 
 /* Focus styles for accessibility */
 .focus-visible {
-  @apply outline-none ring-2 ring-gray-500 ring-offset-2;
+  @apply outline-none ring-2 ring-cyan-500 ring-offset-2;
 }
 
 /* Monospace font for typing area */

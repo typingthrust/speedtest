@@ -31,23 +31,23 @@ function MinimalLeaderboardOverlay({ open, onClose, children }: { open: boolean;
   return (
     <div
       ref={backdropRef}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-white/60 backdrop-blur-[12px]"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-[12px]"
       style={{ WebkitBackdropFilter: 'blur(12px)' }}
     >
       <div
         ref={overlayRef}
-        className="relative w-full max-w-2xl mx-auto bg-white/90 rounded-3xl border border-white/30 shadow-xl flex flex-col items-center min-h-[60vh] max-h-[95vh] min-w-[90vw] sm:min-w-[320px] px-4 p-0"
-        style={{ boxShadow: '0 4px 32px 0 rgba(0,0,0,0.08)', border: '1px solid rgba(255,255,255,0.3)' }}
+        className="relative w-full max-w-2xl mx-auto bg-slate-800/90 rounded-3xl border border-slate-700 shadow-xl flex flex-col items-center min-h-[60vh] max-h-[95vh] min-w-[90vw] sm:min-w-[320px] px-4 p-0"
+        style={{ boxShadow: '0 4px 32px 0 rgba(0,0,0,0.5)', border: '1px solid rgba(51, 65, 85, 0.5)' }}
       >
         {/* X Close Button absolutely positioned, not in header */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-xl p-2 rounded-full focus:outline-none z-10"
+          className="absolute top-4 right-4 text-slate-400 hover:text-slate-200 text-xl p-2 rounded-full focus:outline-none z-10"
           aria-label="Close leaderboard"
         >
           <X className="w-6 h-6" />
         </button>
-        <div className="w-full h-full px-2 sm:px-8 py-8 overflow-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
+        <div className="w-full h-full px-2 sm:px-8 py-8 overflow-auto scrollbar-thin scrollbar-thumb-slate-600 scrollbar-track-transparent">
           {children}
         </div>
       </div>
@@ -59,18 +59,18 @@ function ShareModal({ open, onClose, link }: { open: boolean; onClose: () => voi
   const [copied, setCopied] = useState(false);
   if (!open) return null;
   return (
-    <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/20 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-xs flex flex-col items-center animate-fade-in">
-        <h2 className="text-lg font-bold mb-2 text-gray-900">Share Leaderboard</h2>
+    <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+      <div className="bg-slate-800 rounded-2xl shadow-xl p-6 w-full max-w-xs flex flex-col items-center animate-fade-in">
+        <h2 className="text-lg font-bold mb-2 text-slate-100">Share Leaderboard</h2>
         <input
-          className="w-full px-3 py-2 rounded border border-gray-200 bg-gray-50 text-sm mb-3 text-center text-gray-900"
+          className="w-full px-3 py-2 rounded border border-slate-600 bg-slate-700 text-sm mb-3 text-center text-slate-100"
           value={link}
           readOnly
           onFocus={e => e.target.select()}
         />
         <div className="flex gap-2 w-full mb-3">
           <button
-            className={`flex-1 px-3 py-2 rounded-lg font-semibold text-white ${copied ? 'bg-gray-700' : 'bg-gray-900 hover:bg-gray-700'}`}
+            className={`flex-1 px-3 py-2 rounded-lg font-semibold text-slate-900 ${copied ? 'bg-slate-600' : 'bg-cyan-500 hover:bg-cyan-400'}`}
             onClick={() => {
               navigator.clipboard.writeText(link);
               setCopied(true);
@@ -80,7 +80,7 @@ function ShareModal({ open, onClose, link }: { open: boolean; onClose: () => voi
             {copied ? 'Copied!' : 'Copy Link'}
           </button>
         </div>
-        <button className="text-gray-500 hover:text-gray-900 mt-2" onClick={onClose}>Close</button>
+        <button className="text-slate-400 hover:text-slate-200 mt-2" onClick={onClose}>Close</button>
       </div>
     </div>
   );
@@ -118,9 +118,9 @@ export default function LeaderboardOverlay() {
     <MinimalLeaderboardOverlay open={open === 'leaderboard'} onClose={closeOverlay}>
       <section className="w-full flex flex-col gap-6 items-center">
         <header className="w-full flex flex-row items-center justify-between mb-2 pr-14">
-          <h1 className="text-2xl font-bold text-gray-900">Leaderboard</h1>
+          <h1 className="text-2xl font-bold text-slate-100">Leaderboard</h1>
           <button
-            className="flex items-center gap-1 px-4 py-2 rounded-lg bg-gray-900 text-white font-semibold hover:bg-gray-700 transition"
+            className="flex items-center gap-1 px-4 py-2 rounded-lg bg-cyan-500 text-slate-900 font-semibold hover:bg-cyan-400 transition"
             onClick={() => setShareOpen(true)}
             aria-label="Share leaderboard"
           >
@@ -132,7 +132,7 @@ export default function LeaderboardOverlay() {
           {TIMEFRAMES.map(tf => (
             <button
               key={tf.value}
-              className={`px-3 py-1 rounded-full text-xs font-semibold ${state.timeframe === tf.value ? 'bg-gray-600 text-white' : 'bg-gray-100 text-gray-700'}`}
+              className={`px-3 py-1 rounded-full text-xs font-semibold ${state.timeframe === tf.value ? 'bg-cyan-500 text-slate-900' : 'bg-slate-700 text-slate-300'}`}
               onClick={() => setTimeframe(tf.value as any)}
             >
               {tf.label}
@@ -142,22 +142,22 @@ export default function LeaderboardOverlay() {
         {/* Leaderboard List */}
         <section className="w-full flex flex-col gap-2">
           {sorted.length === 0 ? (
-            <span className="text-gray-400">No leaderboard data</span>
+            <span className="text-slate-400">No leaderboard data</span>
           ) : (
             <ul className="flex flex-col gap-2">
               {sorted.map((entry, i) => (
                 <li
                   key={getDisplayName(entry)}
-                  className={`flex items-center gap-2 px-3 py-3 rounded-2xl shadow-sm border border-gray-100 bg-white/80 transition-all duration-200`}
+                  className={`flex items-center gap-2 px-3 py-3 rounded-2xl shadow-sm border border-slate-600 bg-slate-700/80 transition-all duration-200`}
                   style={{ minHeight: 56 }}
                 >
-                  <span className="w-8 text-center text-lg font-bold text-gray-400 select-none">{i + 1}</span>
-                  <span className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden text-gray-500 font-bold text-base">
+                  <span className="w-8 text-center text-lg font-bold text-slate-400 select-none">{i + 1}</span>
+                  <span className="w-10 h-10 rounded-full bg-slate-600 flex items-center justify-center overflow-hidden text-slate-300 font-bold text-base">
                     <UserIcon className="w-6 h-6" />
                   </span>
-                  <span className="flex-1 truncate text-gray-900 text-base font-medium">{getDisplayName(entry)}</span>
-                  <span className="w-16 text-center text-gray-700 font-mono text-base">{entry.wpm} WPM</span>
-                  <span className="w-14 text-center text-gray-500 font-mono text-sm">{entry.xp ?? 0} XP</span>
+                  <span className="flex-1 truncate text-slate-100 text-base font-medium">{getDisplayName(entry)}</span>
+                  <span className="w-16 text-center text-cyan-400 font-mono text-base">{entry.wpm} WPM</span>
+                  <span className="w-14 text-center text-slate-400 font-mono text-sm">{entry.xp ?? 0} XP</span>
                 </li>
               ))}
             </ul>
@@ -166,16 +166,16 @@ export default function LeaderboardOverlay() {
         {/* Current User Row (if not in top 5) */}
         {userIdx > 4 && userEntry && (
           <div className="w-full flex flex-col items-center mt-2">
-            <div className="flex items-center gap-2 px-3 py-3 rounded-2xl shadow-sm border border-gray-200 bg-white/90 ring-2 ring-gray-900/80 font-bold scale-[1.03]" style={{ minHeight: 56 }}>
-              <span className="w-8 text-center text-lg font-bold text-gray-400 select-none">{userIdx + 1}</span>
-              <span className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden text-gray-500 font-bold text-base">
+            <div className="flex items-center gap-2 px-3 py-3 rounded-2xl shadow-sm border border-cyan-500 bg-slate-700 ring-2 ring-cyan-500/50 font-bold scale-[1.03]" style={{ minHeight: 56 }}>
+              <span className="w-8 text-center text-lg font-bold text-cyan-400 select-none">{userIdx + 1}</span>
+              <span className="w-10 h-10 rounded-full bg-cyan-500 flex items-center justify-center overflow-hidden text-slate-900 font-bold text-base">
                 <UserIcon className="w-6 h-6" />
               </span>
-              <span className="flex-1 truncate text-gray-900 text-base font-medium">{getDisplayName(userEntry)}</span>
-              <span className="w-16 text-center text-gray-700 font-mono text-base">{userEntry.wpm} WPM</span>
-              <span className="w-14 text-center text-gray-500 font-mono text-sm">{userEntry.xp ?? 0} XP</span>
+              <span className="flex-1 truncate text-cyan-400 text-base font-medium">{getDisplayName(userEntry)}</span>
+              <span className="w-16 text-center text-cyan-400 font-mono text-base">{userEntry.wpm} WPM</span>
+              <span className="w-14 text-center text-cyan-400 font-mono text-sm">{userEntry.xp ?? 0} XP</span>
             </div>
-            <span className="text-xs text-gray-500 mt-1">Your rank</span>
+            <span className="text-xs text-slate-400 mt-1">Your rank</span>
           </div>
         )}
       </section>

@@ -188,24 +188,24 @@ export default function AuthOverlay() {
   return (
     <div
       ref={backdropRef}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-white/60 backdrop-blur-[12px]"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-[12px]"
       style={{ WebkitBackdropFilter: 'blur(12px)' }}
     >
       <div
         ref={overlayRef}
-        className="relative w-full max-w-md mx-auto bg-white/95 rounded-2xl border border-white/40 shadow-2xl flex flex-col min-h-[400px] max-h-[90vh] min-w-[320px] p-0"
-        style={{ boxShadow: '0 8px 40px 0 rgba(0,0,0,0.12)' }}
+        className="relative w-full max-w-md mx-auto bg-slate-800/95 rounded-2xl border border-slate-700 shadow-2xl flex flex-col min-h-[400px] max-h-[90vh] min-w-[320px] p-0"
+        style={{ boxShadow: '0 8px 40px 0 rgba(0,0,0,0.5)' }}
       >
         <button
           onClick={closeOverlay}
-          className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-xl p-2 rounded-full hover:bg-gray-100 transition-colors focus:outline-none z-10"
+          className="absolute top-4 right-4 text-slate-400 hover:text-slate-200 text-xl p-2 rounded-full hover:bg-slate-700 transition-colors focus:outline-none z-10"
           aria-label="Close"
         >
           <X className="w-5 h-5" />
         </button>
         
         <div className="w-full px-8 pt-8 pb-6">
-          <h2 className="text-2xl font-bold text-gray-900 text-center mb-6">
+          <h2 className="text-2xl font-bold text-slate-100 text-center mb-6">
             {user ? 'Profile' : signup ? 'Create Account' : 'Sign In'}
           </h2>
           
@@ -214,27 +214,27 @@ export default function AuthOverlay() {
             <div className="flex flex-col items-center gap-5">
               {/* Avatar */}
               {user.avatar_url ? (
-                <img src={user.avatar_url} alt="avatar" className="w-20 h-20 rounded-full border-2 border-gray-200 shadow-md" />
+                <img src={user.avatar_url} alt="avatar" className="w-20 h-20 rounded-full border-2 border-slate-600 shadow-md" />
               ) : (
-                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center text-3xl font-bold text-gray-600">
+                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center text-3xl font-bold text-slate-200">
                   {user.username ? user.username[0].toUpperCase() : (user.email ? user.email[0].toUpperCase() : '?')}
                 </div>
               )}
               {/* Username/email */}
-              <div className="text-xl font-bold text-gray-900">{user.username || user.email || 'User'}</div>
+              <div className="text-xl font-bold text-slate-100">{user.username || user.email || 'User'}</div>
               {/* Stats */}
-              <div className="flex flex-row justify-center gap-8 w-full bg-gray-50 border border-gray-200 rounded-xl p-5">
+              <div className="flex flex-row justify-center gap-8 w-full bg-slate-700 border border-slate-600 rounded-xl p-5">
                 <div className="text-center">
-                  <div className="text-2xl font-mono font-bold text-gray-900">{wpm}</div>
-                  <div className="text-xs text-gray-600 mt-1">WPM</div>
+                  <div className="text-2xl font-mono font-bold text-cyan-400">{wpm}</div>
+                  <div className="text-xs text-slate-400 mt-1">WPM</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-mono font-bold text-gray-900">{accuracy}%</div>
-                  <div className="text-xs text-gray-600 mt-1">Accuracy</div>
+                  <div className="text-2xl font-mono font-bold text-cyan-400">{accuracy}%</div>
+                  <div className="text-xs text-slate-400 mt-1">Accuracy</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-mono font-bold text-gray-900">{testsTaken}</div>
-                  <div className="text-xs text-gray-600 mt-1">Tests</div>
+                  <div className="text-2xl font-mono font-bold text-cyan-400">{testsTaken}</div>
+                  <div className="text-xs text-slate-400 mt-1">Tests</div>
                 </div>
               </div>
               <button
@@ -242,7 +242,7 @@ export default function AuthOverlay() {
                   await logout();
                   closeOverlay();
                 }}
-                className="w-full bg-gray-900 hover:bg-gray-800 text-white rounded-lg px-4 py-3 font-semibold transition-all duration-200 shadow-sm"
+                className="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-900 rounded-lg px-4 py-3 font-semibold transition-all duration-200 shadow-sm"
               >
                 Sign Out
               </button>
@@ -253,7 +253,7 @@ export default function AuthOverlay() {
               <button
                 onClick={handleGoogleLogin}
                 disabled={loading}
-                className="w-full flex items-center justify-center gap-3 bg-white border-2 border-gray-300 hover:border-gray-400 text-gray-900 rounded-lg px-4 py-3 font-medium transition-all duration-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full flex items-center justify-center gap-3 bg-slate-700 border-2 border-slate-600 hover:border-slate-500 text-slate-100 rounded-lg px-4 py-3 font-medium transition-all duration-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <svg className="w-5 h-5" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -266,10 +266,10 @@ export default function AuthOverlay() {
 
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-300"></div>
+                  <div className="w-full border-t border-slate-600"></div>
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-white/95 text-gray-500">or</span>
+                  <span className="px-2 bg-slate-800/95 text-slate-400">or</span>
                 </div>
               </div>
 
@@ -278,7 +278,7 @@ export default function AuthOverlay() {
                 <div>
                   <input
                     type="email"
-                    className="w-full border-2 border-gray-300 rounded-lg px-4 py-3 text-sm bg-white text-gray-900 placeholder-gray-400 focus:border-gray-900 focus:ring-2 focus:ring-gray-900 focus:ring-offset-0 transition-all"
+                    className="w-full border-2 border-slate-600 rounded-lg px-4 py-3 text-sm bg-slate-700 text-slate-100 placeholder-slate-400 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500 focus:ring-offset-0 transition-all"
                     placeholder="Email address"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
@@ -289,7 +289,7 @@ export default function AuthOverlay() {
                 <div>
                   <input
                     type="password"
-                    className="w-full border-2 border-gray-300 rounded-lg px-4 py-3 text-sm bg-white text-gray-900 placeholder-gray-400 focus:border-gray-900 focus:ring-2 focus:ring-gray-900 focus:ring-offset-0 transition-all"
+                    className="w-full border-2 border-slate-600 rounded-lg px-4 py-3 text-sm bg-slate-700 text-slate-100 placeholder-slate-400 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500 focus:ring-offset-0 transition-all"
                     placeholder="Password"
                     value={password}
                     onChange={e => setPassword(e.target.value)}
@@ -300,25 +300,25 @@ export default function AuthOverlay() {
                 </div>
                 
                 {error && (
-                  <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-2">
+                  <div className="bg-red-900/30 border border-red-500/50 text-red-300 text-sm rounded-lg px-4 py-2">
                     {error}
                   </div>
                 )}
                 
                 {signup && signupSuccess && !signupExists && (
-                  <div className="bg-blue-50 border border-blue-200 text-blue-800 text-sm rounded-lg px-4 py-4">
+                  <div className="bg-blue-900/30 border border-blue-500/50 text-blue-200 text-sm rounded-lg px-4 py-4">
                     {emailConfirmationRequired ? (
                       <div>
                         <p className="font-semibold mb-2 text-base">✓ Account created!</p>
                         <p className="text-sm mb-3 leading-relaxed">
                           An activation email should be sent to <strong className="text-blue-900">{email}</strong>
                         </p>
-                        <div className="bg-yellow-50 border border-yellow-300 rounded-lg p-3 mb-3">
-                          <p className="text-xs font-semibold text-yellow-900 mb-2">⚠️ Not receiving emails?</p>
-                          <p className="text-xs text-yellow-800 leading-relaxed mb-2 font-semibold">
+                        <div className="bg-yellow-900/30 border border-yellow-500/50 rounded-lg p-3 mb-3">
+                          <p className="text-xs font-semibold text-yellow-300 mb-2">⚠️ Not receiving emails?</p>
+                          <p className="text-xs text-yellow-200 leading-relaxed mb-2 font-semibold">
                             📬 CHECK YOUR SPAM/JUNK FOLDER FIRST! Supabase emails often go there.
                           </p>
-                          <p className="text-xs text-yellow-800 leading-relaxed mb-2">
+                          <p className="text-xs text-yellow-200 leading-relaxed mb-2">
                             If you still don't see it, your Supabase project may not have email sending configured. 
                             You can try signing in directly - if email confirmation is disabled, it will work.
                           </p>
@@ -326,15 +326,15 @@ export default function AuthOverlay() {
                             type="button"
                             onClick={handleResendConfirmationEmail}
                             disabled={resendingEmail}
-                            className="text-xs bg-yellow-100 hover:bg-yellow-200 text-yellow-900 px-3 py-1.5 rounded font-semibold transition-colors disabled:opacity-50"
+                            className="text-xs bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-300 px-3 py-1.5 rounded font-semibold transition-colors disabled:opacity-50"
                           >
                             {resendingEmail ? 'Sending...' : 'Resend confirmation email'}
                           </button>
                         </div>
-                        <div className="bg-blue-100 border border-blue-300 rounded-lg p-3 mb-3">
-                          <p className="text-xs font-semibold text-blue-900 mb-2">📧 Check your email:</p>
-                          <div className="space-y-1.5 text-xs text-blue-800">
-                            <p className="font-semibold text-blue-900">⚠️ IMPORTANT: Check your SPAM/JUNK folder!</p>
+                        <div className="bg-blue-900/30 border border-blue-500/50 rounded-lg p-3 mb-3">
+                          <p className="text-xs font-semibold text-blue-200 mb-2">📧 Check your email:</p>
+                          <div className="space-y-1.5 text-xs text-blue-200">
+                            <p className="font-semibold text-blue-300">⚠️ IMPORTANT: Check your SPAM/JUNK folder!</p>
                             <p>• Activation emails often go to spam - check there first</p>
                             <p>• Look for an email from Supabase or TypingThrust</p>
                             <p>• <strong>Mark it as "Not Spam"</strong> if found in spam folder</p>
@@ -358,7 +358,7 @@ export default function AuthOverlay() {
                                 setError('Account created but email not confirmed. Please check your email for the activation link, or contact support if emails aren\'t being sent.');
                               }
                             }}
-                            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg font-semibold text-sm transition-colors"
+                            className="flex-1 bg-cyan-500 hover:bg-cyan-400 text-slate-900 px-4 py-2.5 rounded-lg font-semibold text-sm transition-colors"
                           >
                             Try Signing In
                           </button>
@@ -370,7 +370,7 @@ export default function AuthOverlay() {
                               setEmailConfirmationRequired(false);
                               setError('');
                             }}
-                            className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2.5 rounded-lg font-semibold text-sm transition-colors"
+                            className="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-200 px-4 py-2.5 rounded-lg font-semibold text-sm transition-colors"
                           >
                             Switch to Sign In
                           </button>
@@ -386,26 +386,26 @@ export default function AuthOverlay() {
                 )}
                 
                 {signup && signupExists && (
-                  <div className="bg-blue-50 border border-blue-200 text-blue-700 text-sm rounded-lg px-4 py-2">
+                  <div className="bg-blue-900/30 border border-blue-500/50 text-blue-200 text-sm rounded-lg px-4 py-2">
                     Account already exists. <button className='underline font-semibold' type='button' onClick={() => { setSignup(false); setSignupSuccess(false); setError(''); }}>Sign in instead</button>
                   </div>
                 )}
 
                 {!signup && resetSent && (
-                  <div className="bg-green-50 border border-green-200 text-green-700 text-sm rounded-lg px-4 py-2">
+                  <div className="bg-green-900/30 border border-green-500/50 text-green-300 text-sm rounded-lg px-4 py-2">
                     Password reset email sent! Check your inbox.
                   </div>
                 )}
                 
                 {!signup && resetError && (
-                  <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-2">
+                  <div className="bg-red-900/30 border border-red-500/50 text-red-300 text-sm rounded-lg px-4 py-2">
                     {resetError}
                   </div>
                 )}
 
                 <button
                   type="submit"
-                  className="w-full bg-gray-900 hover:bg-gray-800 text-white rounded-lg px-4 py-3 font-semibold transition-all duration-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-900 rounded-lg px-4 py-3 font-semibold transition-all duration-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                   disabled={loading || (signup && signupSuccess)}
                 >
                   {loading ? 'Please wait...' : (signup ? 'Create Account' : 'Sign In')}
@@ -416,7 +416,7 @@ export default function AuthOverlay() {
                   <div className="flex justify-end">
                     <button
                       type="button"
-                      className="text-sm text-gray-600 hover:text-gray-900 hover:underline font-medium"
+                      className="text-sm text-slate-400 hover:text-slate-200 hover:underline font-medium"
                       onClick={handleForgotPassword}
                       disabled={loading}
                     >
@@ -427,7 +427,7 @@ export default function AuthOverlay() {
               </form>
 
               {/* Toggle Sign Up/Sign In */}
-              <div className="pt-2 border-t border-gray-200">
+              <div className="pt-2 border-t border-slate-700">
                 <button
                   onClick={() => {
                     setSignup(!signup);
@@ -437,7 +437,7 @@ export default function AuthOverlay() {
                     setResetSent(false);
                     setResetError('');
                   }}
-                  className="w-full text-sm text-gray-600 hover:text-gray-900 font-medium"
+                  className="w-full text-sm text-slate-400 hover:text-slate-200 font-medium"
                   type="button"
                 >
                   {signup ? 'Already have an account? Sign in' : "Don't have an account? Sign up"}
@@ -448,7 +448,7 @@ export default function AuthOverlay() {
               <div className="pt-2">
                 <button
                   onClick={handleGuestLogin}
-                  className="w-full text-sm text-gray-500 hover:text-gray-700 font-medium underline"
+                  className="w-full text-sm text-slate-500 hover:text-slate-300 font-medium underline"
                   type="button"
                   disabled={loading}
                 >

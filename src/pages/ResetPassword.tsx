@@ -66,39 +66,39 @@ const ResetPassword: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-      <div className="bg-white p-6 rounded shadow-md w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-4 text-center">Reset Your Password</h2>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-slate-900">
+      <div className="bg-slate-800 p-6 rounded shadow-md w-full max-w-md border border-slate-700">
+        <h2 className="text-2xl font-bold mb-4 text-center text-slate-100">Reset Your Password</h2>
         {loading ? (
-          <div className="text-center">Loading...</div>
+          <div className="text-center text-slate-400">Loading...</div>
         ) : error ? (
-          <div className="text-red-600 text-center">{error}</div>
+          <div className="text-red-400 text-center">{error}</div>
         ) : success ? (
-          <div className="text-green-600 text-center">Password reset successful! Please sign in with your new password.</div>
+          <div className="text-green-300 text-center">Password reset successful! Please sign in with your new password.</div>
         ) : sessionSet ? (
           <form onSubmit={handleSubmit}>
-            <label className="block mb-2 font-medium">New Password</label>
+            <label className="block mb-2 font-medium text-slate-300">New Password</label>
             <input
               type="password"
-              className="w-full p-2 border rounded mb-4"
+              className="w-full p-2 border border-slate-600 bg-slate-700 text-slate-100 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-cyan-500"
               value={password}
               onChange={e => setPassword(e.target.value)}
               required
               minLength={6}
             />
-            <label className="block mb-2 font-medium">Confirm New Password</label>
+            <label className="block mb-2 font-medium text-slate-300">Confirm New Password</label>
             <input
               type="password"
-              className="w-full p-2 border rounded mb-4"
+              className="w-full p-2 border border-slate-600 bg-slate-700 text-slate-100 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-cyan-500"
               value={confirmPassword}
               onChange={e => setConfirmPassword(e.target.value)}
               required
               minLength={6}
             />
-            {error && <div className="text-red-600 mb-2">{error}</div>}
+            {error && <div className="text-red-400 mb-2">{error}</div>}
             <button
               type="submit"
-              className="w-full bg-black text-white py-2 rounded font-semibold hover:bg-gray-800 transition"
+              className="w-full bg-cyan-500 text-slate-900 py-2 rounded font-semibold hover:bg-cyan-400 transition"
               disabled={loading}
             >
               {loading ? 'Resetting...' : 'Reset Password'}

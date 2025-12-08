@@ -1,54 +1,102 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 
 export default function PrivacyPolicy() {
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center font-sans" style={{ fontFamily: 'Inter, SF Pro, system-ui, sans-serif' }}>
-      {/* Header Bar */}
-      <div className="w-full bg-gray-100/80 shadow-sm">
-        <div className="max-w-xl mx-auto flex items-center justify-between px-4 py-6">
-          <Link to="/" className="flex items-center gap-2 text-gray-600 hover:text-black text-base font-medium bg-white/70 rounded-lg px-3 py-1 shadow-sm border border-gray-200">
-            <span className="text-xl">←</span>
-            <span className="hidden sm:inline">Back</span>
-          </Link>
-          <div className="w-20" /> {/* Spacer for symmetry */}
-        </div>
+    <div className="w-full">
+      <h1 className="text-3xl font-bold text-slate-100 mb-2 text-center">Privacy Policy</h1>
+      <p className="text-slate-400 mb-8 text-center text-sm">Effective Date: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+      
+      <div className="space-y-6 text-slate-300">
+        <section>
+          <h2 className="font-bold text-lg text-slate-100 mb-3">1. Introduction</h2>
+          <p className="leading-relaxed text-sm">
+            At TypingThrust, we are committed to protecting your privacy. This Privacy Policy outlines how we collect, use, and protect your personal data when you use our services.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="font-bold text-lg text-slate-100 mb-3">2. Information We Collect</h2>
+          <p className="leading-relaxed text-sm mb-2">
+            We collect information you provide directly, including:
+          </p>
+          <ul className="list-disc list-inside space-y-1 text-sm ml-4 text-slate-400">
+            <li>Email address and account credentials</li>
+            <li>Typing test results and performance statistics</li>
+            <li>User preferences and settings</li>
+          </ul>
+          <p className="leading-relaxed text-sm mt-3">
+            We may also collect data from third-party authentication providers (Google, GitHub) and anonymized usage data for analytics purposes.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="font-bold text-lg text-slate-100 mb-3">3. How We Use Your Information</h2>
+          <p className="leading-relaxed text-sm">
+            Your data helps us personalize your experience, improve typing performance tracking, provide insights via analytics, and enhance our services. We do not sell your personal information to third parties.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="font-bold text-lg text-slate-100 mb-3">4. Cookies and Tracking</h2>
+          <p className="leading-relaxed text-sm">
+            TypingThrust uses cookies and similar technologies to maintain sessions, remember your preferences, and improve your site experience. You may disable cookies in your browser settings, but certain features may not work properly.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="font-bold text-lg text-slate-100 mb-3">5. Data Sharing</h2>
+          <p className="leading-relaxed text-sm">
+            We never sell your data. Data may be shared only with secure third-party services required for functionality (e.g., authentication providers, hosting services). All data sharing is done in compliance with applicable privacy laws.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="font-bold text-lg text-slate-100 mb-3">6. Data Security</h2>
+          <p className="leading-relaxed text-sm">
+            We implement industry-standard security measures to protect your data from unauthorized access, alteration, disclosure, or destruction. However, no method of transmission over the internet is 100% secure.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="font-bold text-lg text-slate-100 mb-3">7. Your Rights</h2>
+          <p className="leading-relaxed text-sm mb-2">
+            You have the right to:
+          </p>
+          <ul className="list-disc list-inside space-y-1 text-sm ml-4 text-slate-400">
+            <li>Access your personal data</li>
+            <li>Modify or update your information</li>
+            <li>Delete your account and data</li>
+            <li>Opt-out of certain data collection</li>
+          </ul>
+          <p className="leading-relaxed text-sm mt-3">
+            Contact us anytime for assistance with these requests.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="font-bold text-lg text-slate-100 mb-3">8. Children's Privacy</h2>
+          <p className="leading-relaxed text-sm">
+            Our services are not intended for children under 13 years of age. We do not knowingly collect personal information from children under 13.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="font-bold text-lg text-slate-100 mb-3">9. Changes to This Policy</h2>
+          <p className="leading-relaxed text-sm">
+            We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new policy on this page and updating the effective date.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="font-bold text-lg text-slate-100 mb-3">10. Contact Us</h2>
+          <p className="leading-relaxed text-sm">
+            For privacy-related questions or concerns, please contact us at:{' '}
+            <a href="mailto:support@typingthrust.com" className="text-blue-600 hover:text-blue-800 underline">
+              support@typingthrust.com
+            </a>
+          </p>
+        </section>
       </div>
-      {/* Main Card */}
-      <main className="w-full bg-white rounded-2xl shadow-lg px-4 md:px-12 py-10 mt-8 mb-8 flex flex-col gap-6 border border-gray-100 max-w-none">
-        <h1 className="text-3xl font-extrabold text-[#181818] mb-2 text-center">Privacy Policy</h1>
-        <p className="text-gray-700 mb-4 text-center font-medium">Effective Date: July 16, 2025</p>
-        <div className="divide-y divide-gray-200">
-          <section className="py-6">
-            <h2 className="font-bold text-lg text-[#181818] mb-2">1. Introduction</h2>
-            <p className="text-[#1A1A1A] leading-relaxed mb-2">At TypingThrust, we are committed to protecting your privacy. This Privacy Policy outlines how we collect, use, and protect your personal data when you use our services.</p>
-          </section>
-          <section className="py-6">
-            <h2 className="font-bold text-lg text-[#181818] mb-2">2. Information We Collect</h2>
-            <p className="text-[#1A1A1A] leading-relaxed mb-2">We collect information you provide directly (e.g., email, typing stats), and data from third-party logins (Google, GitHub if used). We may also collect anonymized usage data for analytics purposes.</p>
-          </section>
-          <section className="py-6">
-            <h2 className="font-bold text-lg text-[#181818] mb-2">3. How We Use Your Information</h2>
-            <p className="text-[#1A1A1A] leading-relaxed mb-2">Your data helps us personalize your experience, improve typing performance tracking, and provide insights via analytics.</p>
-          </section>
-          <section className="py-6">
-            <h2 className="font-bold text-lg text-[#181818] mb-2">4. Cookies</h2>
-            <p className="text-[#1A1A1A] leading-relaxed mb-2">TypingThrust uses cookies to maintain sessions and improve your site experience. You may disable cookies, but certain features may not work properly.</p>
-          </section>
-          <section className="py-6">
-            <h2 className="font-bold text-lg text-[#181818] mb-2">5. Data Sharing</h2>
-            <p className="text-[#1A1A1A] leading-relaxed mb-2">We never sell your data. Data may be shared only with secure third-party services required for functionality (e.g., authentication, analytics).</p>
-          </section>
-          <section className="py-6">
-            <h2 className="font-bold text-lg text-[#181818] mb-2">6. Your Rights</h2>
-            <p className="text-[#1A1A1A] leading-relaxed mb-2">You have the right to access, modify, or delete your personal data. Contact us anytime for assistance.</p>
-          </section>
-          <section className="py-6">
-            <h2 className="font-bold text-lg text-[#181818] mb-2">7. Contact Us</h2>
-            <p className="text-[#1A1A1A] leading-relaxed mb-2">For privacy-related questions, contact: <a href="mailto:support@typingthrust.com" className="underline">support@typingthrust.com</a></p>
-          </section>
-        </div>
-      </main>
     </div>
   );
-} 
+}

@@ -64,14 +64,14 @@ export default function Widget() {
     let className = 'transition-all duration-150 ease-out inline-block ';
     if (index < userInput.length) {
       if (userInput[index] === char) {
-        className += 'text-gray-600 transform scale-105';
+        className += 'text-slate-200 transform scale-105';
       } else {
-        className += 'text-red-500 bg-red-100 transform scale-110';
+        className += 'text-red-400 transform scale-110';
       }
     } else if (index === currentIndex) {
       return (
         <span key={index} style={{ position: 'relative', display: 'inline-block' }}>
-          <span className="bg-gray-900 text-white transform scale-110">{char === ' ' ? '\u00A0' : char}</span>
+          <span className="bg-cyan-500 text-slate-900 transform scale-110">{char === ' ' ? '\u00A0' : char}</span>
           <span
             className="cursor-blink"
             style={{
@@ -79,7 +79,7 @@ export default function Widget() {
               left: '100%', top: 0,
               width: '2px',
               height: '100%',
-              background: 'white',
+              background: 'hsl(180, 80%, 60%)',
               display: 'inline-block',
               verticalAlign: 'middle',
             }}
@@ -87,7 +87,7 @@ export default function Widget() {
         </span>
       );
     } else {
-      className += 'text-gray-400';
+      className += 'text-slate-400';
     }
     return (
       <span key={index} className={className}>
@@ -103,15 +103,15 @@ export default function Widget() {
   const accuracy = calculateAccuracy(charsTyped - errors, charsTyped);
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-white" style={{ minHeight: 320, minWidth: 320 }}>
-      <div className="w-full max-w-xl mx-auto p-4 rounded-xl shadow border border-gray-100 bg-white">
-        <h2 className="text-xl font-bold text-gray-900 mb-4 text-center">Typing Test</h2>
-        <div className="mb-4 text-lg font-mono bg-gray-50 rounded p-4 min-h-[64px] text-gray-800" style={{ wordBreak: 'break-word' }}>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-slate-900" style={{ minHeight: 320, minWidth: 320 }}>
+      <div className="w-full max-w-xl mx-auto p-4 rounded-xl shadow border border-slate-700 bg-slate-800">
+        <h2 className="text-xl font-bold text-slate-100 mb-4 text-center">Typing Test</h2>
+        <div className="mb-4 text-lg font-mono bg-slate-700 rounded p-4 min-h-[64px] text-slate-100" style={{ wordBreak: 'break-word' }}>
           {sampleText.split('').map((char, index) => renderCharacter(char, index))}
         </div>
         <input
           ref={inputRef}
-          className="w-full border border-gray-300 rounded p-2 text-lg focus:outline-none focus:ring-2 focus:ring-blue-200 transition"
+          className="w-full border border-slate-600 bg-slate-700 text-slate-100 rounded p-2 text-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 transition"
           type="text"
           value={userInput}
           onChange={handleInputChange}
@@ -119,11 +119,11 @@ export default function Widget() {
           autoFocus
           disabled={userInput === sampleText}
         />
-        <div className="mt-6 flex flex-wrap justify-center gap-6 text-base font-medium text-gray-700 bg-gray-50 border border-gray-100 rounded-lg p-3">
-          <div><span className="text-blue-700">WPM:</span> {isNaN(wpm) || !isFinite(wpm) ? 0 : wpm}</div>
-          <div><span className="text-blue-700">Accuracy:</span> {isNaN(accuracy) || !isFinite(accuracy) ? 100 : accuracy}%</div>
-          <div><span className="text-blue-700">Time:</span> {timeElapsed}s</div>
-          <div><span className="text-blue-700">Errors:</span> {errors}</div>
+        <div className="mt-6 flex flex-wrap justify-center gap-6 text-base font-medium text-slate-200 bg-slate-700 border border-slate-600 rounded-lg p-3">
+          <div><span className="text-cyan-400">WPM:</span> {isNaN(wpm) || !isFinite(wpm) ? 0 : wpm}</div>
+          <div><span className="text-cyan-400">Accuracy:</span> {isNaN(accuracy) || !isFinite(accuracy) ? 100 : accuracy}%</div>
+          <div><span className="text-cyan-400">Time:</span> {timeElapsed}s</div>
+          <div><span className="text-cyan-400">Errors:</span> {errors}</div>
         </div>
       </div>
     </div>

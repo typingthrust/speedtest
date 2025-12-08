@@ -11,7 +11,7 @@ const articles = Array.from({ length: 50 }, (_, i) => ({
 
 export default function Blog() {
   return (
-    <div className="min-h-screen bg-white py-12 px-4 max-w-3xl mx-auto">
+    <div className="min-h-screen bg-slate-900 py-12 px-4 max-w-3xl mx-auto">
       <Head>
         <title>Blog & Learning Hub | Typing Speed Test for Developers & Coders</title>
         <meta name="description" content="Tips, guides, and research to help developers and coders type faster, smarter, and healthier. Blog & Learning Hub." />
@@ -19,7 +19,7 @@ export default function Blog() {
         <meta property="og:description" content="Tips, guides, and research to help developers and coders type faster, smarter, and healthier." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://yourdomain.com/blog" />
-        <meta property="og:image" content="/logo.png" />
+        <meta property="og:image" content="/logonew.png" />
         <link rel="canonical" href="https://yourdomain.com/blog" />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
           '@context': 'https://schema.org',
@@ -33,22 +33,22 @@ export default function Blog() {
             'url': 'https://yourdomain.com',
             'logo': {
               '@type': 'ImageObject',
-              'url': '/logo.png'
+              'url': '/logonew.png'
             }
           }
         }) }} />
       </Head>
       <header className="mb-10 text-center">
-        <h1 className="text-4xl font-bold mb-2">Blog & Learning Hub</h1>
-        <p className="text-gray-600">Tips, guides, and research to help developers and coders type faster, smarter, and healthier.</p>
+        <h1 className="text-4xl font-bold mb-2 text-slate-100">Blog & Learning Hub</h1>
+        <p className="text-slate-400">Tips, guides, and research to help developers and coders type faster, smarter, and healthier.</p>
       </header>
       <main>
         <ul className="space-y-6">
           {articles.map(article => (
-            <li key={article.slug} className="bg-gray-50 rounded-lg p-6 border hover:shadow transition">
+            <li key={article.slug} className="bg-slate-800 rounded-lg p-6 border border-slate-700 hover:shadow-lg transition">
               <a href={`#${article.slug}`} className="block">
-                <h2 className="text-2xl font-semibold text-blue-700 mb-1">{article.title}</h2>
-                <p className="text-gray-500 text-sm">{article.summary}</p>
+                <h2 className="text-2xl font-semibold text-cyan-400 mb-1">{article.title}</h2>
+                <p className="text-slate-400 text-sm">{article.summary}</p>
               </a>
             </li>
           ))}

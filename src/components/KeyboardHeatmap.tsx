@@ -49,18 +49,18 @@ const KeyboardHeatmap: React.FC<KeyboardHeatmapProps> = ({ keyStats, keyDetails 
   const allCounts = Object.values(stats);
   const maxCount = Math.max(1, ...allCounts);
   const minCount = Math.min(0, ...allCounts);
-  // Color scale: light grey (low) to dark grey/black (high)
-  const colorLow = '#f3f4f6'; // Tailwind gray-100
-  const colorHigh = '#111111'; // Black
+  // Color scale: dark slate (low) to cyan (high) for dark theme
+  const colorLow = '#334155'; // slate-700
+  const colorHigh = '#06b6d4'; // cyan-500
 
   return (
-    <div className="w-full max-w-2xl mx-auto mt-2 p-4 bg-white rounded-2xl shadow flex flex-col items-center">
-      <div className="text-sm font-semibold text-gray-500 mb-2">Key Press Heatmap</div>
-      <div className="flex gap-4 mb-4 text-xs text-gray-400">
-        <span className="flex items-center"><span className="inline-block w-4 h-4 rounded mr-1" style={{background:'#fef9c3'}}></span>Low</span>
-        <span className="flex items-center"><span className="inline-block w-4 h-4 rounded mr-1" style={{background:'#fde047'}}></span>Medium</span>
-        <span className="flex items-center"><span className="inline-block w-4 h-4 rounded mr-1" style={{background:'#f59e42'}}></span>High</span>
-        <span className="flex items-center"><span className="inline-block w-4 h-4 rounded mr-1" style={{background:'#dc2626'}}></span>Most</span>
+    <div className="w-full max-w-2xl mx-auto mt-2 p-4 bg-slate-800 rounded-2xl shadow flex flex-col items-center">
+      <div className="text-sm font-semibold text-slate-300 mb-2">Key Press Heatmap</div>
+      <div className="flex gap-4 mb-4 text-xs text-slate-400">
+        <span className="flex items-center"><span className="inline-block w-4 h-4 rounded mr-1" style={{background:'#334155'}}></span>Low</span>
+        <span className="flex items-center"><span className="inline-block w-4 h-4 rounded mr-1" style={{background:'#475569'}}></span>Medium</span>
+        <span className="flex items-center"><span className="inline-block w-4 h-4 rounded mr-1" style={{background:'#22d3ee'}}></span>High</span>
+        <span className="flex items-center"><span className="inline-block w-4 h-4 rounded mr-1" style={{background:'#06b6d4'}}></span>Most</span>
       </div>
       {/* Remove any extra box or border around the keyboard area */}
       <div className="space-y-2">
@@ -74,18 +74,21 @@ const KeyboardHeatmap: React.FC<KeyboardHeatmapProps> = ({ keyStats, keyDetails 
               if (maxCount > 0) {
                 color = interpolateColor(colorLow.replace('#', ''), colorHigh.replace('#', ''), factor);
               }
-              // If all counts are zero, use a very light grey
+              // If all counts are zero, use dark slate
               if (maxCount === 0) {
-                color = '#f8fafc'; // Tailwind gray-50
+                color = '#334155'; // slate-700
               }
               const display = KEY_DISPLAY[k] !== undefined ? KEY_DISPLAY[k] : k;
               const isWide = k === 'Space';
+              // Determine text color based on background brightness
+              const bgBrightness = parseInt(color.replace('#', ''), 16);
+              const textColor = bgBrightness > 0x888888 ? '#1e293b' : '#f1f5f9'; // dark text for light bg, light text for dark bg
               return (
                 <div
                   key={k}
                   title={`${k}: ${count} presses`}
                   className={`w-10 h-12 flex items-center justify-center rounded-lg font-bold text-lg transition-all ${isWide ? 'w-24 xs:w-32 sm:w-48' : 'w-7 xs:w-9 sm:w-10'}`}
-                  style={{ background: color, color: count ? '#b45309' : '#9ca3af', border: 'none', boxShadow: 'none' }}
+                  style={{ background: color, color: count ? textColor : '#94a3b8', border: 'none', boxShadow: 'none' }}
                 >
                   {display || <span className="opacity-40">Space</span>}
                 </div>
