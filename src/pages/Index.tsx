@@ -249,14 +249,14 @@ const TypingArea: React.FC<TypingAreaProps & { mode?: string; godModeIndex?: num
                     animation: 'monkey-blink 1s steps(1) infinite',
                   }}
                 />
-                {char === ' ' ? '\u00A0' : char}
+                {char}
               </span>
             );
           }
           
           return (
             <span key={idx} className={className} style={{ display: 'inline-block' }}>
-              {char === ' ' ? '\u00A0' : char}
+              {char}
             </span>
           );
         })}
@@ -318,7 +318,7 @@ const TypingArea: React.FC<TypingAreaProps & { mode?: string; godModeIndex?: num
                     zIndex: 2,
                   }}
                 />
-                {char === '\n' ? <br /> : char === ' ' ? '\u00A0' : char}
+                {char === '\n' ? <br /> : char}
               </span>
             );
           }
@@ -330,7 +330,7 @@ const TypingArea: React.FC<TypingAreaProps & { mode?: string; godModeIndex?: num
           
           return (
             <span key={idx} className={className}>
-              {char === ' ' ? '\u00A0' : char}
+              {char}
             </span>
           );
         })}
@@ -364,9 +364,9 @@ const TypingArea: React.FC<TypingAreaProps & { mode?: string; godModeIndex?: num
           height: 'calc(2.25rem * 1.8 * 3 + 32px)', // Same 3-line height
           width: '100%',
           textAlign: 'left',
-          wordBreak: 'break-word',
+          wordBreak: 'normal',
           overflowWrap: 'break-word',
-          whiteSpace: 'pre-wrap',
+          whiteSpace: 'normal',
           overflowY: 'scroll',
           overflowX: 'hidden',
           fontSize: 'clamp(1.5rem, 4.5vw, 2.25rem)', // Same larger font
@@ -408,7 +408,7 @@ const TypingArea: React.FC<TypingAreaProps & { mode?: string; godModeIndex?: num
                     zIndex: 2,
                   }}
                 />
-          {char === ' ' ? '\u00A0' : char}
+          {char}
         </span>
       );
     }
@@ -449,9 +449,11 @@ const TypingArea: React.FC<TypingAreaProps & { mode?: string; godModeIndex?: num
         height: 'calc(2.25rem * 1.8 * 3 + 32px)', // Exactly 3 lines + padding
         width: '100%',
         textAlign: 'left',
-        wordBreak: 'break-word',
+        wordBreak: 'normal',
         overflowWrap: 'break-word',
-        whiteSpace: 'pre-wrap',
+        whiteSpace: 'normal',
+        textIndent: 0,
+        wordSpacing: 'normal',
         overflowY: 'scroll', // Allow scroll but hide scrollbar via CSS
         overflowX: 'hidden',
         fontSize: 'clamp(1.5rem, 4.5vw, 2.25rem)', // Larger font
@@ -494,14 +496,14 @@ const TypingArea: React.FC<TypingAreaProps & { mode?: string; godModeIndex?: num
                   zIndex: 2,
                 }}
               />
-              {char === ' ' ? '\u00A0' : char}
+              {char}
             </span>
           );
         }
         
         return (
           <span key={idx} className={className}>
-            {char === ' ' ? '\u00A0' : char}
+            {char}
           </span>
         );
       })}
@@ -846,7 +848,7 @@ const MemoChar = memo(function MemoChar({ char, index, userInput, currentIndex }
           layoutId="caret-char"
           transition={{ duration: 0.06, ease: 'easeOut' }}
         >
-          {char === ' ' ? '\u00A0' : char}
+          {char}
         </motion.span>
         <motion.span
           className="cursor-blink"
@@ -1001,153 +1003,153 @@ const Index = () => {
   const sampleTextsByLanguageAndDifficulty = {
     english: {
       short: "The quick brown fox jumps over the lazy dog. Typing is a skill that improves with practice.",
-      medium: "In the midst of winter, I found there was, within me, an invincible summer. And that makes me happy. For it says that no matter how hard the world pushes against me, there's something stronger within me.",
-      long: "Technology has fundamentally transformed the way we live, work, and communicate. From smartphones to satellites, our world is connected like never before. Digital platforms empower individuals and businesses to innovate faster. Understanding technology is now essential in every field and industry.",
-      thicc: "Photosynthesis is the biological process by which plants, algae, and certain bacteria convert light energy into chemical energy stored in glucose molecules. This process occurs in the chloroplasts using chlorophyll. Carbon dioxide and water are converted into sugars and oxygen. Light-dependent reactions take place in the thylakoid membranes. The light-independent reactions, also known as the Calvin Cycle, occur in the stroma. Photosynthesis is vital for life on Earth, producing both oxygen and organic compounds used in food chains."
+      medium: "In the midst of winter I found there was within me an invincible summer. And that makes me happy. For it says that no matter how hard the world pushes against me there is something stronger within me.",
+      long: "Technology has fundamentally transformed the way we live work and communicate. From smartphones to satellites our world is connected like never before. Digital platforms empower individuals and businesses to innovate faster. Understanding technology is now essential in every field and industry.",
+      thicc: "Photosynthesis is the biological process by which plants algae and certain bacteria convert light energy into chemical energy stored in glucose molecules. This process occurs in the chloroplasts using chlorophyll. Carbon dioxide and water are converted into sugars and oxygen. Light-dependent reactions take place in the thylakoid membranes. The light-independent reactions also known as the Calvin Cycle occur in the stroma. Photosynthesis is vital for life on Earth producing both oxygen and organic compounds used in food chains."
     },
     hindi: {
       short: "तेज़ भूरा लोमड़ी आलसी कुत्ते के ऊपर कूद जाती है। टाइपिंग एक कौशल्य है जो अभ्यास से सुधरता है।",
-      medium: "सर्दियों के बीच में, मुझे एक अजेय गर्मी मिली। और यह मुझे खुश करता है। क्योंकि यह दर्शाता है कि चाहे दुनिया कितनी भी कठिनाई से धकेले, मेरे भीतर कुछ मजबूत आछे।",
-      long: "प्रौद्योगिकी ने हमारे जीवन, कार्य और संचार के तरीकों को मूल रूप से बदल दिया है। स्मार्टफोन्स से लेकर उपग्रहों तक, हमारी दुनिया पहले कभी नहीं जुड़े हुए जैसी है। डिजिटल प्लेटफॉर्म व्यक्तियों और व्यवसायों को तेजी से नवाचार करने के लिए सशक्त बनाते हैं। सभी क्षेत्रों और उद्योगों में प्रौद्योगिकी को समझना अब आवश्यक है।",
-      thicc: "प्रकाश संश्लेषण एक जैविक प्रक्रिया है जिसमें पौधे, शैवाल, और कुछ बैक्टीरिया प्रकाश ऊर्जा को ग्लुकोज अणुओं में संग्रहीत रासायनिक ऊर्जा में परिवर्तित करते हैं। यह प्रक्रिया क्लोरोप्लास्ट्स में क्लोरोफिल का उपयोग करके होती है। कार्बन डाइऑक्साइड और पानी को शर्करा और ऑक्सीजन में परिवर्तित किया जाता है। प्रकाश पर निर्भर प्रतिक्रियाएँ थायलेकोएड झिल्लियों में होती हैं। प्रकाश-स्वतंत्र प्रतिक्रियाएं, जिन्हें कैल्विन चक्र के रूप में भी जाना जाता है, स्ट्रोमा में होती हैं।"
+      medium: "सर्दियों के बीच में मुझे एक अजेय गर्मी मिली। और यह मुझे खुश करता है। क्योंकि यह दर्शाता है कि चाहे दुनिया कितनी भी कठिनाई से धकेले मेरे भीतर कुछ मजबूत आछे।",
+      long: "प्रौद्योगिकी ने हमारे जीवन कार्य और संचार के तरीकों को मूल रूप से बदल दिया है। स्मार्टफोन्स से लेकर उपग्रहों तक हमारी दुनिया पहले कभी नहीं जुड़े हुए जैसी है। डिजिटल प्लेटफॉर्म व्यक्तियों और व्यवसायों को तेजी से नवाचार करने के लिए सशक्त बनाते हैं। सभी क्षेत्रों और उद्योगों में प्रौद्योगिकी को समझना अब आवश्यक है।",
+      thicc: "प्रकाश संश्लेषण एक जैविक प्रक्रिया है जिसमें पौधे शैवाल और कुछ बैक्टीरिया प्रकाश ऊर्जा को ग्लुकोज अणुओं में संग्रहीत रासायनिक ऊर्जा में परिवर्तित करते हैं। यह प्रक्रिया क्लोरोप्लास्ट्स में क्लोरोफिल का उपयोग करके होती है। कार्बन डाइऑक्साइड और पानी को शर्करा और ऑक्सीजन में परिवर्तित किया जाता है। प्रकाश पर निर्भर प्रतिक्रियाएँ थायलेकोएड झिल्लियों में होती हैं। प्रकाश-स्वतंत्र प्रतिक्रियाएं जिन्हें कैल्विन चक्र के रूप में भी जाना जाता है स्ट्रोमा में होती हैं।"
     },
     tamil: {
-      short: "வேகமான காவி நரி சோம்பேறி நாயின் மீது குதிக்கின்றது. டட்டச்சு ஒரு திறமை, சிலிர்க்க உறுதி செய்கிறது.",
-      medium: "குளிர்காலத்தின் நடுவில், எனக்குள் வெல்ல முடியாத கோடை கிடைத்தது. அது எனக்கு மகிழ்ச்சியைத் தருகிறது. உலகம் எவ்வளவு தீவிரமாக என்மீது தள்ளும்போதும், எனக்குள் பலம் கொண்ட ஒன்று உள்ளது.",
-      long: "தொழில்நுட்பம் நம் வாழ்க்கை, வேலை, தொடர்புகளை அடிப்படையாக மாற்றியுள்ளது. ஸ்மார்ட்போன்கள் முதல் செயற்கைக்கோள்கள் வரை, நமது உலகம் இதுவரை இல்லாதபடி இணையப்பட்டுள்ளது. டிஜிட்டல் தளங்கள், எவராலும், வணிகங்களில் வேகமாக புதுமை செய்ய நுட்பத்தை வழங்குகின்றன.",
-      thicc: "ஒளித் தசைம்பத்திவதன் மூலம், தாவரங்கள், ஈர்ச்சழலாளிகள், சில வகை மூலக்கூறுகள் ஒளி ஆற்றலை கார்போ ஹைட்ரேட்டுகளில் சேமியக்க முடிவுகளை மாற்றுகிறன. இச்செயல்நிலை கலோரோபிளாஸ்ட்களால் கலோரோஃபிலின் மூலம் நிகழ்கிறது. கார்பன் டைஅக்ஸைடு மற்றும் நீர் சர்க்கரை மற்றும் ஆம்லஜநகமாக மாறுத்துகிறது."
+      short: "வேகமான காவி நரி சோம்பேறி நாயின் மீது குதிக்கின்றது. டட்டச்சு ஒரு திறமை சிலிர்க்க உறுதி செய்கிறது.",
+      medium: "குளிர்காலத்தின் நடுவில் எனக்குள் வெல்ல முடியாத கோடை கிடைத்தது. அது எனக்கு மகிழ்ச்சியைத் தருகிறது. உலகம் எவ்வளவு தீவிரமாக என்மீது தள்ளும்போதும் எனக்குள் பலம் கொண்ட ஒன்று உள்ளது.",
+      long: "தொழில்நுட்பம் நம் வாழ்க்கை வேலை தொடர்புகளை அடிப்படையாக மாற்றியுள்ளது. ஸ்மார்ட்போன்கள் முதல் செயற்கைக்கோள்கள் வரை நமது உலகம் இதுவரை இல்லாதபடி இணையப்பட்டுள்ளது. டிஜிட்டல் தளங்கள் எவராலும் வணிகங்களில் வேகமாக புதுமை செய்ய நுட்பத்தை வழங்குகின்றன.",
+      thicc: "ஒளித் தசைம்பத்திவதன் மூலம் தாவரங்கள் ஈர்ச்சழலாளிகள் சில வகை மூலக்கூறுகள் ஒளி ஆற்றலை கார்போ ஹைட்ரேட்டுகளில் சேமியக்க முடிவுகளை மாற்றுகிறன. இச்செயல்நிலை கலோரோபிளாஸ்ட்களால் கலோரோஃபிலின் மூலம் நிகழ்கிறது. கார்பன் டைஅக்ஸைடு மற்றும் நீர் சர்க்கரை மற்றும் ஆம்லஜநகமாக மாறுத்துகிறது."
     },
     kannada: {
       short: "ನೀವು ವೇಗವಾಗಿ ಮತ್ತು ಸರಿಯಾಗಿ ಟೈಪ್ ಮಾಡುವುದನ್ನು ಅಭ್ಯಾಸದಿಂದ ಕಲಿಯಬಹುದು. ಪ್ರತಿದಿನವೂ ಕೆಲ ನಿಮಿಷಗಳು ಅಭ್ಯಾಸ ಮಾಡುವುದು ಉತ್ತಮವಾಗಿದೆ.",
       medium: "ನಿಮ್ಮ ಟೈಪಿಂಗ್ ದಕ್ಷತೆಯನ್ನು ಸುಧಾರಿಸಲು ದಿನನಿತ್ಯ ಅಭ್ಯಾಸ ಮಾಡುವುದು ಅಗತ್ಯ. ಸರಿಯಾದ ಹತ್ತಿರದ ಕೀಲಿಗಳನ್ನು ಗೊತ್ತಾದಾಗ ತಪ್ಪುಗಳು ಕಡಿಮೆಯಾಗುತ್ತವೆ. ಗಮನವಿಟ್ಟು ಟೈಪ್ ಮಾಡುವುದರಿಂದ ಶುದ್ಧತೆ ಮತ್ತು ವೇಗ ಎರಡೂ ಸುಧಾರಿಸುತ್ತವೆ.",
-      long: "ತಂತ್ರಜ್ಞಾನವು ನಾವು ಬದುಕುವ ವಿಧಾನ, ಕೆಲಸ ಮಾಡುವ ವಿಧಾನ ಮತ್ತು ಸಂಪರ್ಕ ಸಾಧಿಸುವ ವಿಧಾನವನ್ನು ಸಂಪೂರ್ಣವಾಗಿ ಬದಲಿಸಿದೆ. ಸ್ಮಾರ್ಟ್‌ಫೋನ್‌ಗಳಿಂದ ಉಪಗ್ರಹಗಳವರೆಗೆ, ಇಂದು ಪ್ರಪಂಚವು ಹೆಚ್ಚು ಸಂಪರ್ಕಿತವಾಗಿದೆ. ಡಿಜಿಟಲ್ ವೇದಿಕೆಗಳು ವ್ಯಕ್ತಿಗಳು ಮತ್ತು ಉದ್ಯಮಗಳಿಗೆ ವೇಗವಾಗಿ ಹೊಸ ಆವಿಷ್ಕಾರಗಳನ್ನು ಮಾಡಲು ಸಹಾಯ ಮಾಡುತ್ತವೆ. ಪ್ರತಿ ಕ್ಷೇತ್ರದಲ್ಲಿಯೂ ತಂತ್ರಜ್ಞಾನ ತಿಳಿದಿರಬೇಕಾಗಿದೆ.",
-      thicc: "ಫೋಟೋಸಿಂಥೆಸಿಸ್ ಎಂಬುದು ಸಸ್ಯಗಳು, ಶೈವಲಗಳು ಮತ್ತು ಕೆಲ ಬ್ಯಾಕ್ಟೀರಿಯಾಗಳಿಂದ ನಡೆಯುವ ಜೀವಶಾಸ್ತ್ರದ ಪ್ರಕ್ರಿಯೆಯಾಗಿದ್ದು, ಬೆಳಕಿನ ಶಕ್ತಿಯನ್ನು ಗ್ಲುಕೋಸ್ ಅಣುಗಳಲ್ಲಿ ಸಂಗ್ರಹಿತ ರಾಸಾಯನಿಕ ಶಕ್ತಿಯಾಗಿ ಪರಿವರ್ತಿಸುತ್ತದೆ. ಈ ಪ್ರಕ್ರಿಯೆ ಕ್ಲೊರೋಪ್ಲಾಸ್ಟ್‌ನಲ್ಲಿ ನಡೆಯುತ್ತದೆ ಮತ್ತು ಕ್ಲೊರೋಫಿಲ್ ಇದರಲ್ಲಿ ಪ್ರಮುಖ ಪಾತ್ರ ವಹಿಸುತ್ತದೆ. ಕಾರ್ಬನ್ ಡೈಆಕ್ಸೈಡ್ ಮತ್ತು ನೀರನ್ನು ಸಕ್ಕರೆ ಮತ್ತು ಆಮ್ಲಜನಕವಾಗಿ ಪರಿವರ್ತಿಸಲಾಗುತ್ತದೆ. ಬೆಳಕಿನ ಅವಲಂಬಿತ ಪ್ರತಿಕ್ರಿಯೆಗಳು ಥೈಲಾಕಾಯ್ಡ್ ಝಿಲೆಯ ಮೇಲೆ ನಡೆಯುತ್ತವೆ. ಬೆಳಕಿನ ಅವಲಂಬಿತವಲ್ಲದ ಪ್ರತಿಕ್ರಿಯೆಗಳು ಸ್ಟ್ರೋಮಾದಲ್ಲಿ ನಡೆಯುತ್ತವೆ. ಈ ಪ್ರಕ್ರಿಯೆಯು ಭೂಮಿಯ ಮೇಲೆ ಜೀವದ ನಿರ್ವಹಣೆಗೆ ಅತ್ಯಂತ ಅಗತ್ಯವಾಗಿದೆ."
+      long: "ತಂತ್ರಜ್ಞಾನವು ನಾವು ಬದುಕುವ ವಿಧಾನ ಕೆಲಸ ಮಾಡುವ ವಿಧಾನ ಮತ್ತು ಸಂಪರ್ಕ ಸಾಧಿಸುವ ವಿಧಾನವನ್ನು ಸಂಪೂರ್ಣವಾಗಿ ಬದಲಿಸಿದೆ. ಸ್ಮಾರ್ಟ್‌ಫೋನ್‌ಗಳಿಂದ ಉಪಗ್ರಹಗಳವರೆಗೆ ಇಂದು ಪ್ರಪಂಚವು ಹೆಚ್ಚು ಸಂಪರ್ಕಿತವಾಗಿದೆ. ಡಿಜಿಟಲ್ ವೇದಿಕೆಗಳು ವ್ಯಕ್ತಿಗಳು ಮತ್ತು ಉದ್ಯಮಗಳಿಗೆ ವೇಗವಾಗಿ ಹೊಸ ಆವಿಷ್ಕಾರಗಳನ್ನು ಮಾಡಲು ಸಹಾಯ ಮಾಡುತ್ತವೆ. ಪ್ರತಿ ಕ್ಷೇತ್ರದಲ್ಲಿಯೂ ತಂತ್ರಜ್ಞಾನ ತಿಳಿದಿರಬೇಕಾಗಿದೆ.",
+      thicc: "ಫೋಟೋಸಿಂಥೆಸಿಸ್ ಎಂಬುದು ಸಸ್ಯಗಳು ಶೈವಲಗಳು ಮತ್ತು ಕೆಲ ಬ್ಯಾಕ್ಟೀರಿಯಾಗಳಿಂದ ನಡೆಯುವ ಜೀವಶಾಸ್ತ್ರದ ಪ್ರಕ್ರಿಯೆಯಾಗಿದ್ದು ಬೆಳಕಿನ ಶಕ್ತಿಯನ್ನು ಗ್ಲುಕೋಸ್ ಅಣುಗಳಲ್ಲಿ ಸಂಗ್ರಹಿತ ರಾಸಾಯನಿಕ ಶಕ್ತಿಯಾಗಿ ಪರಿವರ್ತಿಸುತ್ತದೆ. ಈ ಪ್ರಕ್ರಿಯೆ ಕ್ಲೊರೋಪ್ಲಾಸ್ಟ್‌ನಲ್ಲಿ ನಡೆಯುತ್ತದೆ ಮತ್ತು ಕ್ಲೊರೋಫಿಲ್ ಇದರಲ್ಲಿ ಪ್ರಮುಖ ಪಾತ್ರ ವಹಿಸುತ್ತದೆ. ಕಾರ್ಬನ್ ಡೈಆಕ್ಸೈಡ್ ಮತ್ತು ನೀರನ್ನು ಸಕ್ಕರೆ ಮತ್ತು ಆಮ್ಲಜನಕವಾಗಿ ಪರಿವರ್ತಿಸಲಾಗುತ್ತದೆ. ಬೆಳಕಿನ ಅವಲಂಬಿತ ಪ್ರತಿಕ್ರಿಯೆಗಳು ಥೈಲಾಕಾಯ್ಡ್ ಝಿಲೆಯ ಮೇಲೆ ನಡೆಯುತ್ತವೆ. ಬೆಳಕಿನ ಅವಲಂಬಿತವಲ್ಲದ ಪ್ರತಿಕ್ರಿಯೆಗಳು ಸ್ಟ್ರೋಮಾದಲ್ಲಿ ನಡೆಯುತ್ತವೆ. ಈ ಪ್ರಕ್ರಿಯೆಯು ಭೂಮಿಯ ಮೇಲೆ ಜೀವದ ನಿರ್ವಹಣೆಗೆ ಅತ್ಯಂತ ಅಗತ್ಯವಾಗಿದೆ."
     },
     telugu: {
       short: "వేగంగా కదలే తోగటెతుకుక్క మందగామి ప్రాణిని దాటుతుంది. టైపింగ్ అనేది సాధనతో మెరుగు పడే నైపుణ్యం.",
-      medium: "చలికాలం మధ్యలో, నాకు అనాగాన్యం వేసవి దొరికింది. ఇది నాకు ఆనందాన్ని ఇస్తుంది. ప్రపంచం ఎంత కష్టంగా నన్ను నెట్టినా, నా లోపల శక్తివంతమైనది ఉంది.",
+      medium: "చలికాలం మధ్యలో నాకు అనాగాన్యం వేసవి దొరికింది. ఇది నాకు ఆనందాన్ని ఇస్తుంది. ప్రపంచం ఎంత కష్టంగా నన్ను నెట్టినా నా లోపల శక్తివంతమైనది ఉంది.",
       long: "సాంకేతికత మన జీవిత, పని, మరియు కమ్యూనికేషన్ విధానాలను మార్చింది. స్మార്ట്‌ఫోన్లు నుండి ఉపగ്రహాలు వరకు, మన ప్రపంచం అసామాన్యంగా కలిసిపోయింది. డిజిట్లు వేదికలు వ్యక్తికൾకు మరియు వ్యాపారాలకు సంశయాతീతమాయి వీణుండు పునరాహ్వానం చేయడానికి శక్తి ఇస్తాయి.",
       thicc: "ప్రకాశ సంశ్లేషణ అనేది మొక్కలు, అల్గే మరియు కొన్ని బ్యాక್టೀరియా కాంతి శక్తిని రసాయన శకతిగా మార్చే జీవ ప్రకరియ. ఇందులో క్లೋరೋఫిల్ సూర్యకాంతిని పట్టుకుంటుంది, వాతావరణం నుండి కార్బన్ డయాక్సైడ్ మరియు నేల నుండి నీటిని తీసుకుని గ్లೂకೋస్ ఉత్పాదిస్తుంది మరియు ఉప ఉత్పత్తిగా ఆక్సిజన్‌ను విడుదల చేస్తుంది."
     },
     bengali: {
       short: "ত্বরিত ভূরা লোমড়ি আলস্য গ্র পুদ লাংঘদী হેয়। টাইপিং একটি দক্ষতা যা অভিযোগ সে উন্নত হয়।",
-      medium: "শীতের মাঝে, আমি অদম্য একটি গ্রীষ্ম খুঁজে পেয়েছিলাম। এবং এটি আমাকে খুশ করে। কারণ এটি প্রমাণ করে যে দুনিয়া কিছুটা বলা হয়, আমার মধ্যে কিছু শক্তিশালী আছে।",
-      long: "প্ৰযুক্তি আমাদের জীবনযাত্রা, কাজ এবং যোগাযোগকে সম্পূর্ণরূপে পরিবর্তন করেছে। স্মার্টফোন থেকে সেটেলাইট পর্যন্ত, আমাদের জগত কখনো এতে জুড়ে আসেনি। ডিজিটাল প্লেটফর্ম ব্যক্তি এবং ব্যবসায়িক উদ্ভাবন করার জন্য শক্তি দেয়।",
-      thicc: "ফোটোসিন্থেসিস হল একটি জীববৈজ্ঞানিক প্ৰক্ৰিয়া যাতে ছড়, শৈবাল, এবং কিছু বেক্টেরিয়া প্রকাশ উপড়িনে রসায়নিক উদয়গে রূপান্তর করে। এই প্রক্রিয়া ক্লোরোফিল ব্যবহার করে ক্লোরোপ্লাস্টমাং ঘটে।"
+      medium: "শীতের মাঝে আমি অদম্য একটি গ্রীষ্ম খুঁজে পেয়েছিলাম। এবং এটি আমাকে খুশ করে। কারণ এটি প্রমাণ করে যে দুনিয়া কিছুটা বলা হয় আমার মধ্যে কিছু শক্তিশালী আছে।",
+      long: "প্ৰযুক্তি আমাদের জীবনযাত্রা কাজ এবং যোগাযোগকে সম্পূর্ণরূপে পরিবর্তন করেছে। স্মার্টফোন থেকে সেটেলাইট পর্যন্ত আমাদের জগত কখনো এতে জুড়ে আসেনি। ডিজিটাল প্লেটফর্ম ব্যক্তি এবং ব্যবসায়িক উদ্ভাবন করার জন্য শক্তি দেয়।",
+      thicc: "ফোটোসিন্থেসিস হল একটি জীববৈজ্ঞানিক প্ৰক্ৰিয়া যাতে ছড় শৈবাল এবং কিছু বেক্টেরিয়া প্রকাশ উপড়িনে রসায়নিক উদয়গে রূপান্তর করে। এই প্রক্রিয়া ক্লোরোফিল ব্যবহার করে ক্লোরোপ্লাস্টমাং ঘটে।"
     },
     marathi: {
-      short: "झपाट्याने फिरणारा तपकिरी कोल्हा आळशी कुत्र्याचा ओलांडतो. टायपिंग एक कौशल्य आहे, जे सरावाने सुधारते.",
-      medium: "हिवाळ्यात, मला एक अपरिहार्य उन्हाळा सापडला. आणि त्यामुळे मला आनंद होतो. कारण जग कितीही जोरदारपणे मला धकేल देत, तरी माझ्या अंदर वळण असलेले काही आहे.",
-      long: "तंत्रज्ञानाने आपल्या जीवन, काम आणि संवादाच्या पद्धतींमध्ये आमूलाग्र बदल केला आहे. स्मार्टफोन ते उपग्रहपर्यंत, आमचा जग कधीही नव्हता इतका जोडलेला आहे. डिजिटल प्लॅटफॉर्म व्यक्ती आणि व्यवसायांना जलद गतीने नवीन करण्यास सक्षम करतात.",
+      short: "झपाट्याने फिरणारा तपकिरी कोल्हा आळशी कुत्र्याचा ओलांडतो. टायपिंग एक कौशल्य आहे जे सरावाने सुधारते.",
+      medium: "हिवाळ्यात मला एक अपरिहार्य उन्हाळा सापडला. आणि त्यामुळे मला आनंद होतो. कारण जग कितीही जोरदारपणे मला धकेल देत तरी माझ्या अंदर वळण असलेले काही आहे.",
+      long: "तंत्रज्ञानाने आपल्या जीवन काम आणि संवादाच्या पद्धतींमध्ये आमूलाग्र बदल केला आहे. स्मार्टफोन ते उपग्रहपर्यंत आमचा जग कधीही नव्हता इतका जोडलेला आहे. डिजिटल प्लॅटफॉर्म व्यक्ती आणि व्यवसायांना जलद गतीने नवीन करण्यास सक्षम करतात.",
       thicc: "फोटोसिंथेसिस हा एक जੈविक प्रक्रिया आहे ज्यात वनस्पती, शੈवाळ, अंदर काही बेक्टेरिया प्रकाश उपड़िने रसायनशास्त्रीय उदयग मध्ये बदलते. या प्रक्रियेमध्ये क्लोरोफिल वापरून क्लोरोप्लास्टमध्ये होते."
     },
     urdu: {
       short: "تیز بھورا لومڑی کاہل کتے کے اوپر چھلانگ لگاتا ہے۔ ٹائپنگ ایک مہارت ہے جو مشق سے بہتر ہوتی ہے۔",
       medium: "سردیوں کے بیچ میں, मجھے اپنے اندر ایک ناقابل تسخیر گرمی ملی۔ اور یہ مجھے خوشی دیتا ہے۔ کیونکہ یہ ثابت کرتا ہے کہ چاہے دنیا کتنی بھی سختی سے مجھے دھکیل دے، پر میرے اندر کچھ زیادہ مضبوط ہے۔",
       long: "ٹیکنالوجی نے ہماری زندگی, कام, اور مواصلات کے طریقوں کو بنیادی طور 'تے بدل دیا ہے۔ स्मार्ट فونز سے لیکر سیٹلائٹس تک، ہماری دنیا اب پہلے سے کہیں زیادہ جڑی ہوئی ہے۔ ڈیجیٹل پلیٹ فارمز افراد اور کاروباروں کو تیز تر جدت فراہم کرتے ہیں۔",
-      thicc: "فوٹو سنتھیسز ایک حیاتیاتی عمل ہے جس میں پودے, ہلا, اور کچھ بیکٹیریا روشنی کی توانائی کو کیمیائی توانائی میں تبدیل کرتے ہیں. یہ عمل کلوروفل کا استعمال کرتے ہوئے کلوروپلاسٹ میں ہوتا ہے."
+      thicc: "فوٹو سنتھیسز ایک حیاتیاتی عمل ہے جس میں پودے ہلا اور کچھ بیکٹیریا روشنی کی توانائی کو کیمیائی توانائی میں تبدیل کرتے ہیں. یہ عمل کلوروفل کا استعمال کرتے ہوئے کلوروپلاسٹ میں ہوتا ہے."
     },
     gujarati: {
       short: "તેજસ્વ ભૂરા લૂમડી આલસ ગ્ર પુદ લાંઘદી હેયો. ટાઈપિંગ એક કુશળતા છે જે અભ્યાસથી સુધરે છે.",
-      medium: "શીયાળાની વચ્ચે, મને મારા અંદર અર્વાચીન ઉનાળો મળ્યો. અને તે મને ખુશ કરે છે. કારણ કે તે દર્શાવે છે કે દુન્યા કેટલીયે બળાનથી મને ધકેલે, પણ મારા અંદર કંઈક મજૂતીસુવાગળ મળે છે.",
-      long: "તંત્રજ્ઞાનવું અમારી જીવન, કામ, અને સંવાદની રીતે આમંત્રિત બદલી દીધી છે. સ્માર્ટ ફોન થી ઉપગ્રહ સુધી, આપણું જગત ક્યારેય આકર્ષિત થઈ ગયું નથી. ડિજિટલ પ્લેટફોર્મ વ્યક્તિઓ અને વ્યવસાયો ને તીજી ને નું કરવા સમર્થ કરે છે.",
-      thicc: "ફોટોસિંથેસિસ એક જੈવિક પ੍રક્રિયા છે જેમાં છડ, શૈવાળ, અને કેટલીક બેક્ટેરિયા પ੍રકાશ ઉપડ઼િને રસાયનિક ઊર્જામાં રૂપાંતર કરે છે. આ પ੍રક્રિયા ક્લોરોફિલનું ઉપયોગ કરીને ક્લોરોપ્લાસ્ટમાં થાય છે."
+      medium: "શીયાળાની વચ્ચે મને મારા અંદર અર્વાચીન ઉનાળો મળ્યો. અને તે મને ખુશ કરે છે. કારણ કે તે દર્શાવે છે કે દુન્યા કેટલીયે બળાનથી મને ધકેલે પણ મારા અંદર કંઈક મજૂતીસુવાગળ મળે છે.",
+      long: "તંત્રજ્ઞાનવું અમારી જીવન કામ અને સંવાદની રીતે આમંત્રિત બદલી દીધી છે. સ્માર્ટ ફોન થી ઉપગ્રહ સુધી આપણું જગત ક્યારેય આકર્ષિત થઈ ગયું નથી. ડિજિટલ પ્લેટફોર્મ વ્યક્તિઓ અને વ્યવસાયો ને તીજી ને નું કરવા સમર્થ કરે છે.",
+      thicc: "ફોટોસિંથેસિસ એક જੈવિક પ੍રક્રિયા છે જેમાં છડ શૈવાળ અને કેટલીક બેક્ટેરિયા પ੍રકાશ ઉપડ઼િને રસાયનિક ઊર્જામાં રૂપાંતર કરે છે. આ પ੍રક્રિયા ક્લોરોફિલનું ઉપયોગ કરીને ક્લોરોપ્લાસ્ટમાં થાય છે."
     },
     malayalam: {
       short: "വേഗത്തിലുള്ള തവിട്ട് നരി മടിയൻ നായയ്ക്കു മുകളിൽ ചാടുന്നു. ടൈപ്പിംഗ് അഭ്യാസം വഴി മെച്ചപ്പെടുന്ന ഒരു നൈപുണ്യമാണ്.",
-      medium: "ശീതകാലത്തിന്റെ ഇടയിൽ, എനിക്കു അജേയമായ ഒരു വേനൽക്കാലം കണ്ടെത്തി. അത് എനിക്ക് സന്തോഷം നൽകുന്നു. എന്തുകൊണ്ടെന്നാൽ ലോകം എത്ര ബലമായി എന്നെ തടസ്സപ്പെടുത്തിക്കഴിഞ്ഞാലും, എന്റെ ഉള്ളിൽ വളരെ ശക്തമായ ഒന്നുണ്ട്.",
-      long: "സാങ്കേതികവിദ്യ പെരുമാറ്റങ്ങൾ, ജോലി, കൊച്ചി തുടങ്ങിയവയെ ആസ്വദിക്കാൻ മാറ്റം വരുത്തി. സ്മാർട്ട്ഫോണുകളിൽ നിന്നും ഉപഗ്രഹങ്ങളിൽ എത്തിച്ചേരുകയും ചെയ്യുന്നു. ഡിജിറ്റൽ പ്ലാറ്റ്ഫോമുകൾ വ്യക്തികൾക്കും ബിസിനസ്സുകൾക്ക് സംശയാതീതമായി വീണ്ടും പ്രവർത്തിക്കാനും അനുവദിക്കുകയും ചെയ്യുന്നു.",
-      thicc: "ഫോട്ടോസിന്തസിസ് ഒരു ജൈവശാസ്ത്ര പ്രക്രിയയാണ്, ഇത് ഔപചാരിക ജൈവക കൃത്യമായ വിഷമത്തിന്റെ ഉല്പാദനവും വിപുലീകരണത്തിലേക്കും ആളിക് മാറ്റുന്നു. ഈ പ്രക്രിയ ക്രോമാറ്റിക് ഉപകരണങ്ങളിലും സൂക്ഷ്മബന്ധത്തിൽ ശ്രദ്ധകൊടുക്കുന്നു."
+      medium: "ശീതകാലത്തിന്റെ ഇടയിൽ എനിക്കു അജേയമായ ഒരു വേനൽക്കാലം കണ്ടെത്തി. അത് എനിക്ക് സന്തോഷം നൽകുന്നു. എന്തുകൊണ്ടെന്നാൽ ലോകം എത്ര ബലമായി എന്നെ തടസ്സപ്പെടുത്തിക്കഴിഞ്ഞാലും എന്റെ ഉള്ളിൽ വളരെ ശക്തമായ ഒന്നുണ്ട്.",
+      long: "സാങ്കേതികവിദ്യ പെരുമാറ്റങ്ങൾ ജോലി കൊച്ചി തുടങ്ങിയവയെ ആസ്വദിക്കാൻ മാറ്റം വരുത്തി. സ്മാർട്ട്ഫോണുകളിൽ നിന്നും ഉപഗ്രഹങ്ങളിൽ എത്തിച്ചേരുകയും ചെയ്യുന്നു. ഡിജിറ്റൽ പ്ലാറ്റ്ഫോമുകൾ വ്യക്തികൾക്കും ബിസിനസ്സുകൾക്ക് സംശയാതീതമായി വീണ്ടും പ്രവർത്തിക്കാനും അനുവദിക്കുകയും ചെയ്യുന്നു.",
+      thicc: "ഫോട്ടോസിന്തസിസ് ഒരു ജൈവശാസ്ത്ര പ്രക്രിയയാണ് ഇത് ഔപചാരിക ജൈവക കൃത്യമായ വിഷമത്തിന്റെ ഉല്പാദനവും വിപുലീകരണത്തിലേക്കും ആളിക് മാറ്റുന്നു. ഈ പ്രക്രിയ ക്രോമാറ്റിക് ഉപകരണങ്ങളിലും സൂക്ഷ്മബന്ധത്തിൽ ശ്രദ്ധകൊടുക്കുന്നു."
     },
     punjabi: {
       short: "ਤੇਜ਼ ਭੂਰਾ ਲੂਮੜੀ ਆਲਸ ਗਰ ਪੁੱਦ ਲਾਂਘਦੀ ਹੈ। ਟਾਈਪਿੰਗ ਉਹ ਹਨਰ ਹੈ ਜੋ ਅਭਿਆਸ ਨਾਲ ਸੁਧਰਦਾ ਹੈ।",
-      medium: "ਸਰਦੀ ਦੇ ਵਿਚਕਾਰ, ਮੈਂ ਖੁਸ਼ੀ ਦਾ ਅਦਮਤ ਗਰਮੀਆ ਮਹਿਸੂਸ ਕੀਤਾ। ਅਤੇ ਇਸ ਨਾਲ ਮੇਰਾ ਦਿਲ ਖ਼ੁਸ਼ ਹੁੰਦਾ ਹੈ। ਇਹ ਦਿਖਾਉਂਦਾ ਹੈ ਕਿ ਦੁਨੀਆ ਜਿੰਨੀ ਵੀ ਮੇਰੀ ਉਪਰ ਧ੍ਕੇਲਣ ਕਈ, ਮੇਰੇ ਅੰਦਰ ਕੁਝ ਮਜੂਤੀਸ਼ਾਲ ਮੁਜੂਦ ਹੈ।",
-      long: "ਤਕਨੀਕ ਨੇ ਸਾਡੇ ਜੀਵਨ, ਕੰਮ ਅਤੇ ਸੰਚਾਰ ਦੇ ਢੰਗ ਨੂੰ ਬੁਨਿਆਦੀ ਤੌਰ 'ਤੇ ਬਦਲ ਦਿਤਾ ਹੈ। ਸਮਾਰਟਫੋਨ ਤੋਂ ਸੈਟੇਲਾਈਟ ਤੱਕ, ਸਾਡਾ ਸੰਸਾਰ ਹੁਣ ਪਹਿਲਾਂ ਕਦੇ ਵੀ ਨਹੀਂ ਜੁੜਿਆ ਹੈ। ਡਿਜ਼ੀਟਲ ਪਲੇਟਫਾਰਮ ਵਿਅਕਤੀਆਂ ਅਤੇ ਕਾਰੋਬਾਰ ਨੂੰ ਤੀਜ਼ੀ ਨਾਲ ਨਵੱਛਣ ਦੀ ਸਮਰਥਕ ਬਣਾਉਦਾ ਹੈ।",
-      thicc: "ਫੋਟੋਸਿੰਥੈਸਿਸ ਇੱਕ ਜੀਵ ਵਿਗਿਆਨਕ ਪ੍ਰਕਿਰਿਆ ਹੈ ਜਿਸ ਵਿੱਚ ਖਰੀ, ਅਲਜੀ ਵ ਅੰਨੇਕ ਬੈਕਟੀਰੀਆ ਰੋਸ਼ਨੀ ਦੀ ਉਰਜਾ ਨੂੰ ਰਸਾਇਨੀਕ ਉਦਯੋਗ ਰੂਪ ਵਿੱਚ ਘੜਨਾ ਕਰਦਾ ਹੈ। ਇਹ ਪ੍ਰਕਿਰਿਆ ਕਲੋਰੋਫ਼ਿਲ ਯਉਗ ਕਲੋਰੋਪਲਾਸਟ ਅੰਦਰ ਹੋਣ ਹੁੰਦਾ ਹੈ."
+      medium: "ਸਰਦੀ ਦੇ ਵਿਚਕਾਰ ਮੈਂ ਖੁਸ਼ੀ ਦਾ ਅਦਮਤ ਗਰਮੀਆ ਮਹਿਸੂਸ ਕੀਤਾ। ਅਤੇ ਇਸ ਨਾਲ ਮੇਰਾ ਦਿਲ ਖ਼ੁਸ਼ ਹੁੰਦਾ ਹੈ। ਇਹ ਦਿਖਾਉਂਦਾ ਹੈ ਕਿ ਦੁਨੀਆ ਜਿੰਨੀ ਵੀ ਮੇਰੀ ਉਪਰ ਧ੍ਕੇਲਣ ਕਈ ਮੇਰੇ ਅੰਦਰ ਕੁਝ ਮਜੂਤੀਸ਼ਾਲ ਮੁਜੂਦ ਹੈ।",
+      long: "ਤਕਨੀਕ ਨੇ ਸਾਡੇ ਜੀਵਨ ਕੰਮ ਅਤੇ ਸੰਚਾਰ ਦੇ ਢੰਗ ਨੂੰ ਬੁਨਿਆਦੀ ਤੌਰ 'ਤੇ ਬਦਲ ਦਿਤਾ ਹੈ। ਸਮਾਰਟਫੋਨ ਤੋਂ ਸੈਟੇਲਾਈਟ ਤੱਕ ਸਾਡਾ ਸੰਸਾਰ ਹੁਣ ਪਹਿਲਾਂ ਕਦੇ ਵੀ ਨਹੀਂ ਜੁੜਿਆ ਹੈ। ਡਿਜ਼ੀਟਲ ਪਲੇਟਫਾਰਮ ਵਿਅਕਤੀਆਂ ਅਤੇ ਕਾਰੋਬਾਰ ਨੂੰ ਤੀਜ਼ੀ ਨਾਲ ਨਵੱਛਣ ਦੀ ਸਮਰਥਕ ਬਣਾਉਦਾ ਹੈ।",
+      thicc: "ਫੋਟੋਸਿੰਥੈਸਿਸ ਇੱਕ ਜੀਵ ਵਿਗਿਆਨਕ ਪ੍ਰਕਿਰਿਆ ਹੈ ਜਿਸ ਵਿੱਚ ਖਰੀ ਅਲਜੀ ਵ ਅੰਨੇਕ ਬੈਕਟੀਰੀਆ ਰੋਸ਼ਨੀ ਦੀ ਉਰਜਾ ਨੂੰ ਰਸਾਇਨੀਕ ਉਦਯੋਗ ਰੂਪ ਵਿੱਚ ਘੜਨਾ ਕਰਦਾ ਹੈ। ਇਹ ਪ੍ਰਕਿਰਿਆ ਕਲੋਰੋਫ਼ਿਲ ਯਉਗ ਕਲੋਰੋਪਲਾਸਟ ਅੰਦਰ ਹੋਣ ਹੁੰਦਾ ਹੈ."
     },
     odia: {
       short: "ତୀବ୍ର ବାଦାମୀ ଶିଆଳ ଆଳସା କୁକୁର ଉପରେ ଚାଳୁଛି। ଟାଇପିଂ ଏକ କୌଶଳ ଯାହା ପ୍ରାକଟିସ ସହିତ ଉନ୍ନତ ହୁଏ।",
-      medium: "ଶୀତ ସମୟରେ, ମୁଁ ମୋ ମନ ଭିତରେ ଜୟରହିତ ଗରମି ଖୋଜିଲି। ଏବଂ ଏହା ମତେ ଖୁସି କରେ। ଏହା ପ୍ରମାଣ করে ଯେ, ବିଶ୍ୱ କେତେ ଭଳି ଭାବରେ ମୋ ଉପରେ ଧକ୍କା ମାରି, ମୋର ଭିତରେ କିଛି ଦୃଢ଼ ଅଛି।",
-      long: "ପ୍ରଯୁକ୍ତିବିଦ୍ୟା ଆମର ଜୀବନ, କାମ, ଏବଂ ଯୋଗାଯୋଗ ପ୍ରଣାଳୀକୁ ମୌଳିକ ଭାବେ ପରିବର୍ତ୍ତିତ କରିଛି। ସ୍ମାର୍ଟଫୋନ ରୁ ଉପଗ୍ରହ ପର୍ଯ୍ୟନ୍ତ, ଆମ୍ଭ ଦୁନିଆ ବର୍ତ୍ତମାନ ପୂର୍ବରୁ କେବେଭୁଳି ଏତେ ଜଡିତ ହୋଇ ନାହିଁ। ଡିଜିଟାଲ ପ୍ଲାଟଫର୍ମ ବ୍ୟକ୍ତିଗତ ଏବଂ ବ୍ୟବସାୟ ଉଦ୍ଭାବନକୁ ଆରମ୍ଭ କରିବାରେ ସକ୍ଷମ କରେ।",
-      thicc: "ଫୋଟୋସିନ୍ଥେସିସ ଜୀବ ଶାସ୍ତ୍ର ବିଦ୍ୟାମଧ୍ୟମ ଯାହାରେ ଉଦ୍ଭିଦ, ଶୈବାଳ, ଏବଂ କିଛି ଜୀବାଣୁ ଆଲୋକ ଶକ୍ତିକୁ ରସାୟନିକ ଶକ୍ତିରେ ରୂପାନ୍ତର ହୁଏ। ଏହି ପ୍ରକ୍ରିୟା କ୍ଲୋରୋଫିଲ୍ ବ୍ୟବହାର କରି କ୍ଲୋରୋପ୍ଲାଷ୍ଟରେ ଘଟେ।"
+      medium: "ଶୀତ ସମୟରେ ମୁଁ ମୋ ମନ ଭିତରେ ଜୟରହିତ ଗରମି ଖୋଜିଲି। ଏବଂ ଏହା ମତେ ଖୁସି କରେ। ଏହା ପ୍ରମାଣ করে ଯେ ବିଶ୍ୱ କେତେ ଭଳି ଭାବରେ ମୋ ଉପରେ ଧକ୍କା ମାରି ମୋର ଭିତରେ କିଛି ଦୃଢ଼ ଅଛି।",
+      long: "ପ୍ରଯୁକ୍ତିବିଦ୍ୟା ଆମର ଜୀବନ କାମ ଏବଂ ଯୋଗାଯୋଗ ପ୍ରଣାଳୀକୁ ମୌଳିକ ଭାବେ ପରିବର୍ତ୍ତିତ କରିଛି। ସ୍ମାର୍ଟଫୋନ ରୁ ଉପଗ୍ରହ ପର୍ଯ୍ୟନ୍ତ ଆମ୍ଭ ଦୁନିଆ ବର୍ତ୍ତମାନ ପୂର୍ବରୁ କେବେଭୁଳି ଏତେ ଜଡିତ ହୋଇ ନାହିଁ। ଡିଜିଟାଲ ପ୍ଲାଟଫର୍ମ ବ୍ୟକ୍ତିଗତ ଏବଂ ବ୍ୟବସାୟ ଉଦ୍ଭାବନକୁ ଆରମ୍ଭ କରିବାରେ ସକ୍ଷମ କରେ।",
+      thicc: "ଫୋଟୋସିନ୍ଥେସିସ ଜୀବ ଶାସ୍ତ୍ର ବିଦ୍ୟାମଧ୍ୟମ ଯାହାରେ ଉଦ୍ଭିଦ ଶୈବାଳ ଏବଂ କିଛି ଜୀବାଣୁ ଆଲୋକ ଶକ୍ତିକୁ ରସାୟନିକ ଶକ୍ତିରେ ରୂପାନ୍ତର ହୁଏ। ଏହି ପ୍ରକ୍ରିୟା କ୍ଲୋରୋଫିଲ୍ ବ୍ୟବହାର କରି କ୍ଲୋରୋପ୍ଲାଷ୍ଟରେ ଘଟେ।"
     },
     assamese: {
       short: "তেজ মুক্‌লি সিয়ালি অলস কুকুৰৰ ওপৰত জঁপ মাৰে। টাইপিং এটা দক্ষতা যি অনুশীলনেৰে উন্নত হয়।",
-      medium: "শীতকালৰ মাজত মই মোৰ ভিতৰত এক অবিনশ্বৰ গ্ৰীষ্ম উলিয়ালোঁ। আৰু এইয়া মোক সুখী কৰে। কাৰণ এইয়া দেখুৱায় যে পৃথিৱী জিমানেই শক্তিশালীভাৱে মোক ঠেলা নাকৰে, মোৰ ভিতৰত কিবা শক্তি আছে।",
-      long: "প্ৰযুক্তিয়ে আমাৰ জীৱন, কাম আৰু যোগাযোগৰ ধৰণ সম্পূৰ্ণ ৰূপে সলনি কৰিছে। স্মাৰ্টফোনৰ পৰা উপগ্ৰহলৈ, আমাৰ পৃথিৱী এতিয়া পৰস্পৰত সংযুক্ত। ডিজিটেল প্লাটফৰ্মবোৰে ব্যক্তি আৰু ব্যৱসায়সমূহক সোনকালে সৃষ্টিশীল কৰিলে সহায় কৰে।",
-      thicc: "ফ'ট'চিন্থেছিছ এটা জীৱ বৈজ্ঞানিক প্ৰক্ৰিয়া য'ত গছ-গছনি, শৈৱাল আৰু কিছুমান বেক্টেৰিয়াই পোহৰ শক্তি ৰাসায়নিক শক্তি ৰূপে ৰূপান্তৰিত কৰে। এই প্ৰক্ৰিয়াটো ক্ল'ৰ'ফিল ব্যবহাৰ কৰি ক্ল'ৰ'প্লাষ্টত ঘটে।"
+      medium: "শীতকালৰ মাজত মই মোৰ ভিতৰত এক অবিনশ্বৰ গ্ৰীষ্ম উলিয়ালোঁ। আৰু এইয়া মোক সুখী কৰে। কাৰণ এইয়া দেখুৱায় যে পৃথিৱী জিমানেই শক্তিশালীভাৱে মোক ঠেলা নাকৰে মোৰ ভিতৰত কিবা শক্তি আছে।",
+      long: "প্ৰযুক্তিয়ে আমাৰ জীৱন কাম আৰু যোগাযোগৰ ধৰণ সম্পূৰ্ণ ৰূপে সলনি কৰিছে। স্মাৰ্টফোনৰ পৰা উপগ্ৰহলৈ আমাৰ পৃথিৱী এতিয়া পৰস্পৰত সংযুক্ত। ডিজিটেল প্লাটফৰ্মবোৰে ব্যক্তি আৰু ব্যৱসায়সমূহক সোনকালে সৃষ্টিশীল কৰিলে সহায় কৰে।",
+      thicc: "ফ'ট'চিন্থেছিছ এটা জীৱ বৈজ্ঞানিক প্ৰক্ৰিয়া য'ত গছ-গছনি শৈৱাল আৰু কিছুমান বেক্টেৰিয়াই পোহৰ শক্তি ৰাসায়নিক শক্তি ৰূপে ৰূপান্তৰিত কৰে। এই প্ৰক্ৰিয়াটো ক্ল'ৰ'ফিল ব্যবহাৰ কৰি ক্ল'ৰ'প্লাষ্টত ঘটে।"
     },
     maithili: {
       short: "तुरंत भूरे रंग के सियार अलसी कुकुर के छलांग लगबैत अछि। टाइपिंग एक कौशल अछि जे अभ्यास सं सुध्रैत अछि।",
-      medium: "जाड़क मौसमक मध्यमेँ, हम अपन भीतर अनतिक्रमणीय ग्रीष्म देखलौं। आ ई हमरा खुशी दैत अछि। कारण ई देखबैत अछि जे संसार जतबे जोर सँ हमरा जोर करय, हमरा भीतर किछु मजबूत अछि।",
-      long: "प्रविधिकेँ हमरा जीवन, कार्य आ संचारक रूप बहुते बदलि देने अछि। स्मार्टफोन सँ सेटेलाइट तक, हमरा संसार अभिए सम्मिलित अछि। डिजिटल प्लेटफार्म आपसी आ व्यवसायिक सभ केँ त्वरित नव सृजनका लागि सक्षम करैत अछि।",
-      thicc: "फोटोसिंथेसिस एक जैविक प्रक्रिया अछि जइमेँ पौधा, अल्गी आ किछु ब्याक्टेरिया प्रकश ऊर्जा केँ रासायनिक ऊर्जा मे परिवर्तित करैत अछि। ई प्रक्रिया क्लोरोफिलकेँ उपयोग करैत अछि जे क्लोरोप्लास्टमेँ घटैत अछि।"
+      medium: "जाड़क मौसमक मध्यमेँ हम अपन भीतर अनतिक्रमणीय ग्रीष्म देखलौं। आ ई हमरा खुशी दैत अछि। कारण ई देखबैत अछि जे संसार जतबे जोर सँ हमरा जोर करय हमरा भीतर किछु मजबूत अछि।",
+      long: "प्रविधिकेँ हमरा जीवन कार्य आ संचारक रूप बहुते बदलि देने अछि। स्मार्टफोन सँ सेटेलाइट तक हमरा संसार अभिए सम्मिलित अछि। डिजिटल प्लेटफार्म आपसी आ व्यवसायिक सभ केँ त्वरित नव सृजनका लागि सक्षम करैत अछि।",
+      thicc: "फोटोसिंथेसिस एक जैविक प्रक्रिया अछि जइमेँ पौधा अल्गी आ किछु ब्याक्टेरिया प्रकश ऊर्जा केँ रासायनिक ऊर्जा मे परिवर्तित करैत अछि। ई प्रक्रिया क्लोरोफिलकेँ उपयोग करैत अछि जे क्लोरोप्लास्टमेँ घटैत अछि।"
     },
     santali: {
       short: "Bagaya khoya hato rako sitma dhon geda lagod. Typing awe binsiye ta bik nemag kom thak chi.",
-      medium: "Sai din majani, len hemeng hepati geda pithi kaklo. Awe len cumbi kupara. Kipor hempa resok khosa re len golwar lamatar, hemeng onor pandi kinor geda chiri.",
-      long: "Tajan din atikchi daehela, he melgi thiya sina khon birat gelog sir. Smartphones ba kalthangang, hemeng sata balga koden bar jariena. Digital platform hiri awe birwa mah geda kam lasambe awe dumai raw samon cho.",
+      medium: "Sai din majani len hemeng hepati geda pithi kaklo. Awe len cumbi kupara. Kipor hempa resok khosa re len golwar lamatar hemeng onor pandi kinor geda chiri.",
+      long: "Tajan din atikchi daehela he melgi thiya sina khon birat gelog sir. Smartphones ba kalthangang hemeng sata balga koden bar jariena. Digital platform hiri awe birwa mah geda kam lasambe awe dumai raw samon cho.",
       thicc: "Photosynthesis awe durumbat chi hemeng mering aor agi go bacchar langowa. Agi awe sa depa chi chlorophyll useba chi chloroplast la. Ul hango chi harel tanser awe palba awe ghaya aseka chi ziemma."
     },
     nepali: {
       short: "चाँडो प्रयास गर्ने भालु आलसी कुकुरमा माथि उफ्रिन्छ। टाइपिंग एउटा सीप हो जसले अभ्यासबाट सुधार गर्दछ।",
-      medium: "जाडोको बीचमा, मैले मेरा भित्र एक अपरिहार्य गर्मी फेला पारे। र यसले मलाई खुशी बनाउँछ। किनकी यो देखाउँछ कि संसार जति ढिलो रुपमा मलाई धकेल्छ, मेरो भित्र केही शक्ति छ।",
-      long: "प्रविधिले हाम्रो जीवन, काम र संवादको तरिकालाई मौलिक रुपमा परिवर्तन गरेको छ। स्मार्टफोनदेखि उपग्रहसम्म, हाम्रो संसार अब कहिल्यो कनेक्टेड छ। डिजिटल प्लेटफर्महरूले व्यक्तिहरूलाई र व्यवसायहरूलाई नयाँ द्रुत गतिमा सिर्जना गर्न सक्षम बनाउँछ।",
-      thicc: "फोटोसिन्थेसिस एक जैविक प्रक्रिया हो जसमा बिरुवाहरू, शैवाल, र केहि ब्याक्टेरिया प्रकाश ऊर्जा रासायनिक ऊर्जा ग्लुकोजमा परिवर्तित गर्दछ। यो प्रक्रिया क्लोरोफिलको प्रयोग गरेर क्लोरोप्लास्टको भित्र हुन्छ।"
+      medium: "जाडोको बीचमा मैले मेरा भित्र एक अपरिहार्य गर्मी फेला पारे। र यसले मलाई खुशी बनाउँछ। किनकी यो देखाउँछ कि संसार जति ढिलो रुपमा मलाई धकेल्छ मेरो भित्र केही शक्ति छ।",
+      long: "प्रविधिले हाम्रो जीवन काम र संवादको तरिकालाई मौलिक रुपमा परिवर्तन गरेको छ। स्मार्टफोनदेखि उपग्रहसम्म हाम्रो संसार अब कहिल्यो कनेक्टेड छ। डिजिटल प्लेटफर्महरूले व्यक्तिहरूलाई र व्यवसायहरूलाई नयाँ द्रुत गतिमा सिर्जना गर्न सक्षम बनाउँछ।",
+      thicc: "फोटोसिन्थेसिस एक जैविक प्रक्रिया हो जसमा बिरुवाहरू शैवाल र केहि ब्याक्टेरिया प्रकाश ऊर्जा रासायनिक ऊर्जा ग्लुकोजमा परिवर्तित गर्दछ। यो प्रक्रिया क्लोरोफिलको प्रयोग गरेर क्लोरोप्लास्टको भित्र हुन्छ।"
     },
     sinhala: {
       short: "Vegavana kalu wušṭara hama naya kevara duppeta kadinava. Typing kiyanne abiasaṭa viśēśa tirṇyaak.",
-      medium: "Himatama sadde, mata lo venasak hemada gai. Eka mata satutak denava. Lokaya mata kisima thargena meselā yana venaṭa, magē sunukama ātma viśēśa tanna thibena aya.",
-      long: "Tathvakneka uganveya meyen abhisheka vannuṭa oʻvī. Seval do parakma karaṇnuṭa ledā ātma grahana vev hasurak kohoma, apa nām ḍanavā vā ekatuvī.",
-      thicc: "Photosynthesis yana wa ātma anušaṅga bī keṭuna vē. Eketin pīnī kiriema modaya oxasu, rinasaṅgahirik aghaṣaṭa. Ekepradeśa apāṇa prakāraṇkaraṇa voṭa hāraṇya deṭeḷa, colopheye varṇa. Ekevānanya calvanṭa vū, hāsilopāna tisuhaṣakha."
+      medium: "Himatama sadde mata lo venasak hemada gai. Eka mata satutak denava. Lokaya mata kisima thargena meselā yana venaṭa magē sunukama ātma viśēśa tanna thibena aya.",
+      long: "Tathvakneka uganveya meyen abhisheka vannuṭa oʻvī. Seval do parakma karaṇnuṭa ledā ātma grahana vev hasurak kohoma apa nām ḍanavā vā ekatuvī.",
+      thicc: "Photosynthesis yana wa ātma anušaṅga bī keṭuna vē. Eketin pīnī kiriema modaya oxasu rinasaṅgahirik aghaṣaṭa. Ekepradeśa apāṇa prakāraṇkaraṇa voṭa hāraṇya deṭeḷa colopheye varṇa. Ekevānanya calvanṭa vū hāsilopāna tisuhaṣakha."
     },
     spanish: {
       short: "El rápido zorro marrón salta sobre el perro perezoso. Escribir es una habilidad que mejora con la práctica.",
-      medium: "En medio del invierno, encontré un verano invencible dentro de mí. Y eso me hace feliz. Porque dice que no importa cuán fuerte me empuje el mundo, dentro de mí hay algo más fuerte.",
-      long: "La tecnología ha transformado fundamentalmente la forma en que vivimos, trabajamos y nos comunicamos. Desde los teléfonos inteligentes hasta los satélites, nuestro mundo está más conectado que nunca. Las plataformas digitales permiten a las personas y empresas innovar más rápido.",
-      thicc: "La fotosíntesis es el proceso biológico mediante el cual las plantas, algas y ciertas bacterias convierten la energía luminosa en energía química almacenada en moléculas de glucosa. Este proceso ocurre en los cloroplastos utilizando clorofila. El dióxido de carbono y el agua se convierten en azúcares y oxígeno."
+      medium: "En medio del invierno encontré un verano invencible dentro de mí. Y eso me hace feliz. Porque dice que no importa cuán fuerte me empuje el mundo dentro de mí hay algo más fuerte.",
+      long: "La tecnología ha transformado fundamentalmente la forma en que vivimos trabajamos y nos comunicamos. Desde los teléfonos inteligentes hasta los satélites nuestro mundo está más conectado que nunca. Las plataformas digitales permiten a las personas y empresas innovar más rápido.",
+      thicc: "La fotosíntesis es el proceso biológico mediante el cual las plantas algas y ciertas bacterias convierten la energía luminosa en energía química almacenada en moléculas de glucosa. Este proceso ocurre en los cloroplastos utilizando clorofila. El dióxido de carbono y el agua se convierten en azúcares y oxígeno."
     },
     french: {
       short: "Le rapide renard brun saute par-dessus le chien paresseux. Taper est une compétence qui s'améliore avec la pratique.",
-      medium: "Au milieu de l'hiver, j'ai découvert en moi un été invincible. Et cela me rend heureux. Car cela dit que peu importe la force avec laquelle le monde me pousse, il y a quelque chose de plus fort en moi.",
-      long: "La technologie a fondamentalement transformé notre façon de vivre, de travailler et de communiquer. Des smartphones aux satellites, notre monde est connecté comme jamais auparavant. Les plateformes numériques permettent aux individus et aux entreprises d'innover plus rapidement.",
-      thicc: "La photosynthèse est le processus biologique par lequel les plantes, les algues et certaines bactéries convertissent l'énergie lumineuse en énergie chimique stockée dans les molécules de glucose. Ce processus se déroule dans les chloroplastes à l'aide de chlorophylle. Le dioxyde de carbone et l'eau se transforment en sucres et en oxygène."
+      medium: "Au milieu de l'hiver j'ai découvert en moi un été invincible. Et cela me rend heureux. Car cela dit que peu importe la force avec laquelle le monde me pousse il y a quelque chose de plus fort en moi.",
+      long: "La technologie a fondamentalement transformé notre façon de vivre de travailler et de communiquer. Des smartphones aux satellites notre monde est connecté comme jamais auparavant. Les plateformes numériques permettent aux individus et aux entreprises d'innover plus rapidement.",
+      thicc: "La photosynthèse est le processus biologique par lequel les plantes les algues et certaines bactéries convertissent l'énergie lumineuse en énergie chimique stockée dans les molécules de glucose. Ce processus se déroule dans les chloroplastes à l'aide de chlorophylle. Le dioxyde de carbone et l'eau se transforment en sucres et en oxygène."
     },
     german: {
-      short: "Der schnelle braune Fuchs springt über den faulen Hund. Tippen ist eine Fähigkeit, die sich mit Übung verbessert.",
-      medium: "Mitten im Winter fand ich in mir einen unbesiegbaren Sommer. Und das macht mich glücklich. Denn es sagt, dass egal wie stark die Welt gegen mich drückt, es gibt etwas Stärkeres in mir.",
-      long: "Die Technologie hat unsere Lebensweise, Arbeit und Kommunikation grundlegend verändert. Vom Smartphone bis zum Satelliten ist unsere Welt stärker vernetzt als je zuvor. Digitale Plattformen ermöglichen es Einzelpersonen und Unternehmen, schneller zu innovieren.",
-      thicc: "Die Photosynthese ist der biologische Prozess, bei dem Pflanzen, Algen und einige Bakterien Lichtenergie in chemische Energie umwandeln, die in Glukosemolekülen gespeichert ist. Dieser Prozess findet in den Chloroplasten unter Verwendung von Chlorophyll statt. Kohlendioxid und Wasser werden in Zucker und Sauerstoff umgewandelt."
+      short: "Der schnelle braune Fuchs springt über den faulen Hund. Tippen ist eine Fähigkeit die sich mit Übung verbessert.",
+      medium: "Mitten im Winter fand ich in mir einen unbesiegbaren Sommer. Und das macht mich glücklich. Denn es sagt dass egal wie stark die Welt gegen mich drückt es gibt etwas Stärkeres in mir.",
+      long: "Die Technologie hat unsere Lebensweise Arbeit und Kommunikation grundlegend verändert. Vom Smartphone bis zum Satelliten ist unsere Welt stärker vernetzt als je zuvor. Digitale Plattformen ermöglichen es Einzelpersonen und Unternehmen schneller zu innovieren.",
+      thicc: "Die Photosynthese ist der biologische Prozess bei dem Pflanzen Algen und einige Bakterien Lichtenergie in chemische Energie umwandeln die in Glukosemolekülen gespeichert ist. Dieser Prozess findet in den Chloroplasten unter Verwendung von Chlorophyll statt. Kohlendioxid und Wasser werden in Zucker und Sauerstoff umgewandelt."
     },
     chinese: {
       short: "快速的棕色狐狸跳过懒狗。打字是一种通过练习提高的技能。",
-      medium: "在冬季的中间，我发现内心有一个不可征服的夏天。这让我快乐。因为这意味着无论世界多么强烈地推我，我内心都有更强的东西。",
-      long: "技术从根本上改变了我们的生活、工作和交流方式。从智能手机到卫星，我们的世界从未如此互联。数字平台使个人和企业能够更快速地创新。",
-      thicc: "光合作用是植物、藻类和某些细菌通过叶绿体内的叶绿素将光能转化为储存在葡萄糖分子中的化学能的生物过程。二氧化碳和水被转化为糖和氧气。"
+      medium: "在冬季的中间我发现内心有一个不可征服的夏天。这让我快乐。因为这意味着无论世界多么强烈地推我我内心都有更强的东西。",
+      long: "技术从根本上改变了我们的生活工作和交流方式。从智能手机到卫星我们的世界从未如此互联。数字平台使个人和企业能够更快速地创新。",
+      thicc: "光合作用是植物藻类和某些细菌通过叶绿体内的叶绿素将光能转化为储存在葡萄糖分子中的化学能的生物过程。二氧化碳和水被转化为糖和氧气。"
     },
     japanese: {
       short: "素早い茶色の狐は怠け者の犬を飛び越えます。タイピングは練習で上達するスキルです。",
-      medium: "冬の真ん中で、私は自分の中に無敵の夏を見つけました。それが私を幸せにします。なぜなら、世界がどんなに強く押しつけても、私の中にはもっと強いものがあるからです。",
-      long: "技術は私たちの生活、仕事、コミュニケーションの方法を根本的に変えました。スマートフォンから人工衛星まで、私たちの世界はこれまでになくつながっています。デジタルプラットフォームは、個人や企業がより迅速に革新することを可能にします。",
-      thicc: "光合成は、植物、藻類、および特定の細菌が光エネルギーをクロロフィルを使用してグルコース分子に蓄えられた化学エネルギーに変換する生物学的プロセスです。このプロセスは葉緑体で行われます。"
+      medium: "冬の真ん中で私は自分の中に無敵の夏を見つけました。それが私を幸せにします。なぜなら世界がどんなに強く押しつけても私の中にはもっと強いものがあるからです。",
+      long: "技術は私たちの生活仕事コミュニケーションの方法を根本的に変えました。スマートフォンから人工衛星まで私たちの世界はこれまでになくつながっています。デジタルプラットフォームは個人や企業がより迅速に革新することを可能にします。",
+      thicc: "光合成は植物藻類および特定の細菌が光エネルギーをクロロフィルを使用してグルコース分子に蓄えられた化学エネルギーに変換する生物学的プロセスです。このプロセスは葉緑体で行われます。"
     },
     russian: {
-      short: "Быстрая коричневая лисица перепрыгивает через ленивую собаку. Набор текста — это навык, который улучшается с практикой.",
-      medium: "В середине зимы я обнаружил в себе непобедимое лето. И это делает меня счастливым. Потому что это показывает, что, несмотря на то, как сильно мир меня давит, в меня есть что-то более сильное.",
-      long: "Технологии кардинально изменили то, как мы живем, работаем и общаемся. От смартфонов до спутников, наш мир связан, как никогда прежде. Цифровые платформы позволяют людям и бизнесу быстрее внедрять инновации.",
-      thicc: "Фотосинтез — это биологический процесс, в ходе которого растения, водоросли и некоторые бактерии превращают световую энергию в химическую энергию, хранящуюся в молекулах глюкозы. Этот процесс происходит в хлоропластах с использованием хлорофилла."
+      short: "Быстрая коричневая лисица перепрыгивает через ленивую собаку. Набор текста это навык который улучшается с практикой.",
+      medium: "В середине зимы я обнаружил в себе непобедимое лето. И это делает меня счастливым. Потому что это показывает что несмотря на то как сильно мир меня давит в меня есть что-то более сильное.",
+      long: "Технологии кардинально изменили то как мы живем работаем и общаемся. От смартфонов до спутников наш мир связан как никогда прежде. Цифровые платформы позволяют людям и бизнесу быстрее внедрять инновации.",
+      thicc: "Фотосинтез это биологический процесс в ходе которого растения водоросли и некоторые бактерии превращают световую энергию в химическую энергию хранящуюся в молекулах глюкозы. Этот процесс происходит в хлоропластах с использованием хлорофилла."
     },
     arabic: {
       short: "الثعلب البني السريع يقفز فوق الكلب الكسول. الكتابة مهارة تتحسن مع الممارسة.",
-      medium: "في وسط الشتاء، وجدت في داخلي صيفًا لا يُقهر. وهذا يجعلني سعيدًا. لأنه بغض النظر عن مدى قوة دفع العالم لي، هناك شيء أقوى بداخلي.",
-      long: "لقد غيرت التكنولوجيا جذريًا الطريقة التي نعيش بها ونعمل ونتواصل. من الهواتف الذكية إلى الأقمار الصناعية، أصبح عالمنا مرتبطًا بشكل غير مسبوق. تُمكّن المنصات الرقمية الأفراد والشركات من الابتكار بشكل أسرع.",
+      medium: "في وسط الشتاء وجدت في داخلي صيفًا لا يُقهر. وهذا يجعلني سعيدًا. لأنه بغض النظر عن مدى قوة دفع العالم لي هناك شيء أقوى بداخلي.",
+      long: "لقد غيرت التكنولوجيا جذريًا الطريقة التي نعيش بها ونعمل ونتواصل. من الهواتف الذكية إلى الأقمار الصناعية أصبح عالمنا مرتبطًا بشكل غير مسبوق. تُمكّن المنصات الرقمية الأفراد والشركات من الابتكار بشكل أسرع.",
       thicc: "التمثيل الضوئي هو العملية البيولوجية التي تقوم من خلالها النباتات والطحالب وبعض البكتيريا بتحويل الطاقة الضوئية إلى طاقة كيميائية مخزنة في جزيئات الجلوكوز. تحدث هذه العملية في البلاستيدات الخضراء باستخدام الكلوروفيل."
     },
     portuguese: {
       short: "A rápida raposa marrom pula sobre o cachorro preguiçoso. Digitar é uma habilidade que melhora com a prática.",
-      medium: "No meio do inverno, encontrei dentro de mim um verão invencível. E isso me faz feliz. Pois mostra que, não importa o quanto o mundo me empurre, há algo mais forte dentro de mim.",
-      long: "A tecnologia transformou fundamentalmente a maneira como vivemos, trabalhamos e nos comunicamos. De smartphones a satélites, nosso mundo está mais conectado do que nunca. As plataformas digitais permitem que indivíduos e empresas inovem mais rapidamente.",
-      thicc: "A fotossíntese é o processo biológico pelo qual plantas, algas e algumas bactérias convertem a energia luminosa em energia química armazenada em moléculas de glicose. Este processo ocorre nos cloroplastos usando clorofila."
+      medium: "No meio do inverno encontrei dentro de mim um verão invencível. E isso me faz feliz. Pois mostra que não importa o quanto o mundo me empurre há algo mais forte dentro de mim.",
+      long: "A tecnologia transformou fundamentalmente a maneira como vivemos trabalhamos e nos comunicamos. De smartphones a satélites nosso mundo está mais conectado do que nunca. As plataformas digitais permitem que indivíduos e empresas inovem mais rapidamente.",
+      thicc: "A fotossíntese é o processo biológico pelo qual plantas algas e algumas bactérias convertem a energia luminosa em energia química armazenada em moléculas de glicose. Este processo ocorre nos cloroplastos usando clorofila."
     },
     // ...other languages remain unchanged
   };
@@ -1157,14 +1159,29 @@ const Index = () => {
     // Only update currentText if not in custom mode
     if (currentMode !== 'custom') {
     const newText = generateNewText(currentMode, difficulty, language);
-    setCurrentText(newText);
+    // Trim and normalize spaces to prevent wrapping issues - remove trailing spaces from each line
+    const normalizedText = newText
+      .split('\n')
+      .map(line => line.trimEnd())
+      .join('\n')
+      .trim()
+      .replace(/\s+/g, ' ');
+    setCurrentText(normalizedText);
     }
     // Optionally reset userInput, errors, etc. here if desired
   }, [language, difficulty, currentMode]);
 
   // On initial load, set currentText to default
   useEffect(() => {
-    setCurrentText(sampleTextsByLanguageAndDifficulty[language]?.[difficulty] || "");
+    const text = sampleTextsByLanguageAndDifficulty[language]?.[difficulty] || "";
+    // Trim and normalize spaces to prevent wrapping issues - remove trailing spaces from each line
+    const normalizedText = text
+      .split('\n')
+      .map(line => line.trimEnd())
+      .join('\n')
+      .trim()
+      .replace(/\s+/g, ' ');
+    setCurrentText(normalizedText);
   }, []);
 
   // Timer logic
@@ -1692,7 +1709,7 @@ const Index = () => {
             layoutId="caret-char"
             transition={{ duration: 0.06, ease: 'easeOut' }}
           >
-            {char === ' ' ? '\u00A0' : char}
+            {char}
           </motion.span>
           <motion.span
             className="cursor-blink"
@@ -1837,6 +1854,10 @@ const Index = () => {
     setChartData([{ x: 0, y: 0, acc: 100 }]);
     setGodModeIndex(0);
     if (typingPauseTimeoutRef.current) clearTimeout(typingPauseTimeoutRef.current);
+    // Close duration dropdown if switching to a non-time mode
+    if (newMode !== 'time' && openSetting === 'duration') {
+      setOpenSetting(null);
+    }
     const newText = generateNewText(newMode, difficulty, language);
     setCurrentText(newText);
     setTimeLeft(newMode === 'time' ? timeLimit : 0);
@@ -2206,14 +2227,17 @@ const Index = () => {
                 </React.Fragment>
               );
             })}
-            {/* Duration and Difficulty controls remain untouched */}
+            {/* Duration and Difficulty controls */}
             <div className="flex flex-row items-center gap-1 ml-4">
+              {/* Duration - Only available for 'time' mode */}
+              {currentMode === 'time' ? (
+                <>
               <button
-                className={`px-2 py-1 text-base font-medium border-none bg-transparent outline-none whitespace-nowrap transition-colors duration-150 flex-shrink-0 ${openSetting === 'duration' ? 'text-cyan-400 underline underline-offset-4' : 'text-slate-400 hover:text-slate-200'}`}
-                onClick={() => {
-                  setOpenSetting(openSetting === 'duration' ? null : 'duration');
-                  setOpenCategory(null); // Close categories when opening Duration
-                }}
+                    className={`px-2 py-1 text-base font-medium border-none bg-transparent outline-none whitespace-nowrap transition-colors duration-150 flex-shrink-0 ${openSetting === 'duration' ? 'text-cyan-400 underline underline-offset-4' : 'text-slate-400 hover:text-slate-200'}`}
+                    onClick={() => {
+                      setOpenSetting(openSetting === 'duration' ? null : 'duration');
+                      setOpenCategory(null); // Close categories when opening Duration
+                    }}
                 style={{ minWidth: 48 }}
               >
                 Duration
@@ -2221,13 +2245,32 @@ const Index = () => {
               {openSetting === 'duration' && [15, 30, 60, 120].map(sec => (
                 <button
                   key={sec}
-                  className={`px-2 py-1 rounded-lg font-medium transition-all duration-150 flex-shrink-0 whitespace-nowrap ${timeLimit === Number(sec) ? 'bg-cyan-500 text-slate-900' : 'text-slate-300 hover:bg-slate-700'}`}
+                      className={`px-2 py-1 rounded-lg font-medium transition-all duration-150 flex-shrink-0 whitespace-nowrap ${timeLimit === Number(sec) ? 'bg-cyan-500 text-slate-900' : 'text-slate-300 hover:bg-slate-700'}`}
                   style={{ minWidth: 40 }}
                   onClick={() => { setTimeLimit(Number(sec)); resetTest(Number(sec)); setOpenSetting(null); }}
                 >
                   {sec + 's'}
                 </button>
               ))}
+                </>
+              ) : (
+                <div className="relative group">
+              <button
+                    className="px-2 py-1 text-base font-medium border-none bg-transparent outline-none whitespace-nowrap transition-colors duration-150 flex-shrink-0 text-slate-500 cursor-not-allowed opacity-50"
+                    style={{ minWidth: 48 }}
+                    disabled
+                    title={`Duration is only available for Timed mode. Current mode: ${currentMode === 'words' ? 'Words' : currentMode === 'quote' ? 'Quotes' : currentMode === 'zen' ? 'Zen' : currentMode === 'coding' ? 'Coding' : currentMode === 'custom' ? 'Custom' : currentMode === 'zenwriting' ? 'Zen Writing' : currentMode === 'god' ? 'God Mode' : currentMode === 'syntax' ? 'Syntax' : currentMode === 'essay' ? 'Essay' : currentMode === 'notimer' ? 'No Timer' : currentMode === 'softtheme' ? 'Soft Theme' : currentMode === 'hardwords' ? 'Hard Words' : currentMode === 'foreign' ? 'Foreign Language' : 'Other'}`}
+                  >
+                    Duration
+                  </button>
+                  <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-slate-800 text-slate-200 text-xs rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50 border border-slate-700">
+                    Duration only works with Timed mode
+                    <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1">
+                      <div className="border-4 border-transparent border-t-slate-800"></div>
+                    </div>
+                  </div>
+                </div>
+              )}
               <button
                 className={`px-2 py-1 text-base font-medium border-none bg-transparent outline-none whitespace-nowrap transition-colors duration-150 flex-shrink-0 ${openSetting === 'difficulty' ? 'text-cyan-400 underline underline-offset-4' : 'text-slate-400 hover:text-slate-200'}`}
                 onClick={() => {
@@ -2384,8 +2427,8 @@ const Index = () => {
                 fontSize: 'clamp(1.5rem, 4.5vw, 2.25rem)',
                 lineHeight: '1.8',
                 padding: '16px',
-                whiteSpace: 'pre-wrap',
-                wordBreak: 'break-word',
+                whiteSpace: 'normal',
+                wordBreak: 'normal',
                 overflowWrap: 'break-word',
               }}
               placeholder=""
