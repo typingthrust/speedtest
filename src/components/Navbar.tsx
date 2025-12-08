@@ -37,13 +37,16 @@ const Navbar: React.FC = () => {
           {/* Logo */}
           <Link 
             to="/" 
-            className="flex items-center focus:outline-none focus:ring-2 focus:ring-cyan-500 rounded-lg px-2 -ml-2"
+            onClick={() => navigate('/')}
+            className="logo-link flex items-center focus:outline-none focus:ring-0 rounded-lg px-2 -ml-2 no-underline"
             aria-label="Go to home page"
+            style={{ outline: 'none', boxShadow: 'none', WebkitTapHighlightColor: 'transparent' }}
           >
             <img
               src={logo}
               alt="TypingThrust Logo"
-              className="w-36 h-36 sm:w-40 sm:h-40 md:w-44 md:h-44 lg:w-48 lg:h-48 xl:w-52 xl:h-52 object-contain flex-shrink-0"
+              className="w-36 h-36 sm:w-40 sm:h-40 md:w-44 md:h-44 lg:w-48 lg:h-48 xl:w-52 xl:h-52 object-contain flex-shrink-0 select-none"
+              draggable="false"
             />
           </Link>
 
@@ -98,17 +101,15 @@ const Navbar: React.FC = () => {
 
           {/* Mobile Menu Button */}
           <div className="flex lg:hidden items-center gap-2">
-            {/* Mobile Gamification Toggle - Only show if enabled */}
-            {state.gamificationEnabled && (
-              <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-slate-800 border border-slate-700 mr-2">
-                <Award className="w-4 h-4 text-cyan-400" />
-                <Switch 
-                  checked={state.gamificationEnabled} 
-                  onCheckedChange={setGamificationEnabled}
-                  className="scale-75"
-                />
-              </div>
-            )}
+            {/* Mobile Gamification Toggle - Always visible */}
+            <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-slate-800 border border-slate-700 mr-2">
+              <Award className="w-4 h-4 text-cyan-400" />
+              <Switch 
+                checked={state.gamificationEnabled} 
+                onCheckedChange={setGamificationEnabled}
+                className="scale-75"
+              />
+            </div>
             
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}

@@ -128,11 +128,18 @@ function getTypingRank(avgWpm: number) {
 
 // Helper to filter history by duration and range
 function filterHistory(history: any[], duration: string, range: string) {
+  if (!history || history.length === 0) return [];
+  
   let filtered = [...history];
+  
   // Filter by duration (test length)
   if (duration !== 'all') {
-    filtered = filtered.filter(h => String(h.duration) === String(duration));
+    filtered = filtered.filter(h => {
+      const hDuration = h.duration || h.time || 0;
+      return String(hDuration) === String(duration);
+    });
   }
+  
   // Filter by range (date)
   if (range !== 'all') {
     const now = new Date();
@@ -141,10 +148,22 @@ function filterHistory(history: any[], duration: string, range: string) {
     if (range === 'week') cutoff = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
     if (range === 'month') cutoff = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
     if (range === '3months') cutoff = new Date(now.getFullYear(), now.getMonth() - 3, now.getDate());
+    
     if (cutoff) {
-      filtered = filtered.filter(h => h.timestamp && new Date(h.timestamp) >= cutoff);
+      filtered = filtered.filter(h => {
+        // Use timestamp or created_at as fallback
+        const dateStr = h.timestamp || h.created_at;
+        if (!dateStr) return false;
+        try {
+          const testDate = new Date(dateStr);
+          return testDate >= cutoff;
+        } catch (e) {
+          return false;
+        }
+      });
     }
   }
+  
   return filtered;
 }
 
@@ -171,28 +190,71 @@ export default function Profile() {
   const [resultsLoading, setResultsLoading] = useState(true);
 
   // Fetch all per-test results from Supabase on mount/user change
-  useEffect(() => {
-    async function fetchResults() {
-      if (!user || !user.id) return;
-      setResultsLoading(true);
-      const { data, error } = await supabase.from('test_results').select('*').eq('user_id', user.id).order('created_at', { ascending: true });
-      if (!error && data) {
+  const fetchResults = async () => {
+    if (!user || !user.id) {
+      setTestResults([]);
+      setResultsLoading(false);
+      return;
+    }
+    setResultsLoading(true);
+    try {
+      // Fetch with both created_at and timestamp fields
+      const { data, error } = await supabase
+        .from('test_results')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .order('timestamp', { ascending: false });
+      
+      if (error) {
+        console.error('Error fetching test results:', error);
+        setTestResults([]);
+      } else if (data && data.length > 0) {
         // Normalize snake_case to camelCase for consistency
         const normalizedData = data.map((result: any) => ({
           ...result,
-          keystrokeStats: result.keystroke_stats || result.keystrokeStats,
-          errorTypes: result.error_types || result.errorTypes,
-          wordCount: result.word_count || result.wordCount,
-          testType: result.test_type || result.testType || (result.keystroke_stats?.testType) || (result.keystrokeStats?.testType),
+          keystrokeStats: result.keystroke_stats || result.keystrokeStats || {},
+          errorTypes: result.error_types || result.errorTypes || {},
+          wordCount: result.word_count || result.wordCount || 0,
+          testType: result.test_type || result.testType || (result.keystroke_stats?.testType) || (result.keystrokeStats?.testType) || 'General',
+          // Ensure timestamp exists (use created_at as fallback)
+          timestamp: result.timestamp || result.created_at || new Date().toISOString(),
+          // Ensure duration exists
+          duration: result.duration || (result.time || 0),
+          // Ensure all required fields exist
+          wpm: result.wpm || 0,
+          accuracy: result.accuracy || 0,
+          errors: result.errors || 0,
+          time: result.time || 0,
         }));
+        console.log('Fetched test results:', normalizedData.length, normalizedData);
         setTestResults(normalizedData);
       } else {
+        console.log('No test results found');
         setTestResults([]);
       }
+    } catch (err) {
+      console.error('Exception fetching test results:', err);
+      setTestResults([]);
+    } finally {
       setResultsLoading(false);
     }
-    if (user && user.id) fetchResults();
-  }, [user && user.id]);
+  };
+
+  useEffect(() => {
+    fetchResults();
+  }, [user?.id]);
+
+  // Refresh data when page becomes visible (user returns from typing test)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden && user?.id) {
+        fetchResults();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [user?.id]);
 
   // Redirect to home if not authenticated, but only after loading is complete
   useEffect(() => {
@@ -202,7 +264,16 @@ export default function Profile() {
   }, [user, loading, navigate]);
 
   // Prevent profile data flash for non-logged-in users
-  if (loading) return null; // or a spinner if you prefer
+  if (loading || resultsLoading) {
+    return (
+      <div className="min-h-screen bg-slate-900 flex flex-col">
+        <Navbar />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-slate-400">Loading profile data...</div>
+        </div>
+      </div>
+    );
+  }
   if (!user) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-slate-900">
@@ -252,9 +323,11 @@ export default function Profile() {
   const totalTimeTyping = totalTime;
 
   // Chart data for WPM/accuracy over time (filtered)
-  const chartLabels = filteredHistory.map((h, i) => i + 1);
-  const wpmData = filteredHistory.map(h => h.wpm || 0);
-  const accData = filteredHistory.map(h => h.accuracy || 0);
+  // Use filteredHistory if available, otherwise use all history
+  const dataForCharts = filteredHistory.length > 0 ? filteredHistory : history;
+  const chartLabels = dataForCharts.map((h, i) => i + 1);
+  const wpmData = dataForCharts.map(h => Math.max(0, h.wpm || 0));
+  const accData = dataForCharts.map(h => Math.max(0, Math.min(100, h.accuracy || 0)));
   const chartData = {
     labels: chartLabels,
     datasets: [
@@ -283,7 +356,9 @@ export default function Profile() {
     ],
   };
   // Calculate max for Y axis with 10% headroom
-  const maxY = Math.max(100, Math.ceil(Math.max(...wpmData, ...accData) * 1.1));
+  const maxY = wpmData.length > 0 && accData.length > 0 
+    ? Math.max(100, Math.ceil(Math.max(...wpmData, ...accData) * 1.1))
+    : 100;
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
@@ -884,10 +959,12 @@ export default function Profile() {
                       <h2 className="text-xl font-bold text-slate-100 mb-2">Speed Trends</h2>
                       <div className="w-full h-72 bg-slate-700 rounded-xl border border-slate-600 flex items-center justify-center">
                         {/* Line chart: WPM & Accuracy over time (black/gray lines) */}
-                        {filteredHistory.length > 1 ? (
+                        {history.length === 0 ? (
+                          <span className="text-slate-400 text-sm">No tests completed yet. Complete some typing tests to see trends.</span>
+                        ) : dataForCharts.length > 1 ? (
                           <Line data={chartData} options={{...chartOptions, elements: { line: { borderColor: '#22d3ee' }, point: { backgroundColor: '#06b6d4' } }, plugins: { legend: { labels: { color: '#f1f5f9' } } }}} style={{ width: '100%', height: 260 }} />
                         ) : (
-                          <span className="text-slate-400 text-sm">Not enough data to show trends</span>
+                          <span className="text-slate-400 text-sm">Not enough data to show trends. Complete more tests.</span>
                         )}
                       </div>
                     </section>
@@ -896,7 +973,9 @@ export default function Profile() {
                     <section className="w-full flex flex-col gap-6">
                       <h2 className="text-xl font-bold text-slate-100 mb-2">Accuracy - Error Distribution by Key</h2>
                       <div className="w-full h-72 bg-slate-700 rounded-xl border border-slate-600 flex items-center justify-center">
-                        {filteredHistory.length === 0 ? (
+                        {history.length === 0 ? (
+                          <span className="text-slate-400 text-sm">No tests completed yet. Complete some typing tests to see analytics.</span>
+                        ) : filteredHistory.length === 0 ? (
                           <span className="text-slate-400 text-sm">No tests in selected range. Try changing the filter above.</span>
                         ) : errorCharLabels.length > 0 ? (
                           <Bar data={errorCharChartData} options={errorCharChartOptions} style={{ width: '100%', height: 260 }} />

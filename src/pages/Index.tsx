@@ -2397,25 +2397,25 @@ const Index = () => {
             />
           </div>
           {/* Stats Display with XP and Streak inline */}
-          <div className="flex justify-center gap-8 sm:gap-12 text-base w-full mx-auto flex-wrap">
-            <div className="text-center">
+          <div className="flex justify-center gap-6 sm:gap-10 md:gap-12 lg:gap-16 text-base w-full mx-auto flex-wrap px-4 mt-8 sm:mt-10 md:mt-12">
+            <div className="text-center px-2 sm:px-4">
               <div className="text-2xl font-mono font-bold text-cyan-400">{accuracy ?? 100}%</div>
-              <div className="text-sm text-slate-400">Accuracy</div>
+              <div className="text-sm text-slate-400 mt-1">Accuracy</div>
             </div>
-            <div className="text-center">
+            <div className="text-center px-2 sm:px-4">
               <div className="text-2xl font-mono font-bold text-red-400">{errors ?? 0}</div>
-              <div className="text-sm text-slate-400">Errors</div>
+              <div className="text-sm text-slate-400 mt-1">Errors</div>
             </div>
             {gamificationEnabled && gamification && (
-              <div className="text-center">
+              <div className="text-center px-2 sm:px-4">
                 <div className="text-2xl font-mono font-bold text-cyan-400">{gamification.streak ?? 0}</div>
-                <div className="text-sm text-slate-400">Streak</div>
+                <div className="text-sm text-slate-400 mt-1">Streak</div>
               </div>
             )}
             {gamificationEnabled && gamification && (
-              <div className="text-center">
+              <div className="text-center px-2 sm:px-4">
                 <div className="text-2xl font-mono font-bold text-cyan-400">{(gamification.xp ?? 0) % 100}</div>
-                <div className="text-sm text-slate-400 flex items-center justify-center gap-1">XP
+                <div className="text-sm text-slate-400 flex items-center justify-center gap-1 mt-1">XP
                   <div className="w-12 h-1 bg-slate-700 rounded-full overflow-hidden ml-2">
                     <motion.div
                       className="h-1 bg-cyan-400 rounded-full"

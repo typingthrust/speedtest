@@ -3,7 +3,6 @@ import { Dialog, DialogContent } from './ui/dialog';
 import PrivacyPolicy from '../pages/PrivacyPolicy';
 import TermsOfService from '../pages/TermsOfService';
 import Contact from '../pages/Contact';
-import { Link } from 'react-router-dom';
 
 const logo = '/logonew.png';
 
@@ -23,31 +22,34 @@ const Footer = () => {
 
   return (
     <footer className="w-full bg-slate-900 text-slate-300 mt-auto">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-          <div className="flex items-center">
-            <img src={logo} alt="TypingThrust" className="h-20 w-20 sm:h-24 sm:w-24 md:h-28 md:w-28 lg:h-32 lg:w-32 object-contain" />
-          </div>
-          <div className="flex items-center gap-6 text-sm">
-            <button
-              onClick={() => setOpen('privacy')}
-              className="text-slate-400 hover:text-slate-100 transition-colors duration-200 focus:outline-none"
-            >
-              Privacy Policy
-            </button>
-            <button
-              onClick={() => setOpen('terms')}
-              className="text-slate-400 hover:text-slate-100 transition-colors duration-200 focus:outline-none"
-            >
-              Terms
-            </button>
-            <button
-              onClick={() => setOpen('contact')}
-              className="text-slate-400 hover:text-slate-100 transition-colors duration-200 focus:outline-none"
-            >
-              Contact
-            </button>
-            <p className="text-slate-500">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center sm:items-center">
+          {/* Links and Copyright */}
+          <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-center sm:gap-6">
+            {/* Links */}
+            <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-sm">
+              <button
+                onClick={() => setOpen('privacy')}
+                className="text-slate-400 hover:text-slate-100 transition-colors duration-200 focus:outline-none whitespace-nowrap"
+              >
+                Privacy Policy
+              </button>
+              <button
+                onClick={() => setOpen('terms')}
+                className="text-slate-400 hover:text-slate-100 transition-colors duration-200 focus:outline-none whitespace-nowrap"
+              >
+                Terms
+              </button>
+              <button
+                onClick={() => setOpen('contact')}
+                className="text-slate-400 hover:text-slate-100 transition-colors duration-200 focus:outline-none whitespace-nowrap"
+              >
+                Contact
+              </button>
+            </div>
+            
+            {/* Copyright */}
+            <p className="text-slate-500 text-sm whitespace-nowrap">
               © {new Date().getFullYear()} TypingThrust
             </p>
           </div>
