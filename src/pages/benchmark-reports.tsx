@@ -12,7 +12,7 @@ export default function BenchmarkReports() {
         <meta property="og:description" content="Industry-leading typing speed and accuracy benchmarks for developers and coders in 2025 and beyond." />
         <meta property="og:type" content="article" />
         <meta property="og:url" content="https://yourdomain.com/benchmark-reports" />
-        <meta property="og:image" content="/public/logo.png" />
+        <meta property="og:image" content="/logo.png" />
         <link rel="canonical" href="https://yourdomain.com/benchmark-reports" />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
           '@context': 'https://schema.org',

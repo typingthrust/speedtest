@@ -19,7 +19,7 @@ export default function Blog() {
         <meta property="og:description" content="Tips, guides, and research to help developers and coders type faster, smarter, and healthier." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://yourdomain.com/blog" />
-        <meta property="og:image" content="/public/logo.png" />
+        <meta property="og:image" content="/logo.png" />
         <link rel="canonical" href="https://yourdomain.com/blog" />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
           '@context': 'https://schema.org',
@@ -33,7 +33,7 @@ export default function Blog() {
             'url': 'https://yourdomain.com',
             'logo': {
               '@type': 'ImageObject',
-              'url': '/public/logo.png'
+              'url': '/logo.png'
             }
           }
         }) }} />

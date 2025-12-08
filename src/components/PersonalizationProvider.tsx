@@ -78,11 +78,24 @@ export const PersonalizationProvider = ({ children }: { children: ReactNode }) =
           }));
         } else if (!error && !data) {
           // No row exists for this user, initialize
-          await supabase.from('user_stats').upsert({ user_id: user.id, stats: defaultStats });
-          setState(prev => ({ ...prev, stats: defaultStats }));
+          const { error: insertError } = await supabase.from('user_stats').upsert({ 
+            user_id: user.id, 
+            stats: defaultStats 
+          });
+          if (insertError) {
+            console.error('Error initializing user stats:', insertError);
+            console.error('Make sure you have run the database schema in Supabase SQL Editor');
+            // Don't crash, just use default state
+          } else {
+            setState(prev => ({ ...prev, stats: defaultStats }));
+          }
         } else {
           // For any other error, do NOT overwrite stats, just log or handle gracefully
           console.error('Failed to load user stats:', error);
+          if (error?.code === 'PGRST116' || error?.message?.includes('relation') || error?.message?.includes('does not exist')) {
+            console.error('⚠️ Database tables not found! Please run the SQL schema in Supabase SQL Editor.');
+            console.error('See supabase-schema.sql file for the complete schema.');
+          }
         }
       } else {
         // Guest: load from sessionStorage
@@ -101,7 +114,13 @@ export const PersonalizationProvider = ({ children }: { children: ReactNode }) =
   // Save stats to Supabase or sessionStorage on update
   const persistStats = async (stats: TypingStats) => {
     if (user && user.id && user.id !== 'guest') {
-      await supabase.from('user_stats').upsert({ user_id: user.id, stats });
+      const { error } = await supabase.from('user_stats').upsert({ user_id: user.id, stats });
+      if (error) {
+        console.error('Error saving user stats:', error);
+        if (error.code === 'PGRST116' || error.message?.includes('relation') || error.message?.includes('does not exist')) {
+          console.error('⚠️ Database tables not found! Please run the SQL schema in Supabase SQL Editor.');
+        }
+      }
     } else {
       sessionStorage.setItem('protype_stats', JSON.stringify(stats));
     }

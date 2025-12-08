@@ -12,7 +12,7 @@ export default function Certification() {
         <meta property="og:description" content="Get officially certified for your typing speed and accuracy. Boost your resume and career prospects as a developer or coder." />
         <meta property="og:type" content="article" />
         <meta property="og:url" content="https://yourdomain.com/certification" />
-        <meta property="og:image" content="/public/logo.png" />
+        <meta property="og:image" content="/logo.png" />
         <link rel="canonical" href="https://yourdomain.com/certification" />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
           '@context': 'https://schema.org',

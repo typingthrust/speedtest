@@ -3,7 +3,7 @@ import { Dialog, DialogContent } from './ui/dialog';
 import PrivacyPolicy from '../pages/PrivacyPolicy';
 import TermsOfService from '../pages/TermsOfService';
 import Contact from '../pages/Contact';
-import logo from '../../public/logo.png';
+const logo = '/logo.png';
 
 const Footer = () => {
   const [open, setOpen] = useState<string | null>(null);

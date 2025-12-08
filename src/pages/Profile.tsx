@@ -113,7 +113,8 @@ function getTotalWords(history: any[]) {
 function getTopCategory(history: any[]) {
   const cat: Record<string, number> = {};
   history.forEach((h: any) => {
-    const type = h.testType || 'General';
+    // Check both direct property and keystroke_stats for testType
+    const type = h.testType || (h.keystroke_stats?.testType) || 'General';
     cat[type] = (cat[type] || 0) + 1;
   });
   return Object.entries(cat).sort((a, b) => b[1] - a[1])[0]?.[0] || 'General';
@@ -174,7 +175,15 @@ export default function Profile() {
       setResultsLoading(true);
       const { data, error } = await supabase.from('test_results').select('*').eq('user_id', user.id).order('created_at', { ascending: true });
       if (!error && data) {
-        setTestResults(data);
+        // Normalize snake_case to camelCase for consistency
+        const normalizedData = data.map((result: any) => ({
+          ...result,
+          keystrokeStats: result.keystroke_stats || result.keystrokeStats,
+          errorTypes: result.error_types || result.errorTypes,
+          wordCount: result.word_count || result.wordCount,
+          testType: result.test_type || result.testType || (result.keystroke_stats?.testType) || (result.keystrokeStats?.testType),
+        }));
+        setTestResults(normalizedData);
       } else {
         setTestResults([]);
       }
@@ -299,9 +308,21 @@ export default function Profile() {
   // Aggregate key error counts from all filtered history
   const errorKeyStats: Record<string, number> = {};
   for (const session of filteredHistory) {
-    if (session.keystrokeStats && session.keystrokeStats.keyCounts) {
-      for (const [key, count] of Object.entries(session.keystrokeStats.keyCounts)) {
-        errorKeyStats[key] = (errorKeyStats[key] || 0) + Number(count);
+    // Handle both camelCase (from frontend) and snake_case (from Supabase)
+    const keystrokeStats = session.keystrokeStats || session.keystroke_stats;
+    if (keystrokeStats && keystrokeStats.keyCounts) {
+      let keyCounts = keystrokeStats.keyCounts;
+      if (typeof keyCounts === 'string') {
+        try {
+          keyCounts = JSON.parse(keyCounts);
+        } catch (e) {
+          keyCounts = {};
+        }
+      }
+      if (keyCounts && typeof keyCounts === 'object') {
+        for (const [key, count] of Object.entries(keyCounts)) {
+          errorKeyStats[key] = (errorKeyStats[key] || 0) + Number(count);
+        }
       }
     }
   }
@@ -366,13 +387,39 @@ export default function Profile() {
 
   // Download certificate handler
   const handleDownloadCertificate = async () => {
+    // Check if user has test data
+    if (!testResults || testResults.length === 0) {
+      alert('You need to complete at least one typing test to download a certificate.');
+      return;
+    }
+    
+    // Check if we have valid WPM and accuracy data
+    if (!bestWpm || bestWpm === 0) {
+      alert('You need to complete at least one typing test with valid results to download a certificate.');
+      return;
+    }
+    
     const certArea = document.getElementById('certificate-download-area');
-    if (!certArea) return;
-    const canvas = await html2canvas(certArea, { scale: 2 });
-    const imgData = canvas.toDataURL('image/png');
-    const pdf = new jsPDF({ orientation: 'landscape', unit: 'px', format: [600, 400] });
-    pdf.addImage(imgData, 'PNG', 0, 0, 600, 400);
-    pdf.save('ProType-Certificate.pdf');
+    if (!certArea) {
+      alert('Certificate could not be generated. Please try again.');
+      return;
+    }
+    
+    try {
+      const canvas = await html2canvas(certArea, { 
+        scale: 2,
+        backgroundColor: '#ffffff',
+        logging: false,
+        useCORS: true
+      });
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({ orientation: 'landscape', unit: 'px', format: [600, 400] });
+      pdf.addImage(imgData, 'PNG', 0, 0, 600, 400);
+      pdf.save(`TypingThrust-Certificate-${new Date().toISOString().split('T')[0]}.pdf`);
+    } catch (error) {
+      console.error('Error generating certificate:', error);
+      alert('Failed to generate certificate. Please try again.');
+    }
   };
 
   // Delete Progress handler
@@ -441,8 +488,10 @@ export default function Profile() {
   // Helper: Error distribution by character
   const errorCharCounts: Record<string, number> = {};
   for (const session of filteredHistory) {
-    if (session.keystrokeStats && session.keystrokeStats.keyCounts) {
-      let keyCounts = session.keystrokeStats.keyCounts;
+    // Handle both camelCase (from frontend) and snake_case (from Supabase)
+    const keystrokeStats = session.keystrokeStats || session.keystroke_stats;
+    if (keystrokeStats && keystrokeStats.keyCounts) {
+      let keyCounts = keystrokeStats.keyCounts;
       if (typeof keyCounts === 'string') {
         try {
           keyCounts = JSON.parse(keyCounts);
@@ -450,10 +499,10 @@ export default function Profile() {
           keyCounts = {};
         }
       }
-      // Debug print to inspect parsed keyCounts
-      console.log('Parsed keyCounts:', keyCounts);
-      for (const [key, count] of Object.entries(keyCounts)) {
-        errorCharCounts[key] = (errorCharCounts[key] || 0) + Number(count);
+      if (keyCounts && typeof keyCounts === 'object') {
+        for (const [key, count] of Object.entries(keyCounts)) {
+          errorCharCounts[key] = (errorCharCounts[key] || 0) + Number(count);
+        }
       }
     }
   }
@@ -525,7 +574,8 @@ export default function Profile() {
   // Helper: Category breakdown
   const categoryStats: Record<string, { wpm: number[] }> = {};
   for (const h of filteredHistory) {
-    const cat = h.testType || 'General';
+    // Check both direct property and keystroke_stats for testType
+    const cat = h.testType || (h.keystroke_stats?.testType) || 'General';
     if (!categoryStats[cat]) categoryStats[cat] = { wpm: [] };
     if (h.wpm) categoryStats[cat].wpm.push(h.wpm);
   }
@@ -556,8 +606,10 @@ export default function Profile() {
   const keyCharCounts: Record<string, number> = {};
   if (filteredHistory.length > 0) {
     for (const session of filteredHistory) {
-      if (session.keystrokeStats && session.keystrokeStats.keyCounts) {
-        let keyCounts = session.keystrokeStats.keyCounts;
+      // Handle both camelCase (from frontend) and snake_case (from Supabase)
+      const keystrokeStats = session.keystrokeStats || session.keystroke_stats;
+      if (keystrokeStats && keystrokeStats.keyCounts) {
+        let keyCounts = keystrokeStats.keyCounts;
         if (typeof keyCounts === 'string') {
           try {
             keyCounts = JSON.parse(keyCounts);
@@ -642,7 +694,12 @@ export default function Profile() {
               </button>
               <button
                 onClick={handleDownloadCertificate}
-                className="mt-2 px-6 py-2 rounded-full bg-black text-white font-semibold hover:bg-gray-800 transition text-base shadow-sm w-full"
+                disabled={!testResults || testResults.length === 0 || !bestWpm || bestWpm === 0}
+                className={`mt-2 px-6 py-2 rounded-full font-semibold transition text-base shadow-sm w-full ${
+                  (!testResults || testResults.length === 0 || !bestWpm || bestWpm === 0)
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    : 'bg-black text-white hover:bg-gray-800'
+                }`}
               >
                 Download Certificate
               </button>
@@ -837,14 +894,14 @@ export default function Profile() {
                   )}
                   {activeAnalyticsTab === 'Accuracy' && (
                     <section className="w-full flex flex-col gap-6">
-                      <h2 className="text-xl font-bold text-black mb-2">Accuracy</h2>
+                      <h2 className="text-xl font-bold text-black mb-2">Accuracy - Error Distribution by Key</h2>
                       <div className="w-full h-72 bg-white rounded-xl border border-gray-200 flex items-center justify-center">
                         {filteredHistory.length === 0 ? (
                           <span className="text-gray-400 text-sm">No tests in selected range. Try changing the filter above.</span>
-                        ) : keyCharLabels.length > 0 ? (
-                          <Bar data={keyCharChartData} options={errorCharChartOptions} style={{ width: '100%', height: 260 }} />
+                        ) : errorCharLabels.length > 0 ? (
+                          <Bar data={errorCharChartData} options={errorCharChartOptions} style={{ width: '100%', height: 260 }} />
                         ) : (
-                          <span className="text-gray-400 text-sm">No key data to show for these tests.</span>
+                          <span className="text-gray-400 text-sm">No error data to show for these tests. Complete some typing tests to see error distribution.</span>
                         )}
                     </div>
                     </section>

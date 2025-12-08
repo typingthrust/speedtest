@@ -12,7 +12,7 @@ export default function Careers() {
         <meta property="og:description" content="Join our mission to help developers and coders improve their typing speed and accuracy. See open roles below." />
         <meta property="og:type" content="article" />
         <meta property="og:url" content="https://yourdomain.com/careers" />
-        <meta property="og:image" content="/public/logo.png" />
+        <meta property="og:image" content="/logo.png" />
         <link rel="canonical" href="https://yourdomain.com/careers" />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
           '@context': 'https://schema.org',

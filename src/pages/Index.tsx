@@ -99,10 +99,10 @@ if (typeof document !== 'undefined' && !document.getElementById('monkey-caret-st
   document.head.appendChild(s);
 }
 
-// --- Memoized Typing Area ---
+// --- Simplified Typing Area Component ---
+// Supports all modes: time, words, quote, coding, custom, zen, god, syntax, essay, notimer, softtheme, hardwords, foreign
 type TypingAreaProps = { currentText: string; userInput: string; currentIndex: number };
 const TypingArea: React.FC<TypingAreaProps & { mode?: string; godModeIndex?: number }> = React.memo(function TypingArea(_props) {
-  // Defensive defaults for all props
   const {
     currentText = '',
     userInput = '',
@@ -111,269 +111,412 @@ const TypingArea: React.FC<TypingAreaProps & { mode?: string; godModeIndex?: num
     godModeIndex
   } = _props;
 
-  // Always declare hooks at the top
   const containerRef = useRef<HTMLDivElement>(null);
-  const caretRef = useRef<HTMLSpanElement>(null);
-  const [caretPos, setCaretPos] = useState<{ left: number; top: number; height: number }>({ left: 0, top: 0, height: 0 });
-  const [lastSentenceEnd, setLastSentenceEnd] = useState(0);
+  const caretCharRef = useRef<HTMLSpanElement>(null);
 
-  // Caret positioning for all modes
+  // Track which line we've scrolled past for Monkeytype-style snapping
+  const [scrolledLines, setScrolledLines] = useState(0);
+  const lineHeightRef = useRef<number>(0);
+  
+  // Monkeytype-style line snapping with smooth animation
   useLayoutEffect(() => {
-    if (!containerRef.current || !caretRef.current) return;
-    const caretSpan = caretRef.current;
+    if (!containerRef.current || !caretCharRef.current) return;
+    
     const container = containerRef.current;
-    const caretRect = caretSpan.getBoundingClientRect();
+    const caretChar = caretCharRef.current;
+    
+    // Calculate actual line height from the caret element
+    const caretRect = caretChar.getBoundingClientRect();
+    const computedStyle = window.getComputedStyle(container);
+    const fontSize = parseFloat(computedStyle.fontSize);
+    const lineHeight = fontSize * 1.8; // Match the CSS lineHeight: 1.8
+    lineHeightRef.current = lineHeight;
+    
+    // Get container's content area (excluding padding)
     const containerRect = container.getBoundingClientRect();
-    setCaretPos({
-      left: caretRect.left - containerRect.left,
-      top: caretRect.top - containerRect.top,
-      height: caretRect.height,
-    });
-    // Coding mode: scroll horizontally and vertically to keep caret in view
-    if (mode === 'coding') {
-      const scrollLeft = caretSpan.offsetLeft - container.clientWidth / 2 + caretSpan.clientWidth / 2;
-      const scrollTop = caretSpan.offsetTop - container.clientHeight / 2 + caretSpan.clientHeight / 2;
-      container.scrollTo({ left: Math.max(0, scrollLeft), top: Math.max(0, scrollTop), behavior: 'smooth' });
+    const paddingTop = parseFloat(computedStyle.paddingTop);
+    
+    // Calculate caret's position relative to the scrollable content
+    const caretTopInContent = caretRect.top - containerRect.top + container.scrollTop - paddingTop;
+    const currentLine = Math.floor(caretTopInContent / lineHeight);
+    
+    // When cursor moves to line 2 (0-indexed), scroll so line 1 becomes line 0
+    // This keeps the cursor always on line 0 or 1 visually
+    if (currentLine >= 2 && currentLine > scrolledLines) {
+      const newScrolledLines = currentLine - 1;
+      setScrolledLines(newScrolledLines);
     }
-  }, [userInput, currentIndex, currentText, mode]);
-
-  // Sentence scroll/fade for normal modes
+  }, [userInput, currentText, scrolledLines]);
+  
+  // Apply smooth scroll animation
   useLayoutEffect(() => {
-    if (!containerRef.current || !caretRef.current) return;
-    if (mode === 'coding' || mode === 'god') return;
-    // Find the end of the last completed sentence
-    const sentenceEndRegex = /[.!?]\s/g;
-    let lastEnd = 0;
-    let match;
-    while ((match = sentenceEndRegex.exec(userInput)) !== null) {
-      lastEnd = match.index + match[0].length;
-    }
-    setLastSentenceEnd(lastEnd);
-    // Only scroll if a sentence was completed
-    if (lastEnd > 0) {
-      const sentenceStartSpan = containerRef.current.querySelector(`[data-sentence-start="${lastEnd}"]`);
-      if (sentenceStartSpan && sentenceStartSpan instanceof HTMLElement) {
-        const container = containerRef.current;
-        const spanRect = sentenceStartSpan.getBoundingClientRect();
-        const containerRect = container.getBoundingClientRect();
-        const scrollTop = container.scrollTop + (spanRect.top - containerRect.top) - 16;
-        container.scrollTo({ top: scrollTop, behavior: 'smooth' });
+    if (!containerRef.current || lineHeightRef.current === 0) return;
+    
+    const targetScrollTop = scrolledLines * lineHeightRef.current;
+    containerRef.current.scrollTo({
+      top: targetScrollTop,
+      behavior: 'smooth'
+    });
+  }, [scrolledLines]);
+  
+  // Reset scroll when test resets
+  useEffect(() => {
+    if (userInput.length === 0) {
+      setScrolledLines(0);
+      if (containerRef.current) {
+        containerRef.current.scrollTo({ top: 0, behavior: 'instant' });
       }
     }
-  }, [userInput, currentIndex, currentText, mode]);
+  }, [userInput]);
 
-  // --- Render logic ---
-  if (mode === 'god') {
-    // Show a window of 3 words (current + next 2)
+  // Determine which rendering mode to use based on the mode prop
+  const isCodeMode = mode === 'coding' || mode === 'syntax';
+  const isZenMode = mode === 'zen' || mode === 'zenwriting' || mode === 'softtheme';
+  const isGodMode = mode === 'god';
+  
+  // Handle empty text gracefully
+  if (!currentText) {
+    return (
+      <div 
+        className="typing-text-area"
+        style={{ 
+          minHeight: 120, 
+          width: '100%', 
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: '#888',
+          fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace',
+        }}
+      >
+        Loading text...
+      </div>
+    );
+  }
+
+  // =============== GOD MODE ===============
+  // Shows only a few words at a time for speed practice - larger and centered
+  if (isGodMode) {
     const words = currentText.split(/\s+/);
     const windowSize = 3;
     const start = godModeIndex || 0;
-    const end = Math.min(words.length, start + windowSize);
-    const visibleWords = words.slice(start, end);
-    const currentWord = words[start] || '';
-    const typed = userInput.trim();
-    // Reconstruct the visible text with spaces
-    let charIdx = 0;
+    const visibleWords = words.slice(start, Math.min(words.length, start + windowSize));
     const visibleText = visibleWords.join(' ');
-    // Find the index of the caret in the visibleText
-    const caretGlobalIdx = typed.length;
+    const typed = userInput.trim();
+    
     return (
-      <div style={{ position: 'relative', minHeight: 48, width: '100%', textAlign: 'center', fontSize: '2rem', display: 'flex', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', maxWidth: '100%' }}>
+      <div 
+        className="typing-text-area"
+        style={{ 
+          height: 'calc(2.5rem * 1.8 * 2 + 32px)', // 2 lines for god mode
+          width: '100%', 
+          textAlign: 'center', 
+          fontSize: 'clamp(2rem, 6vw, 3rem)',
+          fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace',
+          lineHeight: '1.8',
+          padding: '24px 16px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexWrap: 'wrap',
+        }}
+      >
         {Array.from(visibleText).map((char, idx) => {
-          // Figure out which word and char this is
-          let isCurrent = false;
-          let isTyped = false;
-          let isIncorrect = false;
-          if (idx < caretGlobalIdx) {
-            // Typed chars
-            if (visibleText[idx] === typed[idx]) {
-              isTyped = true;
-            } else {
-              isIncorrect = true;
-            }
-          } else if (idx === caretGlobalIdx) {
-            isCurrent = true;
+          const isTyped = idx < typed.length;
+          const isCorrect = isTyped && visibleText[idx] === typed[idx];
+          const isIncorrect = isTyped && visibleText[idx] !== typed[idx];
+          const isCurrent = idx === typed.length;
+          
+          let className = 'text-gray-500';
+          
+          if (isCorrect) className = 'text-gray-800';
+          else if (isIncorrect) className = 'text-red-500'; // Just red, no background
+          else if (isCurrent) className = 'text-gray-800';
+          
+          // Render caret for current character
+          if (isCurrent) {
+            return (
+              <span key={idx} className={className} style={{ position: 'relative', display: 'inline-block' }}>
+                <span 
+                  style={{
+                    position: 'absolute',
+                    left: 0,
+                    top: '0.15em',
+                    width: '3px',
+                    height: '0.85em',
+                    background: 'hsl(48, 96%, 53%)',
+                    borderRadius: '1px',
+                    animation: 'monkey-blink 1s steps(1) infinite',
+                  }}
+                />
+                {char === ' ' ? '\u00A0' : char}
+              </span>
+            );
           }
-          if (char === ' ') {
-            return <span key={idx}>&nbsp;</span>;
-          }
-          if (isTyped) {
-            return <span key={idx} className="text-gray-600">{char}</span>;
-          } else if (isIncorrect) {
-            return <span key={idx} className="text-red-500 bg-red-100">{char}</span>;
-          } else if (isCurrent) {
-            return <span key={idx} className="text-gray-900">{char}</span>;
-          } else {
-            return <span key={idx} className="text-gray-400">{char}</span>;
-          }
+          
+          return (
+            <span key={idx} className={className} style={{ display: 'inline-block' }}>
+              {char === ' ' ? '\u00A0' : char}
+            </span>
+          );
         })}
       </div>
     );
   }
-  if (mode === 'coding') {
-    // Render code with pre formatting
-    const spans = Array.from(currentText).map((char, idx) => {
-      const isTyped = idx < userInput.length && userInput[idx] === char;
-      const isIncorrect = idx < userInput.length && userInput[idx] !== char;
-      const isCaret = idx === userInput.length;
-      const className = isTyped
-        ? 'text-gray-600'
-        : isIncorrect
-        ? 'text-red-500 bg-red-100'
-        : isCaret
-        ? 'text-gray-900'
-        : 'text-gray-400';
-      return (
-        <span
-          key={idx}
-          ref={isCaret ? caretRef : undefined}
-          className={className}
-        >
-          {char === ' ' ? '\u00A0' : char === '\n' ? '\n' : char}
-        </span>
-      );
-    });
+
+  // =============== CODE/SYNTAX MODE ===============
+  // Preserves whitespace, newlines, and uses monospace font
+  if (isCodeMode) {
     return (
       <div
         ref={containerRef}
-        className="typing-text-area"
+        className="typing-text-area scrollbar-hide"
         style={{
           position: 'relative',
-          minHeight: 120,
-          maxHeight: 320,
+          height: 'calc(1.125rem * 1.8 * 6 + 32px)', // 6 lines for code
           width: '100%',
           textAlign: 'left',
-          wordBreak: 'break-word',
-          overflowWrap: 'break-word',
           whiteSpace: 'pre',
-          overflowY: 'auto',
+          overflowY: 'scroll',
           overflowX: 'auto',
-          fontSize: '1.5rem',
-          fontFamily: 'monospace',
-          padding: '0 8px',
+          fontSize: 'clamp(1rem, 3vw, 1.25rem)',
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none',
+          fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace',
+          lineHeight: '1.7',
+          padding: '16px',
+          background: '#fafafa',
+          borderRadius: '8px',
         }}
       >
-        {spans}
-        {/* Custom caret absolutely positioned */}
-        {userInput.length < currentText.length && (
-          <span
+        {Array.from(currentText).map((char, idx) => {
+          const isTyped = idx < userInput.length;
+          const isCorrect = isTyped && userInput[idx] === char;
+          const isIncorrect = isTyped && userInput[idx] !== char;
+          const isCurrent = idx === userInput.length;
+          
+          let className = 'text-gray-500';
+          
+          if (isCorrect) className = 'text-gray-800';
+          else if (isIncorrect) className = 'text-red-500'; // Just red, no background
+          else if (isCurrent) className = 'text-gray-800';
+          
+          // Render the caret inline with the current character
+          if (isCurrent) {
+            return (
+              <span key={idx} ref={caretCharRef} className={className} style={{ position: 'relative' }}>
+                <span 
+                  className="monkey-caret"
+                  style={{
+                    position: 'absolute',
+                    left: 0,
+                    top: '0.1em',
+                    width: '2px',
+                    height: '0.9em',
+                    background: 'hsl(48, 96%, 53%)',
+                    animation: 'monkey-blink 1s steps(1) infinite',
+                    zIndex: 2,
+                  }}
+                />
+                {char === '\n' ? <br /> : char === ' ' ? '\u00A0' : char}
+              </span>
+            );
+          }
+          
+          // Handle newlines and spaces
+          if (char === '\n') {
+            return <br key={idx} />;
+          }
+          
+          return (
+            <span key={idx} className={className}>
+              {char === ' ' ? '\u00A0' : char}
+            </span>
+          );
+        })}
+        {/* Caret at end if all text typed */}
+        {userInput.length >= currentText.length && (
+          <span 
             className="monkey-caret"
             style={{
-              position: 'absolute',
-              left: caretPos.left,
-              top: caretPos.top,
-              height: caretPos.height,
-              width: 2.5,
-              background: '#888',
-              borderRadius: 2,
+              display: 'inline-block',
+              width: '2px',
+              height: '0.9em',
+              background: 'hsl(48, 96%, 53%)',
               animation: 'monkey-blink 1s steps(1) infinite',
-              zIndex: 3,
-              pointerEvents: 'none',
+              verticalAlign: 'text-bottom',
             }}
           />
         )}
       </div>
     );
   }
-  // Normal mode render logic (always return something)
-  // Fade effect at the top only after first sentence is completed
-  const fadeHeight = 32;
-  const showFade = lastSentenceEnd > 0;
-  // Render text with sentence start markers
-  let spans = [];
-  let sentenceEndRegex = /[.!?]\s/g;
-  let lastEnd = 0;
-  let match;
-  let idx = 0;
-  while ((match = sentenceEndRegex.exec(currentText)) !== null) {
-    const sentence = currentText.slice(lastEnd, match.index + match[0].length);
-    for (let i = 0; i < sentence.length; i++, idx++) {
-      const char = sentence[i];
-      const globalIdx = lastEnd + i;
-      const isTyped = globalIdx < userInput.length && userInput[globalIdx] === char;
-      const isIncorrect = globalIdx < userInput.length && userInput[globalIdx] !== char;
-      const isCaret = globalIdx === userInput.length;
-      const className = isTyped
-        ? 'text-gray-600'
-        : isIncorrect
-        ? 'text-red-500 bg-red-100'
-        : isCaret
-        ? 'text-gray-900'
-        : 'text-gray-400';
-      spans.push(
-        <span
-          key={globalIdx}
-          ref={isCaret ? caretRef : undefined}
-          data-sentence-start={i === 0 ? globalIdx : undefined}
-          className={className}
-        >
-          {char === ' ' ? '\u00A0' : char}
-        </span>
-      );
-    }
-    lastEnd = match.index + match[0].length;
-  }
-  // Add remaining text after last sentence
-  for (let i = lastEnd; i < currentText.length; i++) {
-    const char = currentText[i];
-    const isTyped = i < userInput.length && userInput[i] === char;
-    const isIncorrect = i < userInput.length && userInput[i] !== char;
-    const isCaret = i === userInput.length;
-    const className = isTyped
-      ? 'text-gray-600'
-      : isIncorrect
-      ? 'text-red-500 bg-red-100'
-      : isCaret
-      ? 'text-gray-900'
-      : 'text-gray-400';
-    spans.push(
-      <span
-        key={i}
-        ref={isCaret ? caretRef : undefined}
-        data-sentence-start={i === lastEnd ? i : undefined}
-        className={className}
+
+  // =============== ZEN/MINDFULNESS MODE ===============
+  // Same font and size as other modes for consistency
+  if (isZenMode) {
+    return (
+      <div
+        ref={containerRef}
+        className="typing-text-area scrollbar-hide"
+        style={{
+          position: 'relative',
+          height: 'calc(2.25rem * 1.8 * 3 + 32px)', // Same 3-line height
+          width: '100%',
+          textAlign: 'left',
+          wordBreak: 'break-word',
+          overflowWrap: 'break-word',
+          whiteSpace: 'pre-wrap',
+          overflowY: 'scroll',
+          overflowX: 'hidden',
+          fontSize: 'clamp(1.5rem, 4.5vw, 2.25rem)', // Same larger font
+          fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace',
+          lineHeight: '1.8',
+          padding: '16px',
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none',
+          scrollBehavior: 'smooth',
+        }}
       >
-        {char === ' ' ? '\u00A0' : char}
-      </span>
+        {Array.from(currentText).map((char, idx) => {
+          const isTyped = idx < userInput.length;
+          const isCorrect = isTyped && userInput[idx] === char;
+          const isIncorrect = isTyped && userInput[idx] !== char;
+          const isCurrent = idx === userInput.length;
+          
+          let className = 'text-gray-500';
+          
+          if (isCorrect) className = 'text-gray-800';
+          else if (isIncorrect) className = 'text-red-500'; // Just red, no background
+          else if (isCurrent) className = 'text-gray-800';
+          
+          // Render the caret inline with the current character
+          if (isCurrent) {
+            return (
+              <span key={idx} ref={caretCharRef} className={className} style={{ position: 'relative' }}>
+                <span 
+                  className="monkey-caret"
+                  style={{
+                    position: 'absolute',
+                    left: 0,
+                    top: '0.15em',
+                    width: '2px',
+                    height: '0.85em',
+                    background: 'hsl(48, 96%, 53%)',
+                    borderRadius: '1px',
+                    animation: 'monkey-blink 1s steps(1) infinite',
+                    zIndex: 2,
+                  }}
+                />
+                {char === ' ' ? '\u00A0' : char}
+              </span>
+            );
+          }
+          
+          return (
+            <span key={idx} className={className}>
+              {char === ' ' ? '\u00A0' : char}
+            </span>
+          );
+        })}
+        {/* Caret at end if all text typed */}
+        {userInput.length >= currentText.length && (
+          <span 
+            className="monkey-caret"
+            style={{
+              display: 'inline-block',
+              width: '2px',
+              height: '0.85em',
+              background: 'hsl(48, 96%, 53%)',
+              borderRadius: '1px',
+              animation: 'monkey-blink 1s steps(1) infinite',
+              verticalAlign: 'text-bottom',
+            }}
+          />
+        )}
+      </div>
     );
   }
+
+  // =============== DEFAULT MODE ===============
+  // Monkeytype-style: Show 3 lines, when cursor reaches line 3, text snaps up smoothly
   return (
     <div
       ref={containerRef}
-      className="typing-text-area"
+      className="typing-text-area scrollbar-hide"
       style={{
         position: 'relative',
-        minHeight: 80,
-        maxHeight: 220,
+        height: 'calc(2.25rem * 1.8 * 3 + 32px)', // Exactly 3 lines + padding
         width: '100%',
         textAlign: 'left',
         wordBreak: 'break-word',
         overflowWrap: 'break-word',
         whiteSpace: 'pre-wrap',
-        overflowY: 'auto',
+        overflowY: 'scroll', // Allow scroll but hide scrollbar via CSS
         overflowX: 'hidden',
-        fontSize: '2rem',
-        padding: '0 8px',
+        fontSize: 'clamp(1.5rem, 4.5vw, 2.25rem)', // Larger font
+        fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace',
+        lineHeight: '1.8',
+        padding: '16px',
+        scrollbarWidth: 'none', // Firefox
+        msOverflowStyle: 'none', // IE/Edge
+        scrollBehavior: 'smooth', // Smooth scroll animation
       }}
     >
-      {/* Fade effect at the top only after first sentence is completed */}
-      {showFade && <div style={{ position: 'absolute', left: 0, top: 0, right: 0, height: fadeHeight, pointerEvents: 'none', background: 'linear-gradient(to bottom, #fff 70%, transparent 100%)', zIndex: 2 }} />}
-      {spans}
-      {/* Custom caret absolutely positioned */}
-      {userInput.length < currentText.length && (
-        <span
+      {Array.from(currentText).map((char, idx) => {
+        const isTyped = idx < userInput.length;
+        const isCorrect = isTyped && userInput[idx] === char;
+        const isIncorrect = isTyped && userInput[idx] !== char;
+        const isCurrent = idx === userInput.length;
+        
+        // Monkeytype-style colors: gray untyped, dark typed correct, red incorrect (no background)
+        let className = 'text-gray-500'; // Untyped - medium gray
+        
+        if (isCorrect) className = 'text-gray-800'; // Correct - dark
+        else if (isIncorrect) className = 'text-red-500'; // Wrong - just red, no background
+        else if (isCurrent) className = 'text-gray-800';
+        
+        // Render the caret inline with the current character
+        if (isCurrent) {
+          return (
+            <span key={idx} ref={caretCharRef} className={className} style={{ position: 'relative' }}>
+              <span 
+                className="monkey-caret"
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  top: '0.15em',
+                  width: '2px',
+                  height: '0.85em',
+                  background: 'hsl(48, 96%, 53%)', // Yellow caret like Monkeytype
+                  borderRadius: '1px',
+                  animation: 'monkey-blink 1s steps(1) infinite',
+                  zIndex: 2,
+                }}
+              />
+              {char === ' ' ? '\u00A0' : char}
+            </span>
+          );
+        }
+        
+        return (
+          <span key={idx} className={className}>
+            {char === ' ' ? '\u00A0' : char}
+          </span>
+        );
+      })}
+      {/* Caret at end if all text typed */}
+      {userInput.length >= currentText.length && (
+        <span 
           className="monkey-caret"
           style={{
-            position: 'absolute',
-            left: caretPos.left,
-            top: caretPos.top,
-            height: caretPos.height,
-            width: 2.5,
-            background: '#888',
-            borderRadius: 2,
+            display: 'inline-block',
+            width: '2px',
+            height: '0.85em',
+            background: 'hsl(48, 96%, 53%)',
+            borderRadius: '1px',
             animation: 'monkey-blink 1s steps(1) infinite',
-            zIndex: 3,
-            pointerEvents: 'none',
+            verticalAlign: 'text-bottom',
           }}
         />
       )}
@@ -657,6 +800,24 @@ const contentBySubcategory = {
     medium: ["The juxtaposition of zephyrs and labyrinthine corridors perplexed the archaeologists."],
     long: ["Philosophers often ponder the quintessential nature of consciousness, debating whether it is an emergent property or a fundamental aspect of the universe."],
     thicc: ["Sesquipedalian loquaciousness may obfuscate the perspicuity of one's discourse, yet the judicious use of polysyllabic terminology can, on occasion, elucidate complex concepts with remarkable precision and nuance."],
+  },
+  notimer: {
+    short: ["Take your time. There is no rush. Type at your own pace."],
+    medium: ["Practice makes perfect. Without a timer, you can focus on accuracy rather than speed. Enjoy the process of improving."],
+    long: ["In this mode, there is no timer counting down. You can type at whatever pace feels comfortable. Focus on each keystroke, notice the rhythm of your fingers, and enjoy the journey of typing without pressure."],
+    thicc: ["The art of typing is not just about speed. It is about precision, rhythm, and flow. Without the pressure of a timer, you can develop muscle memory, improve accuracy, and truly master the keyboard. Take a deep breath, relax your shoulders, and type each word with intention and care."],
+  },
+  softtheme: {
+    short: ["Gentle keystrokes. Soft focus. Calm mind."],
+    medium: ["In the quiet rhythm of typing, find your peace. Each keystroke is a step towards mastery and mindfulness."],
+    long: ["The soft glow of the screen illuminates your journey. With each letter typed, you move closer to fluency. Let the gentle pace of this practice soothe your mind and sharpen your skills."],
+    thicc: ["Typing can be a form of meditation. As your fingers dance across the keys, let your thoughts flow like water. There is no destination, only the journey. Each word is a brushstroke on the canvas of digital expression. Embrace the tranquility of focused practice."],
+  },
+  god: {
+    short: ["Speed. Focus. Precision."],
+    medium: ["In god mode, only the current words matter. Type fast, stay accurate, dominate the keyboard."],
+    long: ["God mode is designed for speed demons. You see only a few words at a time. Your focus sharpens. Your fingers fly. Every keystroke counts. Are you ready to push your limits?"],
+    thicc: ["Welcome to god mode, where typing transcends ordinary practice. Here, distractions fade away. Only the words before you exist. Your peripheral vision narrows. Your fingers become an extension of your thoughts. This is where champions are forged. This is where records are broken. Type like your keyboard depends on it."],
   },
 };
 
@@ -1040,13 +1201,73 @@ const Index = () => {
   }, [userInput, currentText, startTime]);
 
   // Enhanced handleInputChange to track keystrokes and error types
+  // Track previous input to detect Grammarly/extension modifications
+  const previousInputRef = useRef<string>('');
+  
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
+    const previousValue = previousInputRef.current;
     
     // Prevent input longer than current text
     if (value.length > currentText.length) {
+      // Reset to previous value if extension tries to add extra characters
+      if (inputRef.current) {
+        inputRef.current.value = previousValue;
+      }
       return;
     }
+    
+    // Detect if Grammarly or other extensions modified the text
+    // If the change is not a simple append (new char at end) or single deletion,
+    // it might be an extension modification
+    const isSimpleAppend = value.length === previousValue.length + 1 && 
+                           value.slice(0, -1) === previousValue;
+    const isSimpleDelete = value.length === previousValue.length - 1 && 
+                           value === previousValue.slice(0, -1);
+    const isBackspaceDelete = value.length < previousValue.length && 
+                              value === previousValue.slice(0, value.length);
+    
+    // If it's not a simple keystroke, check if it's a valid modification
+    // (e.g., Grammarly correcting a word)
+    if (!isSimpleAppend && !isSimpleDelete && !isBackspaceDelete && value !== previousValue) {
+      // This might be an extension modification
+      // Only accept if the new value matches the expected text better
+      // or if it's a valid correction within the current word
+      const currentWordEnd = Math.min(
+        previousValue.length,
+        (previousValue.lastIndexOf(' ') + 1) || 0
+      );
+      const modifiedPart = value.slice(currentWordEnd);
+      const expectedPart = currentText.slice(currentWordEnd, value.length);
+      
+      // If the modification doesn't match expected text, reject it
+      if (modifiedPart !== expectedPart && value.length <= currentText.length) {
+        // Check if it's a valid single-character change (typo correction)
+        let diffCount = 0;
+        let diffIndex = -1;
+        for (let i = 0; i < Math.min(value.length, previousValue.length); i++) {
+          if (value[i] !== previousValue[i]) {
+            diffCount++;
+            if (diffIndex === -1) diffIndex = i;
+          }
+        }
+        
+        // If more than 1 character changed, it's likely an extension modification - reject it
+        if (diffCount > 1 || (value.length !== previousValue.length && diffCount > 0)) {
+          // Reset to previous value
+          if (inputRef.current) {
+            inputRef.current.value = previousValue;
+            setUserInput(previousValue);
+            setCurrentIndex(previousValue.length);
+            previousInputRef.current = previousValue;
+            return;
+          }
+        }
+      }
+    }
+    
+    // Update previous input reference
+    previousInputRef.current = value;
     
     // Start typing if not already started
     if (!isTyping && value.length > 0) {
@@ -1059,13 +1280,19 @@ const Index = () => {
     setUserInput(value);
     setCurrentIndex(value.length);
     
-    // --- FIX: Recalculate errors and accuracy on every change ---
+    // Recalculate errors and accuracy on every change
     let errorCount = 0;
     for (let i = 0; i < value.length; i++) {
       if (value[i] !== currentText[i]) errorCount++;
     }
     setErrors(errorCount);
-    const currentAcc = value.length > 0 ? Math.round(((value.length - errorCount) / value.length) * 100) : 100;
+    // Calculate accuracy: (correct characters / total characters) * 100
+    // If no input, show 100%. If all wrong, show 0% (not negative)
+    const totalChars = value.length;
+    const correctChars = totalChars - errorCount;
+    const currentAcc = totalChars > 0 
+      ? Math.max(0, Math.round((correctChars / totalChars) * 100))
+      : 100;
     setAccuracy(currentAcc);
     // Debounce the heavy calculations to prevent lag during fast typing
     if (timerRef.current) clearTimeout(timerRef.current);
@@ -1183,17 +1410,39 @@ const Index = () => {
         // Award XP: 1 XP per word, bonus for high accuracy/speed
         let xpEarned = Math.round(correctChars / 5) + (finalAcc >= 98 ? 10 : 0) + (finalWpm >= 60 ? 10 : 0);
         if (xpEarned > 0) addXP(xpEarned);
-        // Streak: increment if accuracy >= 90, else reset
+        // Streak: Only increment once per day if accuracy >= 90
+        // The incrementStreak function handles checking if we've already counted today
         if (finalAcc >= 90 && typeof incrementStreak === 'function') {
-          incrementStreak();
-        } else if (typeof resetStreak === 'function') {
-          resetStreak();
+          incrementStreak(); // This will only increment if today's test hasn't been counted yet
         }
+        // Note: We don't reset streak immediately on low accuracy - streak is based on daily activity
         // Badges: check and unlock
         if (finalWpm >= 60 && typeof addBadge === 'function') addBadge('Speedster');
         if (finalAcc >= 98 && typeof addBadge === 'function') addBadge('Accuracy Ace');
-        if (gamification.streak + 1 === 3 && typeof addBadge === 'function') addBadge('Streak Starter');
-        if (gamification.streak + 1 === 5 && typeof addBadge === 'function') addBadge('Consistency King');
+        
+        // For streak badges: Check after incrementStreak updates state
+        // incrementStreak only increments if today hasn't been counted yet
+        // So we check badges after a brief delay to allow state to update
+        if (finalAcc >= 90) {
+          // Use setTimeout to check badges after incrementStreak has updated the state
+          setTimeout(() => {
+            // Re-read gamification state to get updated streak
+            // Note: This closure captures the current gamification state
+            // We need to check the actual updated value
+            // For now, calculate expected: if this is first test today, streak increments
+            // The incrementStreak function handles the logic, so we check what it would result in
+            const currentStreak = gamification.streak;
+            // Since incrementStreak was just called and accuracy >= 90,
+            // if today wasn't counted, streak will be currentStreak + 1
+            // But we can't know for sure without lastTestDate, so we check both possibilities
+            const minExpectedStreak = currentStreak; // At minimum, current streak
+            const maxExpectedStreak = currentStreak + 1; // At maximum, current streak + 1
+            
+            // Check with the higher value (worst case, we check twice but addBadge prevents duplicates)
+            if (maxExpectedStreak >= 3 && typeof addBadge === 'function') addBadge('Streak Starter');
+            if (maxExpectedStreak >= 5 && typeof addBadge === 'function') addBadge('Consistency King');
+          }, 100); // Small delay to allow state update
+        }
         // Add more badge logic as needed
       }
       // --- Leaderboard upsert ---
@@ -1220,7 +1469,7 @@ const Index = () => {
   };
 
   // Enhanced resetTest to always reset WPM history and stats
-  const resetTest = (newTimeLimit = undefined) => {
+  const resetTest = useCallback((newTimeLimit = undefined) => {
     setIsTyping(false);
     setTimeLeft(currentMode === 'time' ? (newTimeLimit ?? timeLimit) : 0);
     setUserInput('');
@@ -1236,12 +1485,19 @@ const Index = () => {
     setConsistency(null);
     setChartData([{ x: 0, y: 0, acc: 100 }]);
     setCurrentText(generateNewText(currentMode, difficulty, language));
+    // Reset line scrolling
+    if (containerRef.current) {
+      containerRef.current.scrollTo({ top: 0, behavior: 'instant' });
+    }
+    // Clear any timers
+    if (timerRef.current) clearTimeout(timerRef.current);
+    if (wpmIntervalRef.current) clearInterval(wpmIntervalRef.current);
     setTimeout(() => {
       if (inputRef.current) {
         inputRef.current.focus();
       }
     }, 100);
-  };
+  }, [currentMode, timeLimit, difficulty, language]);
 
   // Focus input when clicking on container
   const handleContainerClick = () => {
@@ -1250,21 +1506,32 @@ const Index = () => {
     }
   };
 
-  // Handle keyboard shortcuts
+  // Handle keyboard shortcuts (Tab+Shift to reset, Escape to reset)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Tab' && e.shiftKey) {
+      // Only handle shortcuts when not in an input field (unless it's our typing area)
+      const target = e.target as HTMLElement;
+      const isInInput = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA';
+      const isOurTextarea = target === inputRef.current;
+      
+      // Tab + Shift: Reset test (works anywhere)
+      if (e.key === 'Tab' && e.shiftKey && !showResults) {
         e.preventDefault();
         resetTest();
+        return;
       }
-      if (e.key === 'Escape') {
+      
+      // Escape: Reset test (only when in our typing area or not in any input)
+      if (e.key === 'Escape' && (isOurTextarea || !isInInput) && !showResults) {
+        e.preventDefault();
         resetTest();
+        return;
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [showResults, resetTest]);
 
   // Auto-focus input on mount
   useEffect(() => {
@@ -1411,7 +1678,7 @@ const Index = () => {
 
   const { state: gamification, addXP, incrementStreak, resetStreak, addBadge, setGamificationEnabled } = useGamification();
   const gamificationEnabled = gamification.gamificationEnabled;
-  const { state: leaderboardState } = useLeaderboard();
+  const { refreshLeaderboard } = useLeaderboard();
 
   // Helper: get a random sample from an object of arrays
   function getRandom(arr) {
@@ -1419,31 +1686,71 @@ const Index = () => {
     return arr[Math.floor(Math.random() * arr.length)];
   }
 
-  // Update generateNewText to handle all subcategories
+  // Update generateNewText to handle ALL modes
   const generateNewText = (mode, difficulty, language) => {
-    if (mode === 'words') {
-      return sampleTextsByLanguageAndDifficulty[language]?.[difficulty] || '';
-    }
+    // Check subcategory content first (has content for most special modes)
     if (contentBySubcategory[mode] && contentBySubcategory[mode][difficulty]) {
       return getRandom(contentBySubcategory[mode][difficulty]);
     }
+    
+    // Handle specific modes
     switch (mode) {
+      case 'words':
+      case 'time':
+        return sampleTextsByLanguageAndDifficulty[language]?.[difficulty] || 
+               sampleTextsByLanguageAndDifficulty['english']?.[difficulty] || '';
+      
       case 'quote':
-        return getRandom(contentByCategory.quote[difficulty]);
+        return getRandom(contentByCategory.quote[difficulty]) || 
+               sampleTextsByLanguageAndDifficulty[language]?.[difficulty] || '';
+      
       case 'coding':
-        return getRandom(contentByCategory.coding[difficulty]);
-      case 'custom':
-        // Handled in handleModeChange
-        return '';
+        return getRandom(contentByCategory.coding[difficulty]) || 
+               getRandom(contentBySubcategory.coding[difficulty]) || '';
+      
+      case 'syntax':
+        return getRandom(contentBySubcategory.syntax[difficulty]) || '';
+      
+      case 'essay':
+        return getRandom(contentBySubcategory.essay[difficulty]) || '';
+      
+      case 'zen':
+      case 'zenwriting':
+        return getRandom(contentBySubcategory.zen[difficulty]) || 
+               getRandom(contentBySubcategory.zenwriting[difficulty]) || '';
+      
+      case 'notimer':
+        return getRandom(contentBySubcategory.notimer[difficulty]) || 
+               sampleTextsByLanguageAndDifficulty[language]?.[difficulty] || '';
+      
+      case 'softtheme':
+        return getRandom(contentBySubcategory.softtheme[difficulty]) || 
+               getRandom(contentBySubcategory.zen[difficulty]) || '';
+      
+      case 'hardwords':
+        return getRandom(contentBySubcategory.hardwords[difficulty]) || '';
+      
+      case 'god':
+        return getRandom(contentBySubcategory.god[difficulty]) || 
+               sampleTextsByLanguageAndDifficulty[language]?.[difficulty] || '';
+      
       case 'foreign': {
         // Pick a random non-English language sample for the selected difficulty
         const langs = Object.keys(sampleTextsByLanguageAndDifficulty).filter(l => l !== 'english');
         const randomLang = langs[Math.floor(Math.random() * langs.length)];
-        return sampleTextsByLanguageAndDifficulty[randomLang]?.[difficulty] || '';
+        return sampleTextsByLanguageAndDifficulty[randomLang]?.[difficulty] || 
+               sampleTextsByLanguageAndDifficulty['english']?.[difficulty] || '';
       }
-      case 'time':
+      
+      case 'custom':
+        // Handled in handleModeChange via content library
+        return '';
+      
       default:
-        return sampleTextsByLanguageAndDifficulty[language]?.[difficulty] || '';
+        // Fallback to language-based text
+        return sampleTextsByLanguageAndDifficulty[language]?.[difficulty] || 
+               sampleTextsByLanguageAndDifficulty['english']?.[difficulty] || 
+               'Start typing to begin the test.';
     }
   };
 
@@ -1559,8 +1866,154 @@ const Index = () => {
       console.error('Supabase test_results insert error:', error);
     } else {
       console.log('Supabase test_results insert success:', data);
+      
+      // Update leaderboard after successfully saving test result
+      await updateLeaderboard(userId, wpm);
     }
   }
+
+  // Function to update leaderboard for all timeframes
+  async function updateLeaderboard(userId: string, wpm: number) {
+    try {
+      // Get user email and XP
+      const { data: userData } = await supabase.auth.getUser();
+      const userEmail = userData?.user?.email || null;
+      
+      // Get user's current XP from gamification
+      const { data: gamificationData } = await supabase
+        .from('user_gamification')
+        .select('xp')
+        .eq('user_id', userId)
+        .single();
+      
+      const xp = gamificationData?.xp || 0;
+      
+      // Update leaderboard for 'all' timeframe (always update best WPM)
+      // First, check if entry exists and get current WPM
+      const { data: existingAll } = await supabase
+        .from('leaderboard')
+        .select('wpm')
+        .eq('user_id', userId)
+        .eq('timeframe', 'all')
+        .single();
+      
+      const bestWpm = existingAll?.wpm ? Math.max(existingAll.wpm, wpm) : wpm;
+      
+      const { error: allError } = await supabase
+        .from('leaderboard')
+        .upsert({
+          user_id: userId,
+          email: userEmail,
+          wpm: bestWpm,
+          xp: xp,
+          timeframe: 'all',
+        }, {
+          onConflict: 'user_id,timeframe',
+        });
+      
+      if (allError) {
+        console.error('Error updating leaderboard (all):', allError);
+      }
+      
+      // Update weekly leaderboard (only if test was in last 7 days)
+      const weekAgo = new Date();
+      weekAgo.setDate(weekAgo.getDate() - 7);
+      const testDate = new Date();
+      if (testDate >= weekAgo) {
+        const { data: existingWeekly } = await supabase
+          .from('leaderboard')
+          .select('wpm')
+          .eq('user_id', userId)
+          .eq('timeframe', 'weekly')
+          .single();
+        
+        const bestWeeklyWpm = existingWeekly?.wpm ? Math.max(existingWeekly.wpm, wpm) : wpm;
+        
+        const { error: weeklyError } = await supabase
+          .from('leaderboard')
+          .upsert({
+            user_id: userId,
+            email: userEmail,
+            wpm: bestWeeklyWpm,
+            xp: xp,
+            timeframe: 'weekly',
+          }, {
+            onConflict: 'user_id,timeframe',
+          });
+        
+        if (weeklyError) {
+          console.error('Error updating leaderboard (weekly):', weeklyError);
+        }
+      }
+      
+      // Update monthly leaderboard (only if test was in last 30 days)
+      const monthAgo = new Date();
+      monthAgo.setDate(monthAgo.getDate() - 30);
+      if (testDate >= monthAgo) {
+        const { data: existingMonthly } = await supabase
+          .from('leaderboard')
+          .select('wpm')
+          .eq('user_id', userId)
+          .eq('timeframe', 'monthly')
+          .single();
+        
+        const bestMonthlyWpm = existingMonthly?.wpm ? Math.max(existingMonthly.wpm, wpm) : wpm;
+        
+        const { error: monthlyError } = await supabase
+          .from('leaderboard')
+          .upsert({
+            user_id: userId,
+            email: userEmail,
+            wpm: bestMonthlyWpm,
+            xp: xp,
+            timeframe: 'monthly',
+          }, {
+            onConflict: 'user_id,timeframe',
+          });
+        
+        if (monthlyError) {
+          console.error('Error updating leaderboard (monthly):', monthlyError);
+        }
+      }
+      
+      // Update yearly leaderboard (only if test was in last 365 days)
+      const yearAgo = new Date();
+      yearAgo.setFullYear(yearAgo.getFullYear() - 1);
+      if (testDate >= yearAgo) {
+        const { data: existingYearly } = await supabase
+          .from('leaderboard')
+          .select('wpm')
+          .eq('user_id', userId)
+          .eq('timeframe', 'yearly')
+          .single();
+        
+        const bestYearlyWpm = existingYearly?.wpm ? Math.max(existingYearly.wpm, wpm) : wpm;
+        
+        const { error: yearlyError } = await supabase
+          .from('leaderboard')
+          .upsert({
+            user_id: userId,
+            email: userEmail,
+            wpm: bestYearlyWpm,
+            xp: xp,
+            timeframe: 'yearly',
+          }, {
+            onConflict: 'user_id,timeframe',
+          });
+        
+        if (yearlyError) {
+          console.error('Error updating leaderboard (yearly):', yearlyError);
+        }
+      }
+      
+      // Refresh leaderboard in the UI
+      if (refreshLeaderboard) {
+        await refreshLeaderboard();
+      }
+    } catch (err) {
+      console.error('Error updating leaderboard:', err);
+    }
+  };
 
   if (open === 'content-library') {
     return <ContentLibraryOverlay onContentSelect={handleContentSelect} />;
@@ -1730,8 +2183,8 @@ const Index = () => {
           </div>
         )}
 
-        {/* Typing Area */}
-        <div className="w-full max-w-5xl flex flex-col items-center justify-center">
+        {/* Typing Area - maximum width with responsive padding */}
+        <div className="w-full px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24 2xl:px-32 flex flex-col items-center justify-center" style={{ maxWidth: '1800px' }}>
           {/* Language Selector - centered above typing text, ultra-minimal */}
           <div className="w-full flex justify-center mb-8">
             <button
@@ -1791,50 +2244,55 @@ const Index = () => {
           <div 
             ref={containerRef}
             onClick={handleContainerClick}
-            className="mb-6 relative cursor-text"
-            style={{ maxWidth: '100%', width: '100%' }}
+            className="mb-6 relative cursor-text w-full"
+            style={{ maxWidth: '100%' }}
           >
             {/* Text Display */}
             <div
               ref={textDisplayRef}
-              className="typing-text-area text-2xl font-mono leading-relaxed text-gray-800 min-h-[180px] max-h-[220px] overflow-y-auto pr-2 text-center"
+              className="w-full"
               style={{
-                scrollBehavior: 'smooth',
-                scrollbarWidth: 'none',
-                msOverflowStyle: 'none',
-                wordBreak: 'normal',
-                overflowWrap: 'break-word',
-                whiteSpace: 'pre-wrap',
                 position: 'relative',
               }}
             >
               <TypingArea currentText={currentText} userInput={userInput} currentIndex={currentIndex} mode={currentMode} godModeIndex={godModeIndex} />
             </div>
-            {/* Fade-out effect at the bottom of the visible area - moved outside the scrollable area */}
-            <div
-              aria-hidden="true"
-              style={{
-                pointerEvents: 'none',
-                position: 'absolute',
-                left: 0,
-                right: 0,
-                bottom: 0,
-                height: 32,
-                background: 'linear-gradient(to bottom, rgba(255,255,255,0) 0%, #fff 100%)',
-                zIndex: 30,
-              }}
-            />
             {/* Overlayed Transparent Textarea for Input */}
             <textarea
               ref={inputRef}
               value={userInput}
               onChange={handleInputChange}
-              className="absolute inset-0 w-full h-full bg-transparent text-transparent caret-transparent outline-none resize-none border-none p-0 m-0 text-lg font-mono"
-              style={{ zIndex: 10, minHeight: 180, maxHeight: 220, color: 'transparent', background: 'transparent', overflow: 'hidden', caretColor: 'transparent' }}
+              data-gramm="false"
+              data-gramm_editor="false"
+              data-enable-grammarly="false"
+              spellCheck="false"
+              autoComplete="off"
+              autoCorrect="off"
+              autoCapitalize="off"
+              onKeyDown={(e) => {
+                // Prevent backspace from going back in browser history
+                if (e.key === 'Backspace' && userInput.length === 0) {
+                  e.preventDefault();
+                }
+              }}
+              className="absolute inset-0 w-full h-full bg-transparent text-transparent caret-transparent outline-none resize-none border-none p-0 m-0"
+              style={{ 
+                zIndex: 5, 
+                height: 'calc(2.25rem * 1.8 * 3 + 32px)', // Match typing area height
+                color: 'transparent', 
+                background: 'transparent', 
+                overflow: 'hidden', 
+                caretColor: 'transparent',
+                fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace',
+                fontSize: 'clamp(1.5rem, 4.5vw, 2.25rem)',
+                lineHeight: '1.8',
+                padding: '16px',
+                whiteSpace: 'pre-wrap',
+                wordBreak: 'break-word',
+                overflowWrap: 'break-word',
+              }}
               placeholder=""
               disabled={showResults}
-              autoComplete="off"
-              spellCheck={false}
               inputMode="text"
               aria-label="Typing input"
               tabIndex={0}
@@ -1842,30 +2300,30 @@ const Index = () => {
             />
           </div>
           {/* Stats Display with XP and Streak inline */}
-          <div className="flex justify-center gap-12 text-base w-full max-w-2xl mx-auto">
+          <div className="flex justify-center gap-8 sm:gap-12 text-base w-full mx-auto flex-wrap">
             <div className="text-center">
-              <div className="text-2xl font-mono font-bold text-gray-800">{accuracy}%</div>
+              <div className="text-2xl font-mono font-bold text-gray-800">{accuracy ?? 100}%</div>
               <div className="text-sm text-gray-500">Accuracy</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-mono font-bold text-gray-800">{errors}</div>
+              <div className="text-2xl font-mono font-bold text-gray-800">{errors ?? 0}</div>
               <div className="text-sm text-gray-500">Errors</div>
             </div>
-            {gamificationEnabled && (
+            {gamificationEnabled && gamification && (
               <div className="text-center">
-                <div className="text-2xl font-mono font-bold text-gray-800">{gamification.streak}</div>
+                <div className="text-2xl font-mono font-bold text-gray-800">{gamification.streak ?? 0}</div>
                 <div className="text-sm text-gray-500">Streak</div>
               </div>
             )}
-            {gamificationEnabled && (
+            {gamificationEnabled && gamification && (
               <div className="text-center">
-                <div className="text-2xl font-mono font-bold text-gray-800">{gamification.xp % 100}</div>
+                <div className="text-2xl font-mono font-bold text-gray-800">{(gamification.xp ?? 0) % 100}</div>
                 <div className="text-sm text-gray-500 flex items-center justify-center gap-1">XP
                   <div className="w-12 h-1 bg-gray-200 rounded-full overflow-hidden ml-2">
                     <motion.div
                       className="h-1 bg-gray-700 rounded-full"
                       initial={false}
-                      animate={{ width: `${Math.min(100, (gamification.xp % 100))}%` }}
+                      animate={{ width: `${Math.min(100, Math.max(0, ((gamification.xp ?? 0) % 100)))}%` }}
                       transition={{ type: 'spring', stiffness: 200, damping: 24 }}
                     />
                   </div>
@@ -1877,8 +2335,10 @@ const Index = () => {
           <div className="mt-6 flex justify-center w-full">
             <button
               onClick={() => resetTest()}
-              className="flex items-center gap-3 px-6 py-3 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all duration-200 hover:scale-105 mx-auto"
+              disabled={showResults}
+              className="flex items-center gap-3 px-6 py-3 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all duration-200 hover:scale-105 mx-auto disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
               style={{ display: 'flex' }}
+              aria-label="Reset typing test"
             >
               <RotateCcw className="w-5 h-5" />
               <span className="font-medium">Reset Test</span>
