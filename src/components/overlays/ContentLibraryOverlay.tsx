@@ -28,17 +28,17 @@ function MinimalContentLibraryOverlay({ open, onClose, children }: { open: boole
   return (
     <div
       ref={backdropRef}
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-[12px]"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-background/60 backdrop-blur-[12px]"
       style={{ WebkitBackdropFilter: 'blur(12px)' }}
     >
       <div
         ref={overlayRef}
-        className="relative w-full max-w-lg mx-4 sm:mx-auto bg-slate-800/95 rounded-2xl border border-slate-700 shadow-2xl flex flex-col items-center min-h-[40vh] max-h-[90vh] min-w-0 sm:min-w-[320px] p-0"
+        className="relative w-full max-w-lg mx-4 sm:mx-auto bg-card/95 rounded-2xl border border-border shadow-2xl flex flex-col items-center min-h-[40vh] max-h-[90vh] min-w-0 sm:min-w-[320px] p-0"
         style={{ boxShadow: '0 8px 40px 0 rgba(0,0,0,0.5)' }}
       >
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-slate-400 hover:text-slate-200 text-xl p-2 rounded-full hover:bg-slate-700 transition-colors focus:outline-none z-10"
+          className="absolute top-4 right-4 text-muted-foreground hover:text-foreground text-xl p-2 rounded-full hover:bg-muted transition-colors focus:outline-none z-10"
           aria-label="Close content library"
         >
           <X className="w-6 h-6" />
@@ -130,7 +130,7 @@ export default function ContentLibraryOverlay({ onContentSelect }: { onContentSe
         </header>
 
         <div
-          className={`w-full flex flex-col items-center justify-center p-8 border-2 border-dashed rounded-lg transition-all duration-200 cursor-pointer ${dragActive ? 'border-primary bg-primary/10' : 'border-slate-600 bg-slate-700/50 hover:border-slate-500'}`}
+          className={`w-full flex flex-col items-center justify-center p-8 border-2 border-dashed rounded-lg transition-all duration-200 cursor-pointer ${dragActive ? 'border-primary bg-primary/10' : 'border-border bg-muted/50 hover:border-border/80'}`}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
@@ -149,7 +149,7 @@ export default function ContentLibraryOverlay({ onContentSelect }: { onContentSe
         </div>
 
         <textarea
-          className="w-full border border-slate-600 rounded-lg p-3 text-base bg-slate-700 text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary transition mt-2"
+          className="w-full border border-border rounded-lg p-3 text-base bg-muted text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition mt-2"
           rows={5}
           placeholder="Or paste your custom content here..."
           value={customText}

@@ -49,12 +49,12 @@ function MinimalGamificationOverlay({ open, onClose, children }: { open: boolean
   return (
     <div
       ref={backdropRef}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-[12px]"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-background/60 backdrop-blur-[12px]"
       style={{ WebkitBackdropFilter: 'blur(12px)' }}
     >
       <div
         ref={overlayRef}
-        className="relative w-full max-w-lg mx-4 sm:mx-auto bg-slate-800/90 rounded-xl border border-slate-700 shadow-lg flex flex-col items-center min-h-[40vh] max-h-[90vh] min-w-0 sm:min-w-[320px] p-0"
+        className="relative w-full max-w-lg mx-4 sm:mx-auto bg-card/90 rounded-xl border border-border shadow-lg flex flex-col items-center min-h-[40vh] max-h-[90vh] min-w-0 sm:min-w-[320px] p-0"
         style={{ boxShadow: '0 4px 32px 0 rgba(0,0,0,0.5)', border: '1px solid rgba(51, 65, 85, 0.5)' }}
       >
         <button
@@ -101,7 +101,7 @@ export default function GamificationOverlay() {
           <h1 className="text-2xl font-bold text-slate-100" tabIndex={0}>Gamification</h1>
         </header>
         {/* XP & Level Section */}
-        <div className="w-full bg-slate-700/80 rounded-2xl shadow-sm border border-slate-600 p-6 flex flex-col gap-2 items-center" aria-label="XP and Level">
+        <div className="w-full bg-muted/80 rounded-2xl shadow-sm border border-border p-6 flex flex-col gap-2 items-center" aria-label="XP and Level">
           <h2 className="text-lg font-semibold text-slate-100 mb-1">XP & Level</h2>
           <div className="flex items-center gap-4 w-full max-w-xs">
             <div className="flex flex-col items-center">
@@ -147,12 +147,12 @@ export default function GamificationOverlay() {
                 const earned = state.badges.includes(badge.name);
                 const Icon = badge.icon;
                 return (
-                  <div key={badge.key} className={`group relative w-14 h-14 rounded-full flex items-center justify-center shadow transition-all duration-300 z-10 ${earned ? 'bg-slate-600 text-slate-100' : 'bg-slate-700 text-slate-500 grayscale'}` } tabIndex={0} aria-label={badge.name + (earned ? '' : ' (Locked)')}>
+                  <div key={badge.key} className={`group relative w-14 h-14 rounded-full flex items-center justify-center shadow transition-all duration-300 z-10 ${earned ? 'bg-muted/80 text-foreground' : 'bg-muted text-muted-foreground grayscale'}` } tabIndex={0} aria-label={badge.name + (earned ? '' : ' (Locked)')}>
                     <Icon className="w-7 h-7 relative z-0" />
                     {!earned && (
                       <Lock className="absolute w-5 h-5 text-slate-500 top-1 right-1 opacity-80 z-10" />
                     )}
-                    <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 rounded-lg bg-slate-900 text-slate-100 text-xs opacity-0 group-hover:opacity-100 group-focus:opacity-100 group-active:opacity-100 transition-opacity whitespace-nowrap z-[100] shadow-2xl pointer-events-none border border-slate-700">
+                    <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 rounded-lg bg-background text-foreground text-xs opacity-0 group-hover:opacity-100 group-focus:opacity-100 group-active:opacity-100 transition-opacity whitespace-nowrap z-[100] shadow-2xl pointer-events-none border border-border">
                       <span className="font-bold block">{badge.name}</span>
                       <span className="font-normal text-slate-300 text-[10px]">{earned ? '' : '(Locked) '}{badge.description}</span>
                     </span>

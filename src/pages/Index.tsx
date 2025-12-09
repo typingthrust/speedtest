@@ -567,7 +567,7 @@ const AnimatedChip = ({ selected, onClick, children }: { selected: boolean; onCl
     className={`relative px-6 py-2 rounded-xl font-semibold text-base transition-all duration-200
       ${selected
         ? "bg-primary text-slate-900 shadow-lg scale-105"
-        : "bg-slate-700 text-slate-200 hover:bg-slate-600 hover:scale-105"}
+        : "bg-muted text-foreground hover:bg-muted/80 hover:scale-105"}
       focus:outline-none focus:ring-2 focus:ring-primary`}
     whileTap={{ scale: 0.97 }}
     whileHover={{ scale: 1.07 }}
@@ -607,7 +607,7 @@ const AnimatedSettingsSection = ({
   >
     <div
       className={`text-lg font-bold text-slate-200 px-6 py-3 rounded-xl cursor-pointer transition-colors duration-200 ${
-        expanded ? 'bg-slate-800' : 'bg-slate-800/50'
+        expanded ? 'bg-card' : 'bg-card/50'
       }`}
       style={{backdropFilter: expanded ? 'blur(4px)' : undefined, WebkitBackdropFilter: expanded ? 'blur(4px)' : undefined}}
     >
@@ -620,7 +620,7 @@ const AnimatedSettingsSection = ({
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -8, scale: 0.98 }}
           transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-          className="absolute left-0 right-0 z-10 mt-2 p-4 rounded-2xl bg-slate-800/90 shadow-xl backdrop-blur-md border border-slate-700"
+          className="absolute left-0 right-0 z-10 mt-2 p-4 rounded-2xl bg-card/90 shadow-xl backdrop-blur-md border border-border"
         >
           {children}
         </motion.div>
@@ -654,7 +654,7 @@ const SettingsCard = ({
   >
     <div
       className={`w-full px-4 py-4 rounded-2xl text-center font-semibold text-lg transition-colors duration-200 text-slate-200 ${
-        expanded ? 'bg-slate-800/90 backdrop-blur-md border border-slate-700' : 'bg-slate-800/50 border border-transparent'
+        expanded ? 'bg-card/90 backdrop-blur-md border border-border' : 'bg-card/50 border border-transparent'
       }`}
       style={{ minHeight: 56 }}
     >
@@ -667,7 +667,7 @@ const SettingsCard = ({
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -8 }}
           transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-          className="absolute left-0 right-0 top-full z-10 mt-2 p-4 rounded-2xl bg-slate-800/90 shadow-xl backdrop-blur-md border border-slate-700 flex flex-col items-center"
+          className="absolute left-0 right-0 top-full z-10 mt-2 p-4 rounded-2xl bg-card/90 shadow-xl backdrop-blur-md border border-border flex flex-col items-center"
         >
           {children}
         </motion.div>
@@ -2113,7 +2113,7 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col">
       {/* Navbar - Hides when typing */}
       <AnimatePresence>
         {!isTyping && (
@@ -2144,7 +2144,7 @@ const Index = () => {
           <div className="sm:hidden w-full px-4 -mt-4">
             <button
               onClick={() => setMobileDrawerOpen(true)}
-              className="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-slate-800/90 border border-slate-700 text-slate-200 hover:bg-slate-700/90 transition-all duration-200"
+              className="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-card/90 border border-border text-foreground hover:bg-muted/90 transition-all duration-200"
             >
               <div className="flex items-center gap-3">
                 <SlidersHorizontal className="w-5 h-5 text-primary" />
@@ -2172,7 +2172,7 @@ const Index = () => {
           <motion.div
             layout
             transition={{ type: 'spring', stiffness: 400, damping: 32 }}
-            className="hidden sm:inline-flex flex-row flex-nowrap items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-2xl bg-slate-800/90 border border-slate-700 shadow-md backdrop-blur-md select-none relative transition-all duration-300 mx-auto overflow-x-auto flex-nowrap scrollbar-hide"
+            className="hidden sm:inline-flex flex-row flex-nowrap items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-2xl bg-card/90 border border-border shadow-md backdrop-blur-md select-none relative transition-all duration-300 mx-auto overflow-x-auto flex-nowrap scrollbar-hide"
                 style={{ width: 'fit-content', minWidth: 0, maxWidth: '100vw', position: 'relative', zIndex: 10 }}
           >
             {/* Category Headings with Inline Sub-options */}
@@ -2242,7 +2242,7 @@ const Index = () => {
                         return (
                           <button
                             key={item.value}
-                            className={`px-3 py-1 rounded-lg font-medium text-sm transition-all duration-150 flex-shrink-0 whitespace-nowrap ${isActive ? 'bg-primary text-slate-900' : 'text-slate-300 hover:bg-slate-700'}`}
+                            className={`px-3 py-1 rounded-lg font-medium text-sm transition-all duration-150 flex-shrink-0 whitespace-nowrap ${isActive ? 'bg-primary text-primary-foreground' : 'text-foreground/80 hover:bg-muted'}`}
                             style={{ minWidth: 40 }}
                             onClick={() => { 
                               handleModeChange(String(item.value)); 
@@ -2277,7 +2277,7 @@ const Index = () => {
               {openSetting === 'duration' && [15, 30, 60, 120].map(sec => (
                 <button
                   key={sec}
-                      className={`px-2 py-1 rounded-lg font-medium transition-all duration-150 flex-shrink-0 whitespace-nowrap ${timeLimit === Number(sec) ? 'bg-primary text-slate-900' : 'text-slate-300 hover:bg-slate-700'}`}
+                      className={`px-2 py-1 rounded-lg font-medium transition-all duration-150 flex-shrink-0 whitespace-nowrap ${timeLimit === Number(sec) ? 'bg-primary text-primary-foreground' : 'text-foreground/80 hover:bg-muted'}`}
                   style={{ minWidth: 40 }}
                   onClick={() => { setTimeLimit(Number(sec)); resetTest(Number(sec)); setOpenSetting(null); }}
                 >
@@ -2295,7 +2295,7 @@ const Index = () => {
                   >
                     Duration
                   </button>
-                  <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-slate-800 text-slate-200 text-xs rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50 border border-slate-700">
+                  <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-card text-foreground text-xs rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50 border border-border">
                     Duration only works with Timed mode
                     <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1">
                       <div className="border-4 border-transparent border-t-slate-800"></div>
@@ -2321,7 +2321,7 @@ const Index = () => {
               ].map(item => (
                 <button
                   key={item.value}
-                  className={`px-2 py-1 rounded-lg font-medium transition-all duration-150 flex-shrink-0 whitespace-nowrap ${difficulty === String(item.value) ? 'bg-primary text-slate-900' : 'text-slate-300 hover:bg-slate-700'}`}
+                  className={`px-2 py-1 rounded-lg font-medium transition-all duration-150 flex-shrink-0 whitespace-nowrap ${difficulty === String(item.value) ? 'bg-primary text-primary-foreground' : 'text-foreground/80 hover:bg-muted'}`}
                   style={{ minWidth: 40 }}
                   onClick={() => { setDifficulty(String(item.value)); resetTest(); setOpenSetting(null); }}
                 >
@@ -2354,7 +2354,7 @@ const Index = () => {
                 animate={{ x: 0 }}
                 exit={{ x: '100%' }}
                 transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-                className="fixed right-0 w-full max-w-sm bg-slate-900 border-l border-slate-700 z-[70] sm:hidden flex flex-col shadow-2xl"
+                className="fixed right-0 w-full max-w-sm bg-background border-l border-border z-[70] sm:hidden flex flex-col shadow-2xl"
                 style={{ 
                   top: 0, 
                   left: 'auto', 
@@ -2370,11 +2370,11 @@ const Index = () => {
                 }}
               >
                 {/* Header */}
-                <div className="flex items-center justify-between p-4 border-b border-slate-700 bg-slate-900" style={{ backgroundColor: '#0f172a', marginTop: 0, paddingTop: '1rem', paddingBottom: '1rem' }}>
+                <div className="flex items-center justify-between p-4 border-b border-border bg-background" style={{ marginTop: 0, paddingTop: '1rem', paddingBottom: '1rem' }}>
                   <h2 className="text-xl font-semibold text-slate-100">Settings</h2>
                   <button
                     onClick={() => setMobileDrawerOpen(false)}
-                    className="p-2 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-slate-100 transition-colors"
+                    className="p-2 rounded-lg hover:bg-card text-muted-foreground hover:text-foreground transition-colors"
                   >
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -2429,11 +2429,11 @@ const Index = () => {
                     const isExpanded = mobileExpandedCategory === cat.heading;
                     const hasActive = cat.sub.some(item => currentMode === item.value);
                     return (
-                      <div key={cat.heading} className="border border-slate-700 rounded-lg overflow-hidden">
+                      <div key={cat.heading} className="border border-border rounded-lg overflow-hidden">
                         <button
                           onClick={() => setMobileExpandedCategory(isExpanded ? null : cat.heading)}
                           className={`w-full flex items-center justify-between p-4 text-left transition-colors ${
-                            hasActive ? 'bg-slate-800/50' : 'bg-slate-800/30 hover:bg-slate-800/50'
+                            hasActive ? 'bg-card/50' : 'bg-card/30 hover:bg-card/50'
                           }`}
                         >
                           <span className={`font-medium ${hasActive ? 'text-primary' : 'text-slate-200'}`}>
@@ -2450,7 +2450,7 @@ const Index = () => {
                           </svg>
                         </button>
                         {isExpanded && (
-                          <div className="p-2 space-y-1 bg-slate-800/20">
+                          <div className="p-2 space-y-1 bg-card/20">
                             {cat.sub.map((item) => {
                               const isActive = currentMode === item.value;
                               return (
@@ -2466,7 +2466,7 @@ const Index = () => {
                                   className={`w-full text-left px-4 py-2.5 rounded-lg transition-all ${
                                     isActive
                                       ? 'bg-primary text-slate-900 font-semibold'
-                                      : 'text-slate-300 hover:bg-slate-700/50'
+                                      : 'text-foreground/80 hover:bg-muted/50'
                                   }`}
                                 >
                                   {item.label}
@@ -2481,8 +2481,8 @@ const Index = () => {
 
                   {/* Duration - Only for time mode */}
                   {currentMode === 'time' && (
-                    <div className="border border-slate-700 rounded-lg overflow-hidden mt-4">
-                      <div className="p-4 bg-slate-800/30">
+                    <div className="border border-border rounded-lg overflow-hidden mt-4">
+                      <div className="p-4 bg-card/30">
                         <h3 className="font-medium text-slate-200 mb-3">Duration</h3>
                         <div className="grid grid-cols-4 gap-2">
                           {[15, 30, 60, 120].map((sec) => (

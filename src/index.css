@@ -50,46 +50,44 @@ All colors MUST be HSL.
   }
 
   .dark {
-    --background: 222.2 47.4% 11.2%; /* slate-900 */
     --foreground: 210 40% 98%; /* slate-100 */
-
-    --card: 215 28% 16.9%; /* slate-800 */
     --card-foreground: 210 40% 98%; /* slate-100 */
-
-    --popover: 215 28% 16.9%; /* slate-800 */
     --popover-foreground: 210 40% 98%; /* slate-100 */
-
-    --primary: 217 91% 60%; /* Will be overridden by theme */
     --primary-foreground: 222.2 47.4% 11.2%; /* slate-900 */
-
-    --secondary: 215 25.9% 16.9%; /* slate-700 */
     --secondary-foreground: 210 40% 98%; /* slate-100 */
-
-    --muted: 215 25.9% 16.9%; /* slate-700 */
     --muted-foreground: 215 16.3% 56.9%; /* slate-400 */
-
-    --accent: 215 25.9% 16.9%; /* slate-700 */
     --accent-foreground: 210 40% 98%; /* slate-100 */
-
     --destructive: 0 72.2% 50.6%; /* red-500 */
     --destructive-foreground: 210 40% 98%; /* slate-100 */
-
-    --border: 215 25.9% 16.9%; /* slate-700 */
-    --input: 215 25.9% 16.9%; /* slate-700 */
-    --ring: var(--theme-primary, 217 91% 60%); /* Uses theme color */
-    --sidebar-background: 222.2 47.4% 11.2%; /* slate-900 */
     --sidebar-foreground: 210 40% 98%; /* slate-100 */
-    --sidebar-primary: var(--theme-primary, 217 91% 60%); /* Uses theme color */
     --sidebar-primary-foreground: 222.2 47.4% 11.2%; /* slate-900 */
-    --sidebar-accent: 215 28% 16.9%; /* slate-800 */
     --sidebar-accent-foreground: 210 40% 98%; /* slate-100 */
-    --sidebar-border: 215 25.9% 16.9%; /* slate-700 */
-    --sidebar-ring: var(--theme-primary, 217 91% 60%); /* Uses theme color */
+
+    /* Theme colors - will be overridden by ThemeProvider */
+    --background: var(--theme-background, 217 30% 12%); /* Theme-tinted background */
+    --card: var(--theme-card, 217 28% 17%); /* Theme-tinted card */
+    --popover: var(--theme-card, 217 28% 17%); /* Theme-tinted popover */
+    --primary: var(--theme-primary, 217 91% 60%); /* Theme primary */
+    --secondary: var(--theme-muted, 217 25% 18%); /* Theme-tinted secondary */
+    --muted: var(--theme-muted, 217 25% 18%); /* Theme-tinted muted */
+    --accent: var(--theme-muted, 217 25% 18%); /* Theme-tinted accent */
+    --border: var(--theme-border, 217 25% 20%); /* Theme-tinted border */
+    --input: var(--theme-border, 217 25% 20%); /* Theme-tinted input */
+    --ring: var(--theme-primary, 217 91% 60%); /* Theme primary */
+    --sidebar-background: var(--theme-background, 217 30% 12%); /* Theme-tinted sidebar */
+    --sidebar-primary: var(--theme-primary, 217 91% 60%); /* Theme primary */
+    --sidebar-accent: var(--theme-card, 217 28% 17%); /* Theme-tinted sidebar accent */
+    --sidebar-border: var(--theme-border, 217 25% 20%); /* Theme-tinted sidebar border */
+    --sidebar-ring: var(--theme-primary, 217 91% 60%); /* Theme primary */
     
     /* Default theme colors (blue) */
     --theme-primary: 217 91% 60%;
     --theme-primary-hover: 217 91% 55%;
     --theme-primary-light: 217 91% 70%;
+    --theme-background: 217 30% 12%;
+    --theme-card: 217 28% 17%;
+    --theme-border: 217 25% 20%;
+    --theme-muted: 217 25% 18%;
   }
 
   /* Theme color variations */
@@ -153,7 +151,8 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-slate-900 text-slate-100;
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     overflow-x: hidden;
   }

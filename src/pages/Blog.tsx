@@ -11,7 +11,7 @@ const articles = Array.from({ length: 50 }, (_, i) => ({
 
 export default function Blog() {
   return (
-    <div className="min-h-screen bg-slate-900 py-12 px-4 max-w-3xl mx-auto">
+    <div className="min-h-screen bg-background py-12 px-4 max-w-3xl mx-auto">
       <Head>
         <title>Blog & Learning Hub | Typing Speed Test for Developers & Coders</title>
         <meta name="description" content="Tips, guides, and research to help developers and coders type faster, smarter, and healthier. Blog & Learning Hub." />

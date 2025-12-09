@@ -246,7 +246,7 @@ export default function Profile() {
 
   if (loading || resultsLoading) {
     return (
-      <div className="min-h-screen bg-slate-900 flex flex-col">
+      <div className="min-h-screen bg-background flex flex-col">
         <Navbar />
         <div className="flex-1 flex items-center justify-center">
           <div className="text-slate-400">Loading profile data...</div>
@@ -256,8 +256,8 @@ export default function Profile() {
   }
   if (!user) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-900">
-        <div className="bg-slate-800 p-8 rounded-xl shadow-md text-center border border-slate-700">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background">
+        <div className="bg-card p-8 rounded-xl shadow-md text-center border border-border">
           <h2 className="text-2xl font-bold mb-4 text-slate-100">No Account Found</h2>
           <p className="mb-6 text-slate-400">Please log in to access your profile and analytics.</p>
           <button
@@ -762,7 +762,7 @@ export default function Profile() {
           </div>
 
           {/* Level Progress Card */}
-          <div className="bg-gradient-to-r from-slate-800 to-slate-800/50 rounded-xl border border-slate-700 p-6 mb-6">
+          <div className="bg-gradient-to-r from-card to-card/50 rounded-xl border border-border p-6 mb-6">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
               <div className="flex-1">
                 <h3 className="text-lg font-semibold text-slate-100 mb-1 text-left">Level {level}</h3>
@@ -776,14 +776,14 @@ export default function Profile() {
                     </div>
                   ))}
                   {badges.length > 3 && (
-                    <div className="px-3 py-1 bg-slate-700 text-slate-400 rounded-lg text-xs font-semibold border border-slate-600 whitespace-nowrap">
+                    <div className="px-3 py-1 bg-muted text-muted-foreground rounded-lg text-xs font-semibold border border-border whitespace-nowrap">
                       +{badges.length - 3}
                     </div>
                   )}
                 </div>
               )}
             </div>
-            <div className="w-full h-3 bg-slate-700 rounded-full overflow-hidden">
+            <div className="w-full h-3 bg-muted rounded-full overflow-hidden">
               <div 
                 className="h-full bg-primary rounded-full transition-all duration-500" 
                 style={{ width: `${progress}%` }} 
@@ -802,7 +802,7 @@ export default function Profile() {
                 className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
                   selectedDuration === d.value
                     ? 'bg-primary text-slate-900 shadow-lg shadow-primary/20'
-                    : 'bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700'
+                    : 'bg-card text-foreground/80 hover:bg-muted border border-border'
                 }`}
                 onClick={() => setSelectedDuration(d.value)}
               >
@@ -818,7 +818,7 @@ export default function Profile() {
                 className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
                   selectedRange === r.value
                     ? 'bg-primary text-slate-900 shadow-lg shadow-primary/20'
-                    : 'bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700'
+                    : 'bg-card text-foreground/80 hover:bg-muted border border-border'
                 }`}
                 onClick={() => setSelectedRange(r.value)}
               >
@@ -830,7 +830,7 @@ export default function Profile() {
 
         {/* Main Tabs */}
         <div className="mb-6">
-          <div className="flex gap-2 border-b border-slate-700">
+          <div className="flex gap-2 border-b border-border">
             <button
               className={`px-6 py-3 text-sm font-semibold border-b-2 transition-colors ${
                 selectedTab === 'overview'
@@ -858,7 +858,7 @@ export default function Profile() {
         {selectedTab === 'overview' && (
           <div className="space-y-6">
             {/* Progress Chart */}
-            <div className="bg-slate-800/50 rounded-xl border border-slate-700 p-6">
+            <div className="bg-card/50 rounded-xl border border-border p-6">
               <h2 className="text-xl font-semibold text-slate-100 mb-4 text-left">Progress Over Time</h2>
               <div className="h-64">
                 {filteredHistory.length > 1 ? (
@@ -893,7 +893,7 @@ export default function Profile() {
                   className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
                     activeAnalyticsTab === tab
                       ? 'bg-primary text-slate-900'
-                      : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                      : 'bg-card text-foreground/80 hover:bg-muted'
                   }`}
                   onClick={() => setActiveAnalyticsTab(tab)}
                 >
@@ -903,7 +903,7 @@ export default function Profile() {
             </div>
 
             {/* Advanced Analytics Content */}
-            <div className="bg-slate-800/50 rounded-xl border border-slate-700 p-6">
+            <div className="bg-card/50 rounded-xl border border-border p-6">
               {activeAnalyticsTab === 'Speed Trends' && (
                 <div>
                   <h2 className="text-xl font-semibold text-slate-100 mb-4 text-left">Speed Trends</h2>
@@ -993,7 +993,7 @@ export default function Profile() {
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {categoryLabels.map((cat, i) => (
-                      <div key={cat} className="bg-slate-700/50 rounded-lg p-4 border border-slate-600">
+                      <div key={cat} className="bg-muted/50 rounded-lg p-4 border border-border">
                         <div className="text-sm text-slate-400 mb-1">{cat}</div>
                         <div className="text-2xl font-bold text-primary">{categoryWpmData[i]} WPM</div>
                       </div>
@@ -1012,7 +1012,7 @@ export default function Profile() {
             disabled={!testResults || testResults.length === 0 || !bestWpm || bestWpm === 0}
             className={`px-6 py-3 rounded-lg font-semibold transition-all ${
               (!testResults || testResults.length === 0 || !bestWpm || bestWpm === 0)
-                ? 'bg-slate-700 text-slate-500 cursor-not-allowed'
+                ? 'bg-muted text-muted-foreground cursor-not-allowed'
                 : 'bg-primary text-slate-900 hover:opacity-90'
             }`}
           >
@@ -1020,7 +1020,7 @@ export default function Profile() {
           </button>
           <button
             onClick={logout}
-            className="px-6 py-3 rounded-lg bg-slate-800 text-slate-200 font-semibold hover:bg-slate-700 transition-all border border-slate-700"
+            className="px-6 py-3 rounded-lg bg-card text-foreground font-semibold hover:bg-muted transition-all border border-border"
           >
             Sign Out
           </button>
@@ -1042,7 +1042,7 @@ export default function Profile() {
 
         {/* Dialogs */}
         <AlertDialog open={showDeleteProgress} onOpenChange={setShowDeleteProgress}>
-          <AlertDialogContent className="bg-slate-800 border-slate-700">
+          <AlertDialogContent className="bg-card border-border">
             <AlertDialogHeader>
               <AlertDialogTitle className="text-slate-100">Delete All Progress?</AlertDialogTitle>
               <AlertDialogDescription className="text-slate-400">
@@ -1050,7 +1050,7 @@ export default function Profile() {
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel disabled={deleting} className="bg-slate-700 text-slate-200 border-slate-600 hover:bg-slate-600">Cancel</AlertDialogCancel>
+              <AlertDialogCancel disabled={deleting} className="bg-muted text-foreground border-border hover:bg-muted/80">Cancel</AlertDialogCancel>
               <AlertDialogAction disabled={deleting} onClick={handleDeleteProgress} className="bg-red-600 hover:bg-red-700 text-white">
                 Delete Progress
               </AlertDialogAction>
@@ -1059,7 +1059,7 @@ export default function Profile() {
         </AlertDialog>
 
         <AlertDialog open={showDeleteAccount} onOpenChange={setShowDeleteAccount}>
-          <AlertDialogContent className="bg-slate-800 border-slate-700">
+          <AlertDialogContent className="bg-card border-border">
             <AlertDialogHeader>
               <AlertDialogTitle className="text-slate-100">Delete Account?</AlertDialogTitle>
               <AlertDialogDescription className="text-slate-400">
@@ -1067,7 +1067,7 @@ export default function Profile() {
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel disabled={deleting} className="bg-slate-700 text-slate-200 border-slate-600 hover:bg-slate-600">Cancel</AlertDialogCancel>
+              <AlertDialogCancel disabled={deleting} className="bg-muted text-foreground border-border hover:bg-muted/80">Cancel</AlertDialogCancel>
               <AlertDialogAction disabled={deleting} onClick={handleDeleteAccount} className="bg-red-900 hover:bg-red-800 text-white">
                 Delete Account
               </AlertDialogAction>
@@ -1094,7 +1094,7 @@ function ModernStatCard({ icon: Icon, label, value, color = 'cyan' }: { icon: an
   };
   
   return (
-    <div className={`bg-slate-800/50 rounded-xl border ${colorClasses[color]} p-4 transition-all hover:scale-105`}>
+    <div className={`bg-card/50 rounded-xl border ${colorClasses[color]} p-4 transition-all hover:scale-105`}>
       <div className="flex items-center gap-2 mb-2">
         <Icon className="w-5 h-5 flex-shrink-0" />
         <span className="text-xs font-medium text-slate-400 uppercase tracking-wide leading-tight">{label}</span>
@@ -1107,7 +1107,7 @@ function ModernStatCard({ icon: Icon, label, value, color = 'cyan' }: { icon: an
 // Simple Stat Card Component
 function StatCard({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <div className="bg-slate-800/50 rounded-xl border border-slate-700 p-4 hover:border-slate-600 transition-all">
+    <div className="bg-card/50 rounded-xl border border-border p-4 hover:border-border/80 transition-all">
       <div className="text-xs font-medium text-slate-400 mb-2 uppercase tracking-wide leading-tight">{label}</div>
       <div className="text-xl font-bold text-primary leading-tight">{value}</div>
     </div>

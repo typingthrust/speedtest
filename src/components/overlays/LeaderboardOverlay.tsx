@@ -31,12 +31,12 @@ function MinimalLeaderboardOverlay({ open, onClose, children }: { open: boolean;
   return (
     <div
       ref={backdropRef}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-[12px]"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-background/60 backdrop-blur-[12px]"
       style={{ WebkitBackdropFilter: 'blur(12px)' }}
     >
       <div
         ref={overlayRef}
-        className="relative w-full max-w-2xl mx-4 sm:mx-auto bg-slate-800/90 rounded-3xl border border-slate-700 shadow-xl flex flex-col items-center min-h-[60vh] max-h-[95vh] min-w-0 sm:min-w-[320px] px-4 p-0"
+        className="relative w-full max-w-2xl mx-4 sm:mx-auto bg-card/90 rounded-3xl border border-border shadow-xl flex flex-col items-center min-h-[60vh] max-h-[95vh] min-w-0 sm:min-w-[320px] px-4 p-0"
         style={{ boxShadow: '0 4px 32px 0 rgba(0,0,0,0.5)', border: '1px solid rgba(51, 65, 85, 0.5)' }}
       >
         {/* X Close Button absolutely positioned, not in header */}
@@ -60,10 +60,10 @@ function ShareModal({ open, onClose, link }: { open: boolean; onClose: () => voi
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-      <div className="bg-slate-800 rounded-2xl shadow-xl p-6 w-full max-w-xs flex flex-col items-center animate-fade-in">
+      <div className="bg-card rounded-2xl shadow-xl p-6 w-full max-w-xs flex flex-col items-center animate-fade-in">
         <h2 className="text-lg font-bold mb-2 text-slate-100">Share Leaderboard</h2>
         <input
-          className="w-full px-3 py-2 rounded border border-slate-600 bg-slate-700 text-sm mb-3 text-center text-slate-100"
+          className="w-full px-3 py-2 rounded border border-border bg-muted text-sm mb-3 text-center text-foreground"
           value={link}
           readOnly
           onFocus={e => e.target.select()}
@@ -139,7 +139,7 @@ export default function LeaderboardOverlay() {
           {TIMEFRAMES.map(tf => (
             <button
               key={tf.value}
-              className={`px-3 py-1 rounded-full text-xs font-semibold ${state.timeframe === tf.value ? 'bg-primary text-slate-900' : 'bg-slate-700 text-slate-300'}`}
+              className={`px-3 py-1 rounded-full text-xs font-semibold ${state.timeframe === tf.value ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground/80'}`}
               onClick={() => setTimeframe(tf.value as any)}
             >
               {tf.label}
@@ -155,7 +155,7 @@ export default function LeaderboardOverlay() {
               {filteredEntries.slice(0, 5).map((entry, i) => (
                 <li
                   key={getDisplayName(entry)}
-                  className={`flex items-center gap-2 px-3 py-3 rounded-2xl shadow-sm border border-slate-600 bg-slate-700/80 transition-all duration-200`}
+                  className={`flex items-center gap-2 px-3 py-3 rounded-2xl shadow-sm border border-border bg-muted/80 transition-all duration-200`}
                   style={{ minHeight: 56 }}
                 >
                   <span className="w-8 text-center text-lg font-bold text-slate-400 select-none">{i + 1}</span>
@@ -173,7 +173,7 @@ export default function LeaderboardOverlay() {
         {/* Current User Row (if not in top 5) */}
         {userIdx > 4 && userEntry && (
           <div className="w-full flex flex-col items-center mt-2">
-            <div className="flex items-center gap-2 px-3 py-3 rounded-2xl shadow-sm border border-primary bg-slate-700 ring-2 ring-primary/50 font-bold scale-[1.03]" style={{ minHeight: 56 }}>
+            <div className="flex items-center gap-2 px-3 py-3 rounded-2xl shadow-sm border border-primary bg-muted ring-2 ring-primary/50 font-bold scale-[1.03]" style={{ minHeight: 56 }}>
               <span className="w-8 text-center text-lg font-bold text-primary select-none">{userIdx + 1}</span>
               <span className="w-10 h-10 rounded-full bg-primary flex items-center justify-center overflow-hidden text-slate-900 font-bold text-base">
                 <UserIcon className="w-6 h-6" />

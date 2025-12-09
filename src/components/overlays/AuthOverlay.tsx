@@ -85,11 +85,11 @@ export default function AuthOverlay() {
             closeOverlay();
             navigate('/profile');
           }, 1500);
-        } else {
+      } else {
           // No session - email confirmation is REQUIRED
           // User MUST click the activation link in their email
           setEmailConfirmationRequired(true);
-          setSignupSuccess(true);
+        setSignupSuccess(true);
           setError('');
         }
       } else {
@@ -192,17 +192,17 @@ export default function AuthOverlay() {
   return (
     <div
       ref={backdropRef}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-[12px]"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-background/60 backdrop-blur-[12px]"
       style={{ WebkitBackdropFilter: 'blur(12px)' }}
     >
       <div
         ref={overlayRef}
-        className="relative w-full max-w-md mx-4 sm:mx-auto bg-slate-800/95 rounded-2xl border border-slate-700 shadow-2xl flex flex-col min-h-[400px] max-h-[90vh] min-w-0 sm:min-w-[320px] p-0"
+        className="relative w-full max-w-md mx-4 sm:mx-auto bg-card/95 rounded-2xl border border-border shadow-2xl flex flex-col min-h-[400px] max-h-[90vh] min-w-0 sm:min-w-[320px] p-0"
         style={{ boxShadow: '0 8px 40px 0 rgba(0,0,0,0.5)' }}
       >
         <button
           onClick={closeOverlay}
-          className="absolute top-4 right-4 text-slate-400 hover:text-slate-200 text-xl p-2 rounded-full hover:bg-slate-700 transition-colors focus:outline-none z-10"
+          className="absolute top-4 right-4 text-muted-foreground hover:text-foreground text-xl p-2 rounded-full hover:bg-muted transition-colors focus:outline-none z-10"
           aria-label="Close"
         >
           <X className="w-5 h-5" />
@@ -227,7 +227,7 @@ export default function AuthOverlay() {
               {/* Username/email */}
               <div className="text-xl font-bold text-slate-100">{user.username || user.email || 'User'}</div>
               {/* Stats */}
-              <div className="flex flex-row justify-center gap-8 w-full bg-slate-700 border border-slate-600 rounded-xl p-5">
+              <div className="flex flex-row justify-center gap-8 w-full bg-muted border border-border rounded-xl p-5">
                 <div className="text-center">
                   <div className="text-2xl font-mono font-bold text-primary">{wpm}</div>
                   <div className="text-xs text-slate-400 mt-1">WPM</div>
@@ -257,7 +257,7 @@ export default function AuthOverlay() {
               <button
                 onClick={handleGoogleLogin}
                 disabled={loading}
-                className="w-full flex items-center justify-center gap-3 bg-slate-700 border-2 border-slate-600 hover:border-slate-500 text-slate-100 rounded-lg px-4 py-3 font-medium transition-all duration-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full flex items-center justify-center gap-3 bg-muted border-2 border-border hover:border-border/80 text-foreground rounded-lg px-4 py-3 font-medium transition-all duration-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <svg className="w-5 h-5" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -273,7 +273,7 @@ export default function AuthOverlay() {
                   <div className="w-full border-t border-slate-600"></div>
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-slate-800/95 text-slate-400">or</span>
+                  <span className="px-2 bg-card/95 text-muted-foreground">or</span>
                 </div>
               </div>
 
@@ -289,7 +289,7 @@ export default function AuthOverlay() {
                     <div>
                       <input
                         type="email"
-                        className="w-full border-2 border-slate-600 rounded-lg px-4 py-3 text-sm bg-slate-700 text-slate-100 placeholder-slate-400 focus:border-primary focus:ring-2 focus:ring-primary focus:ring-offset-0 transition-all"
+                        className="w-full border-2 border-border rounded-lg px-4 py-3 text-sm bg-muted text-foreground placeholder-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary focus:ring-offset-0 transition-all"
                         placeholder="Email address"
                         value={email}
                         onChange={e => setEmail(e.target.value)}
@@ -321,7 +321,7 @@ export default function AuthOverlay() {
                             setResetSent(false);
                             setResetError('');
                           }}
-                          className="mt-3 w-full bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-lg px-4 py-2.5 font-semibold text-sm transition-colors"
+                          className="mt-3 w-full bg-muted hover:bg-muted/80 text-foreground rounded-lg px-4 py-2.5 font-semibold text-sm transition-colors"
                         >
                           Back to Sign In
                         </button>
@@ -364,24 +364,24 @@ export default function AuthOverlay() {
                   {/* Email/Password Form */}
                   <form onSubmit={signup ? handleEmailSignup : handleEmailLogin} className="space-y-4">
                     <div>
-                      <input
-                        type="email"
-                        className="w-full border-2 border-slate-600 rounded-lg px-4 py-3 text-sm bg-slate-700 text-slate-100 placeholder-slate-400 focus:border-primary focus:ring-2 focus:ring-primary focus:ring-offset-0 transition-all"
+                <input
+                  type="email"
+                        className="w-full border-2 border-border rounded-lg px-4 py-3 text-sm bg-muted text-foreground placeholder-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary focus:ring-offset-0 transition-all"
                         placeholder="Email address"
-                        value={email}
-                        onChange={e => setEmail(e.target.value)}
-                        required
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  required
                         disabled={loading || (signup && signupSuccess)}
-                      />
+                />
                     </div>
                     <div>
-                      <input
-                        type="password"
-                        className="w-full border-2 border-slate-600 rounded-lg px-4 py-3 text-sm bg-slate-700 text-slate-100 placeholder-slate-400 focus:border-primary focus:ring-2 focus:ring-primary focus:ring-offset-0 transition-all"
-                        placeholder="Password"
-                        value={password}
-                        onChange={e => setPassword(e.target.value)}
-                        required
+                <input
+                  type="password"
+                        className="w-full border-2 border-border rounded-lg px-4 py-3 text-sm bg-muted text-foreground placeholder-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary focus:ring-offset-0 transition-all"
+                  placeholder="Password"
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  required
                         disabled={loading || (signup && signupSuccess)}
                         minLength={6}
                       />
@@ -450,7 +450,7 @@ export default function AuthOverlay() {
                           >
                             Try Signing In
                           </button>
-                          <button
+                <button
                             type="button"
                             onClick={() => {
                               setSignup(false);
@@ -461,7 +461,7 @@ export default function AuthOverlay() {
                             className="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-200 px-4 py-2.5 rounded-lg font-semibold text-sm transition-colors"
                           >
                             Switch to Sign In
-                          </button>
+                </button>
                         </div>
                       </div>
                     ) : (
@@ -487,11 +487,11 @@ export default function AuthOverlay() {
                       {loading ? 'Please wait...' : (signup ? 'Create Account' : 'Sign In')}
                     </button>
 
-                    {/* Forgot password link */}
-                    {!signup && (
+                {/* Forgot password link */}
+                {!signup && (
                       <div className="flex justify-end">
-                        <button
-                          type="button"
+                    <button
+                      type="button"
                           className="text-sm text-slate-400 hover:text-slate-200 hover:underline font-medium transition-colors"
                           onClick={() => {
                             setShowForgotPassword(true);
@@ -499,12 +499,12 @@ export default function AuthOverlay() {
                             setResetError('');
                             setResetSent(false);
                           }}
-                          disabled={loading}
-                        >
-                          Forgot password?
-                        </button>
-                      </div>
-                    )}
+                      disabled={loading}
+                    >
+                      Forgot password?
+                    </button>
+                  </div>
+                )}
                   </form>
                 </>
               )}
@@ -541,7 +541,7 @@ export default function AuthOverlay() {
               </div>
             </>
           )}
-          </div>
+        </div>
         </div>
       </div>
     </div>

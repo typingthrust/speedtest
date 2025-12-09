@@ -103,7 +103,7 @@ export default function Widget() {
   const accuracy = calculateAccuracy(charsTyped - errors, charsTyped);
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-slate-900" style={{ minHeight: 320, minWidth: 320 }}>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-background" style={{ minHeight: 320, minWidth: 320 }}>
       <div className="w-full max-w-xl mx-auto p-4 rounded-xl shadow border border-slate-700 bg-slate-800">
         <h2 className="text-xl font-bold text-slate-100 mb-4 text-center">Typing Test</h2>
         <div className="mb-4 text-lg font-mono bg-slate-700 rounded p-4 min-h-[64px] text-slate-100" style={{ wordBreak: 'break-word' }}>

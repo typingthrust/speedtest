@@ -93,8 +93,8 @@ const CircularProgress: React.FC<{ value: number; max: number; size?: number; la
 const StatCard: React.FC<{ icon: React.ReactNode; label: string; value: string | number; subValue?: string; highlight?: boolean }> = ({
   icon, label, value, subValue, highlight
 }) => (
-  <div className={`flex items-center gap-3 px-4 py-3 rounded-xl ${highlight ? 'bg-primary/10 border border-primary/30' : 'bg-slate-800/50'}`}>
-    <div className={`p-2 rounded-lg ${highlight ? 'bg-primary/20 text-primary' : 'bg-slate-700 text-slate-400'}`}>
+  <div className={`flex items-center gap-3 px-4 py-3 rounded-xl ${highlight ? 'bg-primary/10 border border-primary/30' : 'bg-card/50'}`}>
+    <div className={`p-2 rounded-lg ${highlight ? 'bg-primary/20 text-primary' : 'bg-muted text-muted-foreground'}`}>
       {icon}
     </div>
     <div>
@@ -224,7 +224,7 @@ const ResultScreen: React.FC<ResultScreenProps> = ({
   }, [keystrokeStats]);
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col">
+    <div className="min-h-screen bg-background text-foreground flex flex-col">
       <Navbar />
       
       <main className="flex-1 flex flex-col items-center px-4 py-8">
@@ -232,7 +232,7 @@ const ResultScreen: React.FC<ResultScreenProps> = ({
           
           {/* Header with Grade */}
           <div className="text-center mb-8">
-            <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-800 border border-slate-700 ${performance.color}`}>
+            <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full bg-card border border-border ${performance.color}`}>
               <span className="text-3xl font-black">{performance.grade}</span>
               <span className="text-sm font-medium text-slate-400">{performance.label}</span>
             </div>
@@ -265,7 +265,7 @@ const ResultScreen: React.FC<ResultScreenProps> = ({
 
           {/* Performance Graph */}
           {chartData && (
-            <div className="bg-slate-800/50 rounded-2xl p-4 mb-8 border border-slate-700/50">
+            <div className="bg-card/50 rounded-2xl p-4 mb-8 border border-border/50">
               <div className="flex items-center gap-2 mb-4">
                 <TrendingUp className="w-4 h-4 text-primary" />
                 <span className="text-sm font-medium text-slate-300">Performance Over Time</span>
@@ -278,7 +278,7 @@ const ResultScreen: React.FC<ResultScreenProps> = ({
 
           {/* Error Analysis */}
           {(topErrorKeys.length > 0 || (errorTypes && Object.values(errorTypes).some(v => v > 0))) && (
-            <div className="bg-slate-800/50 rounded-2xl p-4 mb-8 border border-slate-700/50">
+            <div className="bg-card/50 rounded-2xl p-4 mb-8 border border-border/50">
               <div className="text-sm font-medium text-slate-300 mb-4">Error Analysis</div>
               <div className="flex flex-wrap gap-6">
                 {/* Problem Keys */}
@@ -303,19 +303,19 @@ const ResultScreen: React.FC<ResultScreenProps> = ({
                     <div className="text-xs text-slate-500 mb-2">Error Types</div>
                     <div className="flex gap-3">
                       {errorTypes.punctuation > 0 && (
-                        <div className="px-3 py-1.5 bg-slate-700/50 rounded-lg text-sm">
+                        <div className="px-3 py-1.5 bg-muted/50 rounded-lg text-sm">
                           <span className="text-slate-400">Punctuation:</span>
                           <span className="text-red-400 ml-1 font-semibold">{errorTypes.punctuation}</span>
                         </div>
                       )}
                       {errorTypes.case > 0 && (
-                        <div className="px-3 py-1.5 bg-slate-700/50 rounded-lg text-sm">
+                        <div className="px-3 py-1.5 bg-muted/50 rounded-lg text-sm">
                           <span className="text-slate-400">Case:</span>
                           <span className="text-red-400 ml-1 font-semibold">{errorTypes.case}</span>
                         </div>
                       )}
                       {errorTypes.number > 0 && (
-                        <div className="px-3 py-1.5 bg-slate-700/50 rounded-lg text-sm">
+                        <div className="px-3 py-1.5 bg-muted/50 rounded-lg text-sm">
                           <span className="text-slate-400">Numbers:</span>
                           <span className="text-red-400 ml-1 font-semibold">{errorTypes.number}</span>
                         </div>

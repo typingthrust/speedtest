@@ -12,7 +12,7 @@ function MinimalGrowthOverlay({ open, onClose, children }: { open: boolean; onCl
       style={{ WebkitBackdropFilter: 'blur(12px)' }}
     >
       <div
-        className="relative w-full max-w-2xl mx-4 sm:mx-auto bg-slate-800/90 rounded-xl border border-slate-700 shadow-lg flex flex-col items-center min-h-[40vh] max-h-[90vh] min-w-0 sm:min-w-[320px] p-0"
+        className="relative w-full max-w-2xl mx-4 sm:mx-auto bg-card/90 rounded-xl border border-border shadow-lg flex flex-col items-center min-h-[40vh] max-h-[90vh] min-w-0 sm:min-w-[320px] p-0"
         style={{ boxShadow: '0 4px 32px 0 rgba(0,0,0,0.5)', border: '1px solid rgba(51, 65, 85, 0.5)' }}
       >
         <button
@@ -52,7 +52,7 @@ export default function GrowthToolsOverlay() {
         <section className="w-full">
           <h3 className="text-base font-semibold mb-2 text-slate-300">Join Our Community</h3>
           <div className="flex justify-center gap-3 mb-1">
-            <a href="https://discord.gg/your-discord" target="_blank" rel="noopener" className="flex items-center gap-2 bg-slate-700 hover:bg-slate-600 text-slate-100 px-5 py-2 rounded-lg font-semibold shadow transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-primary">
+            <a href="https://discord.gg/your-discord" target="_blank" rel="noopener" className="flex items-center gap-2 bg-muted hover:bg-muted/80 text-foreground px-5 py-2 rounded-lg font-semibold shadow transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-primary">
               <FaDiscord className="w-5 h-5" style={{ color: '#94a3b8' }} />
               Discord
             </a>
@@ -61,13 +61,13 @@ export default function GrowthToolsOverlay() {
         {/* Competitions Placeholder */}
         <section className="w-full">
           <h3 className="text-base font-semibold mb-2 text-slate-300">Typing Competitions</h3>
-          <div className="bg-slate-700/80 rounded-lg p-3 text-xs text-slate-300 border border-slate-600">Competitions and challenge system coming soon!</div>
+          <div className="bg-muted/80 rounded-lg p-3 text-xs text-foreground/80 border border-border">Competitions and challenge system coming soon!</div>
         </section>
         {/* Embeddable Widget */}
         <section className="w-full">
           <h3 className="text-base font-semibold mb-2 text-slate-300">Embeddable Widget</h3>
           <div className="flex items-center gap-2 mb-1">
-            <textarea className="w-full border border-slate-600 bg-slate-700 text-slate-100 rounded p-2 text-xs focus:outline-none focus:ring-2 focus:ring-primary" rows={2} value={widgetCode} readOnly />
+            <textarea className="w-full border border-border bg-muted text-foreground rounded p-2 text-xs focus:outline-none focus:ring-2 focus:ring-primary" rows={2} value={widgetCode} readOnly />
             <button
               className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold transition-colors duration-150 ${copiedWidget ? 'bg-green-500 text-slate-900' : 'bg-primary text-slate-900 hover:opacity-90'}`}
               onClick={handleCopyWidget}
