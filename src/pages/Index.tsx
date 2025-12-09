@@ -285,8 +285,9 @@ const TypingArea: React.FC<TypingAreaProps & { mode?: string; godModeIndex?: num
           fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace',
           lineHeight: '1.7',
           padding: '16px',
-          background: '#1e293b', // slate-800
+          background: 'hsl(var(--card))',
           borderRadius: '8px',
+          border: '1px solid hsl(var(--border))',
         }}
       >
         {Array.from(currentText).map((char, idx) => {
@@ -1157,8 +1158,14 @@ const Index = () => {
   };
 
   // Function to modify text based on punctuation and numbers preferences
-  const modifyTextForOptions = (text: string): string => {
+  const modifyTextForOptions = (text: string, mode?: string): string => {
     if (!text) return text;
+    
+    // Don't modify coding/syntax mode text - preserve formatting and always include punctuation/numbers
+    if (mode === 'coding' || mode === 'syntax') {
+      // Force punctuation and numbers to be true for coding mode (they're always included)
+      return text;
+    }
     
     let modifiedText = text;
     
@@ -1166,8 +1173,8 @@ const Index = () => {
     if (!includePunctuation) {
       // Remove common punctuation marks but keep spaces
       modifiedText = modifiedText.replace(/[.,!?;:'"()\[\]{}\-_=+<>\/\\|`~@#$%^&*]/g, '');
-      // Clean up multiple spaces that might result
-      modifiedText = modifiedText.replace(/\s+/g, ' ').trim();
+      // Clean up multiple spaces that might result (but preserve newlines)
+      modifiedText = modifiedText.replace(/[ \t]+/g, ' ').replace(/ +$/gm, '');
     }
     // If includePunctuation is true, keep text as-is (don't modify)
     
@@ -1175,8 +1182,8 @@ const Index = () => {
     if (!includeNumbers) {
       // Remove all digits (0-9)
       modifiedText = modifiedText.replace(/[0-9]/g, '');
-      // Clean up multiple spaces that might result
-      modifiedText = modifiedText.replace(/\s+/g, ' ').trim();
+      // Clean up multiple spaces that might result (but preserve newlines)
+      modifiedText = modifiedText.replace(/[ \t]+/g, ' ').replace(/ +$/gm, '');
     } else {
       // If numbers are enabled, ensure some numbers exist in the text
       const hasNumbers = /[0-9]/.test(modifiedText);
@@ -1207,16 +1214,24 @@ const Index = () => {
     // Only update currentText if not in custom mode
     if (currentMode !== 'custom') {
     const newText = generateNewText(currentMode, difficulty, language);
-    // Apply punctuation and numbers modifications
-    const modifiedText = modifyTextForOptions(newText);
-    // Trim and normalize spaces to prevent wrapping issues - remove trailing spaces from each line
-    const normalizedText = modifiedText
-      .split('\n')
-      .map(line => line.trimEnd())
-      .join('\n')
-      .trim()
-      .replace(/\s+/g, ' ');
-    setCurrentText(normalizedText);
+    // Apply punctuation and numbers modifications (skip for coding/syntax to preserve formatting)
+    const modifiedText = modifyTextForOptions(newText, currentMode);
+    // For coding/syntax mode, preserve original formatting and force punctuation/numbers
+    if (currentMode === 'coding' || currentMode === 'syntax') {
+      // Force include punctuation and numbers for coding mode
+      setIncludePunctuation(true);
+      setIncludeNumbers(true);
+      setCurrentText(modifiedText);
+    } else {
+      // Trim and normalize spaces to prevent wrapping issues - remove trailing spaces from each line
+      const normalizedText = modifiedText
+        .split('\n')
+        .map(line => line.trimEnd())
+        .join('\n')
+        .trim()
+        .replace(/\s+/g, ' ');
+      setCurrentText(normalizedText);
+    }
     }
     // Optionally reset userInput, errors, etc. here if desired
   }, [language, difficulty, currentMode, includePunctuation, includeNumbers]);
@@ -1588,14 +1603,19 @@ const Index = () => {
     // Regenerate text with current options
     if (currentMode !== 'custom') {
       const newText = generateNewText(currentMode, difficulty, language);
-      const modifiedText = modifyTextForOptions(newText);
-      const normalizedText = modifiedText
-        .split('\n')
-        .map(line => line.trimEnd())
-        .join('\n')
-        .trim()
-        .replace(/\s+/g, ' ');
-      setCurrentText(normalizedText);
+      const modifiedText = modifyTextForOptions(newText, currentMode);
+      // For coding/syntax mode, preserve original formatting
+      if (currentMode === 'coding' || currentMode === 'syntax') {
+        setCurrentText(modifiedText);
+      } else {
+        const normalizedText = modifiedText
+          .split('\n')
+          .map(line => line.trimEnd())
+          .join('\n')
+          .trim()
+          .replace(/\s+/g, ' ');
+        setCurrentText(normalizedText);
+      }
     }
     setKeystrokeStats({ total: 0, correct: 0, incorrect: 0, extra: 0, keyCounts: {} });
     setErrorTypes({ punctuation: 0, case: 0, number: 0, other: 0 });
@@ -1921,14 +1941,22 @@ const Index = () => {
       setOpenSetting(null);
     }
     const newText = generateNewText(newMode, difficulty, language);
-    const modifiedText = modifyTextForOptions(newText);
-    const normalizedText = modifiedText
-      .split('\n')
-      .map(line => line.trimEnd())
-      .join('\n')
-      .trim()
-      .replace(/\s+/g, ' ');
-    setCurrentText(normalizedText);
+    const modifiedText = modifyTextForOptions(newText, newMode);
+    // For coding/syntax mode, preserve original formatting and force punctuation/numbers
+    if (newMode === 'coding' || newMode === 'syntax') {
+      // Force include punctuation and numbers for coding mode
+      setIncludePunctuation(true);
+      setIncludeNumbers(true);
+      setCurrentText(modifiedText);
+    } else {
+      const normalizedText = modifiedText
+        .split('\n')
+        .map(line => line.trimEnd())
+        .join('\n')
+        .trim()
+        .replace(/\s+/g, ' ');
+      setCurrentText(normalizedText);
+    }
     setTimeLeft(newMode === 'time' ? timeLimit : 0);
   };
 
@@ -2198,7 +2226,7 @@ const Index = () => {
       </AnimatePresence>
       {/* Main Content */}
       <div className="flex-1 flex flex-col items-center justify-center space-y-4 w-full pt-4 sm:pt-20 pb-8" style={{ minHeight: 'calc(100vh - 200px)' }}>
-        {/* Compact Horizontal Settings Bar - Minimal & Clean - Hides when typing */}
+        {/* Category Bar - Desktop Only - Hides when typing */}
         <AnimatePresence>
           {!isTyping && (
             <motion.div
@@ -2206,173 +2234,240 @@ const Index = () => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.3 }}
-              className="w-full flex justify-center px-4 sm:px-6 mb-8"
+              className="hidden sm:flex w-full justify-center px-4 sm:px-6 mb-6"
               style={{ position: 'relative', zIndex: 10 }}
             >
-          {/* Mobile: Clean Settings Button */}
-          <div className="sm:hidden w-full max-w-md mx-auto">
-            <button
-              onClick={() => setMobileDrawerOpen(true)}
-              className="w-full flex items-center justify-between px-5 py-3.5 rounded-full bg-card/60 backdrop-blur-sm border border-border/50 text-foreground hover:bg-card/80 transition-all duration-200 shadow-sm"
-            >
-              <div className="flex items-center gap-3">
-                <SlidersHorizontal className="w-4 h-4 text-primary" />
-                <span className="text-sm font-medium">
-                  {(() => {
-                    const modeLabels: Record<string, string> = {
-                      'time': 'Timed',
-                      'words': 'Words',
-                      'quote': 'Quotes',
-                      'zen': 'Zen',
-                      'coding': 'Coding',
-                      'custom': 'Custom',
-                      'syntax': 'Syntax',
-                      'essay': 'Essay',
-                      'notimer': 'No Timer',
-                      'softtheme': 'Soft Theme',
-                      'hardwords': 'Hard Words',
-                      'foreign': 'Foreign',
-                    };
-                    return modeLabels[currentMode] || 'Settings';
-                  })()}
-                </span>
+              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-card/50 backdrop-blur-sm border border-border/50 shadow-sm overflow-x-auto scrollbar-hide">
+                {mainCategories.map((cat) => {
+                  const isActive = openCategory === cat.heading;
+                  const hasActiveSub = cat.subcategories.some(sub => currentMode === sub.value);
+                  return (
+                    <button
+                      key={cat.heading}
+                      onClick={() => setOpenCategory(isActive ? null : cat.heading)}
+                      className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 whitespace-nowrap ${
+                        isActive || hasActiveSub
+                          ? 'bg-primary text-primary-foreground'
+                          : 'text-foreground/70 hover:text-foreground hover:bg-muted/50'
+                      }`}
+                    >
+                      {cat.heading}
+                    </button>
+                  );
+                })}
+                {/* Duration Category */}
                 {currentMode === 'time' && (
-                  <span className="text-xs text-muted-foreground">• {timeLimit}s</span>
-                )}
-                {currentMode === 'words' && (
-                  <span className="text-xs text-muted-foreground">• {wordLimit} words</span>
-                )}
-              </div>
-              <svg className="w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
-          </div>
-
-          {/* Desktop: Compact Horizontal Settings Bar - Minimal & Clean */}
-          <motion.div
-            layout
-            transition={{ type: 'spring', stiffness: 400, damping: 32 }}
-            className="hidden sm:flex flex-row items-center justify-center gap-2 px-5 py-3 rounded-full bg-card/50 backdrop-blur-sm border border-border/50 shadow-sm select-none transition-all duration-300"
-                style={{ width: 'fit-content', maxWidth: '90vw', position: 'relative', zIndex: 10 }}
-          >
-            {/* Mode Selection - Compact Pills */}
-            <div className="flex items-center gap-1.5">
-              {[
-                { label: 'time', value: 'time' },
-                { label: 'words', value: 'words' },
-                { label: 'quote', value: 'quote' },
-                { label: 'zen', value: 'zen' },
-                { label: 'coding', value: 'coding' },
-                { label: 'custom', value: 'custom' },
-              ].map((mode) => {
-                const isActive = currentMode === mode.value;
-                return (
                   <button
-                    key={mode.value}
-                    onClick={() => handleModeChange(mode.value)}
-                    className={`px-3 py-1 rounded-full text-sm font-medium transition-all duration-200 ${
-                      isActive 
-                        ? 'bg-primary text-primary-foreground shadow-md' 
-                        : 'text-foreground/70 hover:text-foreground hover:bg-muted/50'
-                    }`}
-                  >
-                    {mode.label}
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Divider */}
-            <div className="w-px h-5 bg-border/50 mx-1" />
-
-            {/* Duration/Word Count - Only show relevant options */}
-            {currentMode === 'time' ? (
-              <div className="flex items-center gap-1">
-                {[15, 30, 60, 120].map(sec => (
-                  <button
-                    key={sec}
-                    onClick={() => { setTimeLimit(sec); resetTest(sec); }}
-                    className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
-                      timeLimit === sec
+                    onClick={() => setOpenCategory(openCategory === 'Duration' ? null : 'Duration')}
+                    className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 whitespace-nowrap ${
+                      openCategory === 'Duration'
                         ? 'bg-primary text-primary-foreground'
                         : 'text-foreground/70 hover:text-foreground hover:bg-muted/50'
                     }`}
                   >
-                    {sec}
+                    Duration
                   </button>
-                ))}
-              </div>
-            ) : currentMode === 'words' ? (
-              <div className="flex items-center gap-1">
-                {[10, 25, 50, 100].map(words => (
-                  <button
-                    key={words}
-                    onClick={() => { setWordLimit(words); resetTest(); }}
-                    className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
-                      wordLimit === words
-                        ? 'bg-primary text-primary-foreground'
-                        : 'text-foreground/70 hover:text-foreground hover:bg-muted/50'
-                    }`}
-                  >
-                    {words}
-                  </button>
-                ))}
-              </div>
-            ) : null}
-
-            {/* Divider */}
-            {(currentMode === 'time' || currentMode === 'words') && (
-              <div className="w-px h-5 bg-border/50 mx-1" />
-            )}
-
-            {/* Toggles - Punctuation & Numbers */}
-            <button
-              onClick={() => setIncludePunctuation(!includePunctuation)}
-              className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
-                includePunctuation
-                  ? 'bg-primary/20 text-primary border border-primary/30'
-                  : 'text-foreground/70 hover:text-foreground hover:bg-muted/50'
-              }`}
-            >
-              @ punctuation
-            </button>
-            <button
-              onClick={() => setIncludeNumbers(!includeNumbers)}
-              className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
-                includeNumbers
-                  ? 'bg-primary/20 text-primary border border-primary/30'
-                  : 'text-foreground/70 hover:text-foreground hover:bg-muted/50'
-              }`}
-            >
-              # numbers
-            </button>
-
-            {/* Divider */}
-            <div className="w-px h-5 bg-border/50 mx-1" />
-
-            {/* Difficulty - Compact */}
-            <div className="flex items-center gap-1">
-              {[
-                { label: 'Easy', value: 'short' },
-                { label: 'Classic', value: 'medium' },
-                { label: 'Epic', value: 'long' },
-                { label: 'Ultra', value: 'thicc' },
-              ].map(item => (
+                )}
+                {/* Difficulty Category */}
                 <button
-                  key={item.value}
-                  onClick={() => { setDifficulty(item.value); resetTest(); }}
-                  className={`px-2 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
-                    difficulty === item.value
+                  onClick={() => setOpenCategory(openCategory === 'Difficulty' ? null : 'Difficulty')}
+                  className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 whitespace-nowrap ${
+                    openCategory === 'Difficulty'
                       ? 'bg-primary text-primary-foreground'
                       : 'text-foreground/70 hover:text-foreground hover:bg-muted/50'
                   }`}
                 >
-                  {item.label}
+                  Difficulty
                 </button>
-              ))}
-            </div>
-          </motion.div>
+                {/* Punctuation Toggle - Disabled for coding/syntax mode */}
+                <button
+                  onClick={() => {
+                    if (currentMode !== 'coding' && currentMode !== 'syntax') {
+                      setIncludePunctuation(!includePunctuation);
+                      resetTest();
+                    }
+                  }}
+                  disabled={currentMode === 'coding' || currentMode === 'syntax'}
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 whitespace-nowrap ${
+                    currentMode === 'coding' || currentMode === 'syntax'
+                      ? 'opacity-50 cursor-not-allowed'
+                      : ''
+                  } ${
+                    includePunctuation
+                      ? 'bg-primary/20 text-primary border border-primary/30'
+                      : 'text-foreground/70 hover:text-foreground hover:bg-muted/50'
+                  }`}
+                  title={currentMode === 'coding' || currentMode === 'syntax' ? 'Punctuation is always included in coding mode' : ''}
+                >
+                  @ punctuation
+                </button>
+                {/* Numbers Toggle - Disabled for coding/syntax mode */}
+                <button
+                  onClick={() => {
+                    if (currentMode !== 'coding' && currentMode !== 'syntax') {
+                      setIncludeNumbers(!includeNumbers);
+                      resetTest();
+                    }
+                  }}
+                  disabled={currentMode === 'coding' || currentMode === 'syntax'}
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 whitespace-nowrap ${
+                    currentMode === 'coding' || currentMode === 'syntax'
+                      ? 'opacity-50 cursor-not-allowed'
+                      : ''
+                  } ${
+                    includeNumbers
+                      ? 'bg-primary/20 text-primary border border-primary/30'
+                      : 'text-foreground/70 hover:text-foreground hover:bg-muted/50'
+                  }`}
+                  title={currentMode === 'coding' || currentMode === 'syntax' ? 'Numbers are always included in coding mode' : ''}
+                >
+                  # numbers
+                </button>
+              </div>
+              {/* Category Dropdown */}
+              {openCategory && (
+                <>
+                  <div 
+                    className="fixed inset-0 z-10" 
+                    onClick={() => setOpenCategory(null)}
+                  />
+                  <motion.div
+                    initial={{ opacity: 0, y: -8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    className="absolute top-full mt-2 left-1/2 transform -translate-x-1/2 z-20 bg-card/90 backdrop-blur-md border border-border rounded-xl shadow-xl p-4 min-w-[200px]"
+                  >
+                  {(() => {
+                    const selectedCat = mainCategories.find(c => c.heading === openCategory);
+                    if (selectedCat) {
+                      return (
+                        <div className="flex flex-col gap-2">
+                          {selectedCat.subcategories.map((sub) => (
+                            <button
+                              key={sub.value}
+                              onClick={() => {
+                                handleModeChange(sub.value);
+                                setOpenCategory(null);
+                              }}
+                              className={`px-4 py-2 rounded-lg text-sm transition-colors text-left ${
+                                currentMode === sub.value
+                                  ? 'bg-primary text-primary-foreground'
+                                  : 'text-foreground/70 hover:text-foreground hover:bg-muted/50'
+                              }`}
+                            >
+                              {sub.label}
+                            </button>
+                          ))}
+                        </div>
+                      );
+                    } else if (openCategory === 'Duration') {
+                      return (
+                        <div className="flex flex-col gap-2">
+                          {[15, 30, 60, 120].map((sec) => (
+                            <button
+                              key={sec}
+                              onClick={() => {
+                                setTimeLimit(sec);
+                                resetTest(sec);
+                                setOpenCategory(null);
+                              }}
+                              className={`px-4 py-2 rounded-lg text-sm transition-colors text-left ${
+                                timeLimit === sec
+                                  ? 'bg-primary text-primary-foreground'
+                                  : 'text-foreground/70 hover:text-foreground hover:bg-muted/50'
+                              }`}
+                            >
+                              {sec}s
+                            </button>
+                          ))}
+                        </div>
+                      );
+                    } else if (openCategory === 'Difficulty') {
+                      return (
+                        <div className="flex flex-col gap-2">
+                          {[
+                            { label: 'Easy', value: 'short' },
+                            { label: 'Classic', value: 'medium' },
+                            { label: 'Epic', value: 'long' },
+                            { label: 'Ultra', value: 'thicc' },
+                          ].map((item) => (
+                            <button
+                              key={item.value}
+                              onClick={() => {
+                                setDifficulty(item.value);
+                                resetTest();
+                                setOpenCategory(null);
+                              }}
+                              className={`px-4 py-2 rounded-lg text-sm transition-colors text-left ${
+                                difficulty === item.value
+                                  ? 'bg-primary text-primary-foreground'
+                                  : 'text-foreground/70 hover:text-foreground hover:bg-muted/50'
+                              }`}
+                            >
+                              {item.label}
+                            </button>
+                          ))}
+                        </div>
+                      );
+                    }
+                    return null;
+                  })()}
+                  </motion.div>
+                </>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Mobile: Clean Settings Button - Hides when typing */}
+        <AnimatePresence>
+          {!isTyping && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3 }}
+              className="sm:hidden w-full flex justify-center px-4 sm:px-6 mb-8"
+              style={{ position: 'relative', zIndex: 10 }}
+            >
+              <div className="w-full max-w-md mx-auto">
+                <button
+                  onClick={() => setMobileDrawerOpen(true)}
+                  className="w-full flex items-center justify-between px-5 py-3.5 rounded-full bg-card/60 backdrop-blur-sm border border-border/50 text-foreground hover:bg-card/80 transition-all duration-200 shadow-sm"
+                >
+                  <div className="flex items-center gap-3">
+                    <SlidersHorizontal className="w-4 h-4 text-primary" />
+                    <span className="text-sm font-medium">
+                      {(() => {
+                        const modeLabels: Record<string, string> = {
+                          'time': 'Timed',
+                          'words': 'Words',
+                          'quote': 'Quotes',
+                          'zen': 'Zen',
+                          'coding': 'Coding',
+                          'custom': 'Custom',
+                          'syntax': 'Syntax',
+                          'essay': 'Essay',
+                          'notimer': 'No Timer',
+                          'softtheme': 'Soft Theme',
+                          'hardwords': 'Hard Words',
+                          'foreign': 'Foreign',
+                        };
+                        return modeLabels[currentMode] || 'Settings';
+                      })()}
+                    </span>
+                    {currentMode === 'time' && (
+                      <span className="text-xs text-muted-foreground">• {timeLimit}s</span>
+                    )}
+                    {currentMode === 'words' && (
+                      <span className="text-xs text-muted-foreground">• {wordLimit} words</span>
+                    )}
+                  </div>
+                  <svg className="w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
@@ -2469,7 +2564,12 @@ const Index = () => {
                     },
                   ].map((cat) => {
                     const isExpanded = mobileExpandedCategory === cat.heading;
-                    const hasActive = cat.sub.some(item => currentMode === item.value);
+                    const hasActive = cat.sub.some(item => {
+                      if (item.type === 'mode') return currentMode === item.value;
+                      if (item.type === 'duration') return timeLimit === Number(item.value);
+                      if (item.type === 'difficulty') return difficulty === String(item.value);
+                      return false;
+                    });
                     return (
                       <div key={cat.heading} className="rounded-lg overflow-hidden bg-card/50 border border-border/50">
                         <button
@@ -2494,14 +2594,32 @@ const Index = () => {
                         {isExpanded && (
                           <div className="px-2 py-2 space-y-1 bg-card/30">
                             {cat.sub.map((item) => {
-                              const isActive = currentMode === item.value;
+                              let isActive = false;
+                              if (item.type === 'mode') {
+                                isActive = currentMode === item.value;
+                              } else if (item.type === 'duration') {
+                                isActive = timeLimit === Number(item.value);
+                              } else if (item.type === 'difficulty') {
+                                isActive = difficulty === String(item.value);
+                              }
                               return (
                                 <button
                                   key={item.value}
                                   onClick={() => {
-                                    handleModeChange(String(item.value));
-                                    setMobileExpandedCategory(null);
-                                    if (item.value !== 'time') {
+                                    if (item.type === 'mode') {
+                                      handleModeChange(String(item.value));
+                                      setMobileExpandedCategory(null);
+                                      if (item.value !== 'time') {
+                                        setMobileDrawerOpen(false);
+                                      }
+                                    } else if (item.type === 'duration') {
+                                      setTimeLimit(Number(item.value));
+                                      resetTest(Number(item.value));
+                                      setMobileExpandedCategory(null);
+                                    } else if (item.type === 'difficulty') {
+                                      setDifficulty(String(item.value));
+                                      resetTest();
+                                      setMobileExpandedCategory(null);
                                       setMobileDrawerOpen(false);
                                     }
                                   }}
@@ -2548,42 +2666,44 @@ const Index = () => {
                     </div>
                   )}
 
-                  {/* Punctuation & Numbers Toggles */}
-                  <div className="rounded-lg overflow-hidden bg-card/50 border border-border/50">
-                    <div className="p-4">
-                      <h3 className="text-sm font-medium text-foreground mb-3">Options</h3>
-                      <div className="flex flex-col gap-2">
-                        <button
-                          onClick={() => {
-                            setIncludePunctuation(!includePunctuation);
-                            resetTest();
-                          }}
-                          className={`w-full py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
-                            includePunctuation
-                              ? 'bg-primary/20 text-primary border border-primary/30'
-                              : 'bg-muted/50 text-foreground/70 hover:text-foreground hover:bg-muted'
-                          }`}
-                        >
-                          <span>@</span>
-                          <span>punctuation</span>
-                        </button>
-                        <button
-                          onClick={() => {
-                            setIncludeNumbers(!includeNumbers);
-                            resetTest();
-                          }}
-                          className={`w-full py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
-                            includeNumbers
-                              ? 'bg-primary/20 text-primary border border-primary/30'
-                              : 'bg-muted/50 text-foreground/70 hover:text-foreground hover:bg-muted'
-                          }`}
-                        >
-                          <span>#</span>
-                          <span>numbers</span>
-                        </button>
+                  {/* Punctuation & Numbers Toggles - Disabled for coding/syntax mode */}
+                  {(currentMode !== 'coding' && currentMode !== 'syntax') && (
+                    <div className="rounded-lg overflow-hidden bg-card/50 border border-border/50">
+                      <div className="p-4">
+                        <h3 className="text-sm font-medium text-foreground mb-3">Options</h3>
+                        <div className="flex flex-col gap-2">
+                          <button
+                            onClick={() => {
+                              setIncludePunctuation(!includePunctuation);
+                              resetTest();
+                            }}
+                            className={`w-full py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
+                              includePunctuation
+                                ? 'bg-primary/20 text-primary border border-primary/30'
+                                : 'bg-muted/50 text-foreground/70 hover:text-foreground hover:bg-muted'
+                            }`}
+                          >
+                            <span>@</span>
+                            <span>punctuation</span>
+                          </button>
+                          <button
+                            onClick={() => {
+                              setIncludeNumbers(!includeNumbers);
+                              resetTest();
+                            }}
+                            className={`w-full py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
+                              includeNumbers
+                                ? 'bg-primary/20 text-primary border border-primary/30'
+                                : 'bg-muted/50 text-foreground/70 hover:text-foreground hover:bg-muted'
+                            }`}
+                          >
+                            <span>#</span>
+                            <span>numbers</span>
+                          </button>
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  )}
 
                   {/* Difficulty */}
                   <div className="rounded-lg overflow-hidden bg-card/50 border border-border/50">
