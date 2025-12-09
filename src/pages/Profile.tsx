@@ -1042,16 +1042,16 @@ export default function Profile() {
 
         {/* Dialogs */}
         <AlertDialog open={showDeleteProgress} onOpenChange={setShowDeleteProgress}>
-          <AlertDialogContent>
+          <AlertDialogContent className="bg-slate-800 border-slate-700">
             <AlertDialogHeader>
-              <AlertDialogTitle>Delete All Progress?</AlertDialogTitle>
-              <AlertDialogDescription>
+              <AlertDialogTitle className="text-slate-100">Delete All Progress?</AlertDialogTitle>
+              <AlertDialogDescription className="text-slate-400">
                 This will permanently delete all your analytics, stats, and test history. This cannot be undone.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
-              <AlertDialogAction disabled={deleting} onClick={handleDeleteProgress} className="bg-red-600 hover:bg-red-700">
+              <AlertDialogCancel disabled={deleting} className="bg-slate-700 text-slate-200 border-slate-600 hover:bg-slate-600">Cancel</AlertDialogCancel>
+              <AlertDialogAction disabled={deleting} onClick={handleDeleteProgress} className="bg-red-600 hover:bg-red-700 text-white">
                 Delete Progress
               </AlertDialogAction>
             </AlertDialogFooter>
@@ -1059,16 +1059,16 @@ export default function Profile() {
         </AlertDialog>
 
         <AlertDialog open={showDeleteAccount} onOpenChange={setShowDeleteAccount}>
-          <AlertDialogContent>
+          <AlertDialogContent className="bg-slate-800 border-slate-700">
             <AlertDialogHeader>
-              <AlertDialogTitle>Delete Account?</AlertDialogTitle>
-              <AlertDialogDescription>
+              <AlertDialogTitle className="text-slate-100">Delete Account?</AlertDialogTitle>
+              <AlertDialogDescription className="text-slate-400">
                 This will permanently delete your account and all analytics. This cannot be undone. Are you sure?
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
-              <AlertDialogAction disabled={deleting} onClick={handleDeleteAccount} className="bg-red-900 hover:bg-red-800">
+              <AlertDialogCancel disabled={deleting} className="bg-slate-700 text-slate-200 border-slate-600 hover:bg-slate-600">Cancel</AlertDialogCancel>
+              <AlertDialogAction disabled={deleting} onClick={handleDeleteAccount} className="bg-red-900 hover:bg-red-800 text-white">
                 Delete Account
               </AlertDialogAction>
             </AlertDialogFooter>
