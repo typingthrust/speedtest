@@ -36,7 +36,7 @@ function MinimalLeaderboardOverlay({ open, onClose, children }: { open: boolean;
     >
       <div
         ref={overlayRef}
-        className="relative w-full max-w-2xl mx-auto bg-slate-800/90 rounded-3xl border border-slate-700 shadow-xl flex flex-col items-center min-h-[60vh] max-h-[95vh] min-w-[90vw] sm:min-w-[320px] px-4 p-0"
+        className="relative w-full max-w-2xl mx-4 sm:mx-auto bg-slate-800/90 rounded-3xl border border-slate-700 shadow-xl flex flex-col items-center min-h-[60vh] max-h-[95vh] min-w-0 sm:min-w-[320px] px-4 p-0"
         style={{ boxShadow: '0 4px 32px 0 rgba(0,0,0,0.5)', border: '1px solid rgba(51, 65, 85, 0.5)' }}
       >
         {/* X Close Button absolutely positioned, not in header */}
@@ -59,7 +59,7 @@ function ShareModal({ open, onClose, link }: { open: boolean; onClose: () => voi
   const [copied, setCopied] = useState(false);
   if (!open) return null;
   return (
-    <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+    <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
       <div className="bg-slate-800 rounded-2xl shadow-xl p-6 w-full max-w-xs flex flex-col items-center animate-fade-in">
         <h2 className="text-lg font-bold mb-2 text-slate-100">Share Leaderboard</h2>
         <input
@@ -95,10 +95,17 @@ function getDisplayName(entry: any) {
 
 export default function LeaderboardOverlay() {
   const { open, closeOverlay } = useOverlay();
-  const { state, setTimeframe } = useLeaderboard();
+  const { state, setTimeframe, refreshLeaderboard } = useLeaderboard();
   const [shareOpen, setShareOpen] = useState(false);
   const { user } = useAuth();
   const link = 'https://typingthrust.com/leaderboard';
+
+  // Refresh leaderboard when overlay opens
+  useEffect(() => {
+    if (open === 'leaderboard') {
+      refreshLeaderboard();
+    }
+  }, [open, refreshLeaderboard]);
 
   // Use real user ID/email for filtering
   const currentUserId = user?.id;

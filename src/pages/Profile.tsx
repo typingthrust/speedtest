@@ -561,6 +561,8 @@ export default function Profile() {
 
   // --- Advanced Analytics Tab Content ---
   // Helper: Error distribution by character
+  // Note: keyCounts in keystrokeStats represents error counts per key (for demo data)
+  // For real test data, we use keyCounts as a proxy for error-prone keys
   const errorCharCounts: Record<string, number> = {};
   for (const session of filteredHistory) {
     // Handle both camelCase (from frontend) and snake_case (from Supabase)
@@ -581,8 +583,15 @@ export default function Profile() {
       }
     }
   }
-  const errorCharLabels = Object.keys(errorCharCounts);
-  const errorCharData = Object.values(errorCharCounts);
+  
+  // Sort keys by error count (descending) and take top 30 for better visualization
+  const sortedErrorEntries = Object.entries(errorCharCounts)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 30);
+  
+  const errorCharLabels = sortedErrorEntries.map(([key]) => key);
+  const errorCharData = sortedErrorEntries.map(([, count]) => count);
+  
   const errorCharChartData = {
     labels: errorCharLabels,
     datasets: [
@@ -597,8 +606,53 @@ export default function Profile() {
   };
   const errorCharChartOptions = {
     responsive: true,
-    plugins: { legend: { display: false }, tooltip: { enabled: true, backgroundColor: '#1e293b', titleColor: '#f1f5f9', bodyColor: '#f1f5f9', borderColor: '#475569', borderWidth: 1 } },
-    scales: { x: { grid: { color: '#475569' }, ticks: { color: '#94a3b8' } }, y: { grid: { color: '#475569' }, ticks: { color: '#94a3b8' }, beginAtZero: true } },
+    maintainAspectRatio: false,
+    plugins: { 
+      legend: { display: false }, 
+      tooltip: { 
+        enabled: true, 
+        backgroundColor: '#1e293b', 
+        titleColor: '#f1f5f9', 
+        bodyColor: '#f1f5f9', 
+        borderColor: '#475569', 
+        borderWidth: 1,
+        callbacks: {
+          label: (context: any) => {
+            return `Errors: ${context.parsed.y}`;
+          }
+        }
+      } 
+    },
+    scales: { 
+      x: { 
+        grid: { color: '#475569', display: true }, 
+        ticks: { 
+          color: '#94a3b8',
+          font: { size: 11 },
+          maxRotation: 45,
+          minRotation: 0,
+        },
+        title: {
+          display: true,
+          text: 'Keys',
+          color: '#94a3b8',
+        }
+      }, 
+      y: { 
+        grid: { color: '#475569', display: true }, 
+        ticks: { 
+          color: '#94a3b8',
+          font: { size: 11 },
+          stepSize: 1,
+        },
+        beginAtZero: true,
+        title: {
+          display: true,
+          text: 'Error Count',
+          color: '#94a3b8',
+        }
+      } 
+    },
   };
   // Helper: Time per session
   const sessionTimes = filteredHistory.map(h => h.time || 0);
@@ -972,17 +1026,19 @@ export default function Profile() {
                   {activeAnalyticsTab === 'Accuracy' && (
                     <section className="w-full flex flex-col gap-6">
                       <h2 className="text-xl font-bold text-slate-100 mb-2">Accuracy - Error Distribution by Key</h2>
-                      <div className="w-full h-72 bg-slate-700 rounded-xl border border-slate-600 flex items-center justify-center">
+                      <div className="w-full h-72 bg-slate-700 rounded-xl border border-slate-600 p-4 flex items-center justify-center">
                         {history.length === 0 ? (
                           <span className="text-slate-400 text-sm">No tests completed yet. Complete some typing tests to see analytics.</span>
                         ) : filteredHistory.length === 0 ? (
                           <span className="text-slate-400 text-sm">No tests in selected range. Try changing the filter above.</span>
-                        ) : errorCharLabels.length > 0 ? (
-                          <Bar data={errorCharChartData} options={errorCharChartOptions} style={{ width: '100%', height: 260 }} />
+                        ) : errorCharLabels.length > 0 && errorCharData.length > 0 ? (
+                          <div className="w-full h-full">
+                            <Bar data={errorCharChartData} options={errorCharChartOptions} />
+                          </div>
                         ) : (
                           <span className="text-slate-400 text-sm">No error data to show for these tests. Complete some typing tests to see error distribution.</span>
                         )}
-                    </div>
+                      </div>
                     </section>
                   )}
                   {activeAnalyticsTab === 'Time Insights' && (

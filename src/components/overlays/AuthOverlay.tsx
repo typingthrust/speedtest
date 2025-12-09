@@ -193,7 +193,7 @@ export default function AuthOverlay() {
     >
       <div
         ref={overlayRef}
-        className="relative w-full max-w-md mx-auto bg-slate-800/95 rounded-2xl border border-slate-700 shadow-2xl flex flex-col min-h-[400px] max-h-[90vh] min-w-[320px] p-0"
+        className="relative w-full max-w-md mx-4 sm:mx-auto bg-slate-800/95 rounded-2xl border border-slate-700 shadow-2xl flex flex-col min-h-[400px] max-h-[90vh] min-w-0 sm:min-w-[320px] p-0"
         style={{ boxShadow: '0 8px 40px 0 rgba(0,0,0,0.5)' }}
       >
         <button

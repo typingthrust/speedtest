@@ -55,8 +55,16 @@ export const LeaderboardProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  // Refresh when timeframe changes and auto-refresh every hour
   useEffect(() => {
     refreshLeaderboard();
+    
+    // Auto-refresh leaderboard every hour
+    const interval = setInterval(() => {
+      refreshLeaderboard();
+    }, 60 * 60 * 1000); // 1 hour in milliseconds
+
+    return () => clearInterval(interval);
     // eslint-disable-next-line
   }, [state.timeframe]);
 

@@ -30,7 +30,7 @@ function MinimalOverlay({ open, onClose, children }: { open: boolean; onClose: (
     >
       <div
         ref={overlayRef}
-        className="relative w-full max-w-6xl mx-auto bg-slate-800/90 rounded-xl border border-slate-700 shadow-lg flex flex-col items-center min-h-[50vh] max-h-[95vh] min-w-[320px] p-0"
+        className="relative w-full max-w-6xl mx-4 sm:mx-auto bg-slate-800/90 rounded-xl border border-slate-700 shadow-lg flex flex-col items-center min-h-[50vh] max-h-[95vh] min-w-0 sm:min-w-[320px] p-0"
         style={{ boxShadow: '0 4px 32px 0 rgba(0,0,0,0.5)', border: '1px solid rgba(51, 65, 85, 0.5)' }}
       >
         <button

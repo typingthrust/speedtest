@@ -1910,6 +1910,9 @@ const Index = () => {
 
   // Add state for open category
   const [openCategory, setOpenCategory] = useState<string | null>(null);
+  // Mobile drawer state
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+  const [mobileExpandedCategory, setMobileExpandedCategory] = useState<string | null>(null);
 
   const [godModeIndex, setGodModeIndex] = useState(0);
 
@@ -2137,10 +2140,39 @@ const Index = () => {
               className="w-full flex justify-center mt-2 px-2 sm:px-0"
               style={{ position: 'relative', zIndex: 10 }}
             >
+          {/* Mobile: Single Settings Button */}
+          <div className="sm:hidden w-full px-4">
+            <button
+              onClick={() => setMobileDrawerOpen(true)}
+              className="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-slate-800/90 border border-slate-700 text-slate-200 hover:bg-slate-700/90 transition-all duration-200"
+            >
+              <div className="flex items-center gap-3">
+                <SlidersHorizontal className="w-5 h-5 text-cyan-400" />
+                <span className="font-medium">
+                  {(() => {
+                    const categories = [
+                      { heading: 'Developers', sub: [{ value: 'coding' }, { value: 'custom' }, { value: 'syntax' }] },
+                      { heading: 'Students', sub: [{ value: 'words' }, { value: 'time' }, { value: 'essay' }] },
+                      { heading: 'Writers', sub: [{ value: 'quote' }, { value: 'custom' }, { value: 'zen' }] },
+                      { heading: 'Mindfulness', sub: [{ value: 'zen' }, { value: 'notimer' }, { value: 'softtheme' }] },
+                      { heading: 'Challenge Seekers', sub: [{ value: 'time' }, { value: 'hardwords' }, { value: 'foreign' }] },
+                    ];
+                    const found = categories.find(cat => cat.sub.some(s => s.value === currentMode));
+                    return found ? found.heading : 'Settings';
+                  })()}
+                </span>
+              </div>
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+
+          {/* Desktop: Original Horizontal Bar */}
           <motion.div
             layout
             transition={{ type: 'spring', stiffness: 400, damping: 32 }}
-            className="inline-flex flex-row flex-nowrap items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-2xl bg-slate-800/90 border border-slate-700 shadow-md backdrop-blur-md select-none relative transition-all duration-300 mx-auto overflow-x-auto flex-nowrap scrollbar-hide"
+            className="hidden sm:inline-flex flex-row flex-nowrap items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-2xl bg-slate-800/90 border border-slate-700 shadow-md backdrop-blur-md select-none relative transition-all duration-300 mx-auto overflow-x-auto flex-nowrap scrollbar-hide"
                 style={{ width: 'fit-content', minWidth: 0, maxWidth: '100vw', position: 'relative', zIndex: 10 }}
           >
             {/* Category Headings with Inline Sub-options */}
@@ -2299,6 +2331,199 @@ const Index = () => {
             </div>
           </motion.div>
             </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Mobile Settings Drawer */}
+        <AnimatePresence>
+          {mobileDrawerOpen && (
+            <>
+              {/* Backdrop */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 sm:hidden"
+                onClick={() => setMobileDrawerOpen(false)}
+              />
+              {/* Drawer */}
+              <motion.div
+                initial={{ x: '100%' }}
+                animate={{ x: 0 }}
+                exit={{ x: '100%' }}
+                transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+                className="fixed top-0 right-0 bottom-0 w-full max-w-sm bg-slate-900 border-l border-slate-700 z-50 sm:hidden flex flex-col shadow-2xl"
+              >
+                {/* Header */}
+                <div className="flex items-center justify-between p-4 border-b border-slate-700">
+                  <h2 className="text-xl font-semibold text-slate-100">Settings</h2>
+                  <button
+                    onClick={() => setMobileDrawerOpen(false)}
+                    className="p-2 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-slate-100 transition-colors"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+
+                {/* Content */}
+                <div className="flex-1 overflow-y-auto p-4 space-y-2">
+                  {[
+                    {
+                      heading: 'Developers',
+                      sub: [
+                        { label: 'Coding', value: 'coding', type: 'mode' },
+                        { label: 'Custom', value: 'custom', type: 'mode' },
+                        { label: 'Syntax Challenges', value: 'syntax', type: 'mode' },
+                      ],
+                    },
+                    {
+                      heading: 'Students',
+                      sub: [
+                        { label: 'Words', value: 'words', type: 'mode' },
+                        { label: 'Timed', value: 'time', type: 'mode' },
+                        { label: 'Essay Builder', value: 'essay', type: 'mode' },
+                      ],
+                    },
+                    {
+                      heading: 'Writers',
+                      sub: [
+                        { label: 'Quotes', value: 'quote', type: 'mode' },
+                        { label: 'Custom', value: 'custom', type: 'mode' },
+                        { label: 'Zen Writing', value: 'zen', type: 'mode' },
+                      ],
+                    },
+                    {
+                      heading: 'Mindfulness',
+                      sub: [
+                        { label: 'Zen', value: 'zen', type: 'mode' },
+                        { label: 'No Timer', value: 'notimer', type: 'mode' },
+                        { label: 'Soft Theme Mode', value: 'softtheme', type: 'mode' },
+                      ],
+                    },
+                    {
+                      heading: 'Challenge Seekers',
+                      sub: [
+                        { label: 'Timed', value: 'time', type: 'mode' },
+                        { label: 'Hard Words', value: 'hardwords', type: 'mode' },
+                        { label: 'Foreign Language Practice', value: 'foreign', type: 'mode' },
+                      ],
+                    },
+                  ].map((cat) => {
+                    const isExpanded = mobileExpandedCategory === cat.heading;
+                    const hasActive = cat.sub.some(item => currentMode === item.value);
+                    return (
+                      <div key={cat.heading} className="border border-slate-700 rounded-lg overflow-hidden">
+                        <button
+                          onClick={() => setMobileExpandedCategory(isExpanded ? null : cat.heading)}
+                          className={`w-full flex items-center justify-between p-4 text-left transition-colors ${
+                            hasActive ? 'bg-slate-800/50' : 'bg-slate-800/30 hover:bg-slate-800/50'
+                          }`}
+                        >
+                          <span className={`font-medium ${hasActive ? 'text-cyan-400' : 'text-slate-200'}`}>
+                            {cat.heading}
+                          </span>
+                          <svg
+                            className={`w-5 h-5 text-slate-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            viewBox="0 0 24 24"
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </button>
+                        {isExpanded && (
+                          <div className="p-2 space-y-1 bg-slate-800/20">
+                            {cat.sub.map((item) => {
+                              const isActive = currentMode === item.value;
+                              return (
+                                <button
+                                  key={item.value}
+                                  onClick={() => {
+                                    handleModeChange(String(item.value));
+                                    setMobileExpandedCategory(null);
+                                    if (item.value !== 'time') {
+                                      setMobileDrawerOpen(false);
+                                    }
+                                  }}
+                                  className={`w-full text-left px-4 py-2.5 rounded-lg transition-all ${
+                                    isActive
+                                      ? 'bg-cyan-500 text-slate-900 font-semibold'
+                                      : 'text-slate-300 hover:bg-slate-700/50'
+                                  }`}
+                                >
+                                  {item.label}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+
+                  {/* Duration - Only for time mode */}
+                  {currentMode === 'time' && (
+                    <div className="border border-slate-700 rounded-lg overflow-hidden mt-4">
+                      <div className="p-4 bg-slate-800/30">
+                        <h3 className="font-medium text-slate-200 mb-3">Duration</h3>
+                        <div className="grid grid-cols-4 gap-2">
+                          {[15, 30, 60, 120].map((sec) => (
+                            <button
+                              key={sec}
+                              onClick={() => {
+                                setTimeLimit(Number(sec));
+                                resetTest(Number(sec));
+                              }}
+                              className={`py-2.5 rounded-lg font-medium transition-all ${
+                                timeLimit === sec
+                                  ? 'bg-cyan-500 text-slate-900 font-semibold'
+                                  : 'bg-slate-700/50 text-slate-300 hover:bg-slate-700'
+                              }`}
+                            >
+                              {sec}s
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Difficulty */}
+                  <div className="border border-slate-700 rounded-lg overflow-hidden mt-4">
+                    <div className="p-4 bg-slate-800/30">
+                      <h3 className="font-medium text-slate-200 mb-3">Difficulty</h3>
+                      <div className="grid grid-cols-2 gap-2">
+                        {[
+                          { label: 'Easy', value: 'short' },
+                          { label: 'Classic', value: 'medium' },
+                          { label: 'Epic', value: 'long' },
+                          { label: 'Ultra', value: 'thicc' },
+                        ].map((item) => (
+                          <button
+                            key={item.value}
+                            onClick={() => {
+                              setDifficulty(String(item.value));
+                              resetTest();
+                            }}
+                            className={`py-2.5 rounded-lg font-medium transition-all ${
+                              difficulty === String(item.value)
+                                ? 'bg-cyan-500 text-slate-900 font-semibold'
+                                : 'bg-slate-700/50 text-slate-300 hover:bg-slate-700'
+                            }`}
+                          >
+                            {item.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </>
           )}
         </AnimatePresence>
         {/* Timer Display */}

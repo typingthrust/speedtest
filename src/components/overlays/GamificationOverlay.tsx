@@ -54,7 +54,7 @@ function MinimalGamificationOverlay({ open, onClose, children }: { open: boolean
     >
       <div
         ref={overlayRef}
-        className="relative w-full max-w-lg mx-auto bg-slate-800/90 rounded-xl border border-slate-700 shadow-lg flex flex-col items-center min-h-[40vh] max-h-[90vh] min-w-[320px] p-0"
+        className="relative w-full max-w-lg mx-4 sm:mx-auto bg-slate-800/90 rounded-xl border border-slate-700 shadow-lg flex flex-col items-center min-h-[40vh] max-h-[90vh] min-w-0 sm:min-w-[320px] p-0"
         style={{ boxShadow: '0 4px 32px 0 rgba(0,0,0,0.5)', border: '1px solid rgba(51, 65, 85, 0.5)' }}
       >
         <button
@@ -122,14 +122,17 @@ export default function GamificationOverlay() {
         {/* Levels Section */}
         <div className="w-full bg-slate-700/80 rounded-2xl shadow-sm border border-slate-600 p-6 flex flex-col gap-2 items-center" aria-label="Levels Progression">
           <h2 className="text-lg font-semibold text-slate-100 mb-1">Levels</h2>
-          <div className="relative w-full max-w-xs h-8 flex items-center mb-2">
-            <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-2 bg-slate-600 rounded-full" />
+          <div className="relative w-full max-w-xs h-12 flex items-center mb-2">
+            {/* Background line (behind circles) */}
+            <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-2 bg-slate-600 rounded-full z-0" />
+            {/* Progress line (behind circles) */}
+            <div className="absolute left-0 top-1/2 -translate-y-1/2 h-2 bg-cyan-500 rounded-full transition-all z-0" style={{ width: `${Math.min(100, ((state.level-1)/9)*100)}%` }} />
+            {/* Level circles (above lines) */}
             {[1,2,3,4,5,6,7,8,9,10].map(lvl => (
-              <div key={lvl} className="absolute" style={{ left: `${(lvl-1)*11.11}%`, top: '50%', transform: 'translate(-50%, -50%)' }}>
-                <div className={`w-7 h-7 rounded-full flex items-center justify-center border-2 transition-all duration-300 ${state.level === lvl ? 'bg-cyan-500 border-cyan-500 text-slate-900' : lvl < state.level ? 'bg-cyan-400 border-cyan-400 text-slate-900' : 'bg-slate-600 border-slate-500 text-slate-400'}`}>{lvl}</div>
+              <div key={lvl} className="absolute z-10" style={{ left: `${(lvl-1)*11.11}%`, top: '50%', transform: 'translate(-50%, -50%)' }}>
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 transition-all duration-300 font-semibold text-sm ${state.level === lvl ? 'bg-cyan-500 border-cyan-500 text-slate-900' : lvl < state.level ? 'bg-cyan-400 border-cyan-400 text-slate-900' : 'bg-slate-600 border-slate-500 text-slate-400'}`}>{lvl}</div>
               </div>
             ))}
-            <div className="absolute left-0 top-1/2 -translate-y-1/2 h-2 bg-cyan-500 rounded-full transition-all" style={{ width: `${Math.min(100, ((state.level-1)/9)*100)}%`, zIndex: 1 }} />
           </div>
           <div className="text-sm text-slate-300">Current Level: <span className="font-bold text-cyan-400">{state.level}</span></div>
         </div>
@@ -139,19 +142,19 @@ export default function GamificationOverlay() {
           {allBadges.length === 0 ? (
             <span className="text-slate-400 text-sm">No badges available.</span>
           ) : (
-            <div className="flex flex-wrap gap-4 justify-center">
+            <div className="flex flex-wrap gap-4 justify-center relative">
               {allBadges.map(badge => {
                 const earned = state.badges.includes(badge.name);
                 const Icon = badge.icon;
                 return (
-                  <div key={badge.key} className={`group relative w-14 h-14 rounded-full flex items-center justify-center shadow transition-all duration-300 ${earned ? 'bg-slate-600 text-slate-100' : 'bg-slate-700 text-slate-500 grayscale'}` } tabIndex={0} aria-label={badge.name + (earned ? '' : ' (Locked)')}>
-                    <Icon className="w-7 h-7" />
+                  <div key={badge.key} className={`group relative w-14 h-14 rounded-full flex items-center justify-center shadow transition-all duration-300 z-10 ${earned ? 'bg-slate-600 text-slate-100' : 'bg-slate-700 text-slate-500 grayscale'}` } tabIndex={0} aria-label={badge.name + (earned ? '' : ' (Locked)')}>
+                    <Icon className="w-7 h-7 relative z-0" />
                     {!earned && (
-                      <Lock className="absolute w-5 h-5 text-slate-500 top-1 right-1 opacity-80" />
+                      <Lock className="absolute w-5 h-5 text-slate-500 top-1 right-1 opacity-80 z-10" />
                     )}
-                    <span className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full mt-1 px-2 py-1 rounded bg-slate-900 text-slate-100 text-xs opacity-0 group-hover:opacity-100 transition whitespace-nowrap z-20 shadow-lg">
-                      <span className="font-bold">{badge.name}</span> {earned ? '' : '(Locked)'}<br/>
-                      <span className="font-normal text-slate-300">{badge.description}</span>
+                    <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 rounded-lg bg-slate-900 text-slate-100 text-xs opacity-0 group-hover:opacity-100 group-focus:opacity-100 group-active:opacity-100 transition-opacity whitespace-nowrap z-[100] shadow-2xl pointer-events-none border border-slate-700">
+                      <span className="font-bold block">{badge.name}</span>
+                      <span className="font-normal text-slate-300 text-[10px]">{earned ? '' : '(Locked) '}{badge.description}</span>
                     </span>
                   </div>
                 );

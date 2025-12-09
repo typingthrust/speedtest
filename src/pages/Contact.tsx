@@ -1,8 +1,12 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
-import { Mail, Send, CheckCircle, AlertCircle } from 'lucide-react';
+import { Mail, Send, CheckCircle, AlertCircle, ArrowLeft } from 'lucide-react';
+import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
 
 export default function Contact() {
+  const navigate = useNavigate();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
@@ -38,8 +42,21 @@ export default function Contact() {
   }
 
   return (
-    <div className="w-full max-w-md mx-auto">
-      <div className="text-center mb-6">
+    <div className="min-h-screen bg-slate-900 flex flex-col">
+      <Navbar />
+      <div className="flex-1 w-full max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+        {/* Mobile Back Button */}
+        <button
+          onClick={() => navigate(-1)}
+          className="sm:hidden mb-6 flex items-center gap-2 text-slate-400 hover:text-slate-100 transition-colors"
+          aria-label="Go back"
+        >
+          <ArrowLeft className="w-5 h-5" />
+          <span className="text-sm">Back</span>
+        </button>
+
+        <div className="w-full max-w-md mx-auto">
+          <div className="text-center mb-6">
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-700 mb-4">
           <Mail className="w-8 h-8 text-cyan-400" />
         </div>
@@ -136,6 +153,9 @@ export default function Contact() {
           </a>
         </p>
       </div>
+        </div>
+      </div>
+      <Footer />
     </div>
   );
 }
