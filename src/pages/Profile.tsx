@@ -712,8 +712,8 @@ export default function Profile() {
         <div className="mb-8">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
             <div className="flex-1">
-              <h1 className="text-3xl sm:text-4xl font-bold text-slate-100 mb-2">Profile</h1>
-              <p className="text-slate-400 text-sm">Track your typing progress and achievements</p>
+              <h1 className="text-3xl sm:text-4xl font-bold text-slate-100 mb-2 text-left">Profile</h1>
+              <p className="text-slate-400 text-sm text-left">Track your typing progress and achievements</p>
             </div>
             <div className="flex items-center gap-3 flex-shrink-0">
               {user.avatar_url ? (
@@ -762,8 +762,8 @@ export default function Profile() {
           <div className="bg-gradient-to-r from-slate-800 to-slate-800/50 rounded-xl border border-slate-700 p-6 mb-6">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
               <div className="flex-1">
-                <h3 className="text-lg font-semibold text-slate-100 mb-1">Level {level}</h3>
-                <p className="text-sm text-slate-400">{xp} XP • {progress}% to Level {level + 1}</p>
+                <h3 className="text-lg font-semibold text-slate-100 mb-1 text-left">Level {level}</h3>
+                <p className="text-sm text-slate-400 text-left">{xp} XP • {progress}% to Level {level + 1}</p>
               </div>
               {badges && badges.length > 0 && (
                 <div className="flex flex-wrap gap-2">
@@ -856,7 +856,7 @@ export default function Profile() {
           <div className="space-y-6">
             {/* Progress Chart */}
             <div className="bg-slate-800/50 rounded-xl border border-slate-700 p-6">
-              <h2 className="text-xl font-semibold text-slate-100 mb-4">Progress Over Time</h2>
+              <h2 className="text-xl font-semibold text-slate-100 mb-4 text-left">Progress Over Time</h2>
               <div className="h-64">
                 {filteredHistory.length > 1 ? (
                   <Line data={chartData} options={chartOptions} />
@@ -903,7 +903,7 @@ export default function Profile() {
             <div className="bg-slate-800/50 rounded-xl border border-slate-700 p-6">
               {activeAnalyticsTab === 'Speed Trends' && (
                 <div>
-                  <h2 className="text-xl font-semibold text-slate-100 mb-4">Speed Trends</h2>
+                  <h2 className="text-xl font-semibold text-slate-100 mb-4 text-left">Speed Trends</h2>
                   <div className="h-72">
                     {history.length === 0 ? (
                       <div className="flex items-center justify-center h-full text-slate-400">
@@ -922,7 +922,7 @@ export default function Profile() {
 
               {activeAnalyticsTab === 'Accuracy' && (
                 <div>
-                  <h2 className="text-xl font-semibold text-slate-100 mb-4">Error Distribution by Key</h2>
+                  <h2 className="text-xl font-semibold text-slate-100 mb-4 text-left">Error Distribution by Key</h2>
                   <div className="h-72">
                     {history.length === 0 ? (
                       <div className="flex items-center justify-center h-full text-slate-400">
@@ -945,7 +945,7 @@ export default function Profile() {
 
               {activeAnalyticsTab === 'Time Insights' && (
                 <div>
-                  <h2 className="text-xl font-semibold text-slate-100 mb-4">Time Insights</h2>
+                  <h2 className="text-xl font-semibold text-slate-100 mb-4 text-left">Time Insights</h2>
                   <div className="h-72">
                     {sessionTimes.length > 0 ? (
                       <Line data={sessionTimeChartData} options={sessionTimeChartOptions} />
@@ -960,7 +960,7 @@ export default function Profile() {
 
               {activeAnalyticsTab === 'Consistency' && (
                 <div>
-                  <h2 className="text-xl font-semibold text-slate-100 mb-4">Consistency</h2>
+                  <h2 className="text-xl font-semibold text-slate-100 mb-4 text-left">Consistency</h2>
                   <div className="h-72 mb-4">
                     {wpmVarianceData.length > 1 ? (
                       <Line data={wpmVarianceChartData} options={wpmVarianceChartOptions} />
@@ -978,7 +978,7 @@ export default function Profile() {
 
               {activeAnalyticsTab === 'Category Breakdown' && (
                 <div>
-                  <h2 className="text-xl font-semibold text-slate-100 mb-4">Category Breakdown</h2>
+                  <h2 className="text-xl font-semibold text-slate-100 mb-4 text-left">Category Breakdown</h2>
                   <div className="h-72 mb-6">
                     {categoryLabels.length > 0 ? (
                       <Bar data={categoryChartData} options={categoryChartOptions} />
