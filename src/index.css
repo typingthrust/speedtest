@@ -50,20 +50,21 @@ All colors MUST be HSL.
   }
 
   .dark {
-    --foreground: 210 40% 98%; /* slate-100 */
-    --card-foreground: 210 40% 98%; /* slate-100 */
-    --popover-foreground: 210 40% 98%; /* slate-100 */
-    --primary-foreground: 222.2 47.4% 11.2%; /* slate-900 */
-    --secondary-foreground: 210 40% 98%; /* slate-100 */
-    --muted-foreground: 215 16.3% 56.9%; /* slate-400 */
-    --accent-foreground: 210 40% 98%; /* slate-100 */
+    /* Text colors - ALWAYS light/white for readability, never change with theme */
+    --foreground: 210 40% 98%; /* slate-100 - always light */
+    --card-foreground: 210 40% 98%; /* slate-100 - always light */
+    --popover-foreground: 210 40% 98%; /* slate-100 - always light */
+    --primary-foreground: 222.2 47.4% 11.2%; /* slate-900 - dark for light primary buttons */
+    --secondary-foreground: 210 40% 98%; /* slate-100 - always light */
+    --muted-foreground: 215 16.3% 56.9%; /* slate-400 - medium gray, always readable */
+    --accent-foreground: 210 40% 98%; /* slate-100 - always light */
     --destructive: 0 72.2% 50.6%; /* red-500 */
-    --destructive-foreground: 210 40% 98%; /* slate-100 */
-    --sidebar-foreground: 210 40% 98%; /* slate-100 */
-    --sidebar-primary-foreground: 222.2 47.4% 11.2%; /* slate-900 */
-    --sidebar-accent-foreground: 210 40% 98%; /* slate-100 */
+    --destructive-foreground: 210 40% 98%; /* slate-100 - always light */
+    --sidebar-foreground: 210 40% 98%; /* slate-100 - always light */
+    --sidebar-primary-foreground: 222.2 47.4% 11.2%; /* slate-900 - dark for light primary */
+    --sidebar-accent-foreground: 210 40% 98%; /* slate-100 - always light */
 
-    /* Theme colors - will be overridden by ThemeProvider */
+    /* Background colors - change with theme */
     --background: var(--theme-background, 217 30% 12%); /* Theme-tinted background */
     --card: var(--theme-card, 217 28% 17%); /* Theme-tinted card */
     --popover: var(--theme-card, 217 28% 17%); /* Theme-tinted popover */

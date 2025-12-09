@@ -120,7 +120,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     // Also update --primary to use theme color
     document.documentElement.style.setProperty('--primary', colors.primary);
     document.documentElement.style.setProperty('--ring', colors.primary);
-    // Update background and card colors
+    // Update background and card colors (ONLY backgrounds change with theme)
     document.documentElement.style.setProperty('--background', colors.background);
     document.documentElement.style.setProperty('--card', colors.card);
     document.documentElement.style.setProperty('--border', colors.border);
@@ -128,6 +128,8 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     document.documentElement.style.setProperty('--secondary', colors.muted);
     document.documentElement.style.setProperty('--accent', colors.muted);
     document.documentElement.style.setProperty('--input', colors.border);
+    // IMPORTANT: Text colors stay light/white - DO NOT change with theme
+    // --foreground, --muted-foreground, etc. remain constant for readability
   }, [theme]);
 
   const setTheme = (newTheme: ThemeColor) => {
