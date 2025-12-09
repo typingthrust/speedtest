@@ -261,7 +261,7 @@ export default function Profile() {
           <h2 className="text-2xl font-bold mb-4 text-slate-100">No Account Found</h2>
           <p className="mb-6 text-slate-400">Please log in to access your profile and analytics.</p>
           <button
-            className="bg-cyan-500 text-slate-900 px-6 py-2 rounded-lg font-semibold hover:bg-cyan-400 transition"
+            className="bg-primary text-slate-900 px-6 py-2 rounded-lg font-semibold hover:opacity-90 transition"
             onClick={() => openOverlay('auth')}
           >
             Log In
@@ -722,7 +722,7 @@ export default function Profile() {
               {user.avatar_url ? (
                 <img src={user.avatar_url} alt="avatar" className="w-12 h-12 rounded-full border-2 border-slate-600 flex-shrink-0" />
               ) : (
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-cyan-500 to-cyan-600 flex items-center justify-center text-xl font-bold text-slate-900 flex-shrink-0">
+                <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-xl font-bold text-slate-900 flex-shrink-0">
                   {user.username ? user.username[0].toUpperCase() : (user.email ? user.email[0].toUpperCase() : '?')}
                 </div>
               )}
@@ -771,7 +771,7 @@ export default function Profile() {
               {badges && badges.length > 0 && (
                 <div className="flex flex-wrap gap-2">
                   {badges.slice(0, 3).map(badge => (
-                    <div key={badge} className="px-3 py-1 bg-cyan-500/20 text-cyan-400 rounded-lg text-xs font-semibold border border-cyan-500/30 whitespace-nowrap">
+                    <div key={badge} className="px-3 py-1 bg-primary/20 text-primary rounded-lg text-xs font-semibold border border-primary/30 whitespace-nowrap">
                       {badge}
                     </div>
                   ))}
@@ -785,7 +785,7 @@ export default function Profile() {
             </div>
             <div className="w-full h-3 bg-slate-700 rounded-full overflow-hidden">
               <div 
-                className="h-full bg-gradient-to-r from-cyan-500 to-cyan-400 rounded-full transition-all duration-500" 
+                className="h-full bg-primary rounded-full transition-all duration-500" 
                 style={{ width: `${progress}%` }} 
               />
             </div>
@@ -801,7 +801,7 @@ export default function Profile() {
                 key={d.value}
                 className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
                   selectedDuration === d.value
-                    ? 'bg-cyan-500 text-slate-900 shadow-lg shadow-cyan-500/20'
+                    ? 'bg-primary text-slate-900 shadow-lg shadow-primary/20'
                     : 'bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700'
                 }`}
                 onClick={() => setSelectedDuration(d.value)}
@@ -817,7 +817,7 @@ export default function Profile() {
                 key={r.value}
                 className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
                   selectedRange === r.value
-                    ? 'bg-cyan-500 text-slate-900 shadow-lg shadow-cyan-500/20'
+                    ? 'bg-primary text-slate-900 shadow-lg shadow-primary/20'
                     : 'bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700'
                 }`}
                 onClick={() => setSelectedRange(r.value)}
@@ -834,7 +834,7 @@ export default function Profile() {
             <button
               className={`px-6 py-3 text-sm font-semibold border-b-2 transition-colors ${
                 selectedTab === 'overview'
-                  ? 'border-cyan-500 text-cyan-400'
+                  ? 'border-primary text-primary'
                   : 'border-transparent text-slate-400 hover:text-slate-200'
               }`}
               onClick={() => setSelectedTab('overview')}
@@ -844,7 +844,7 @@ export default function Profile() {
             <button
               className={`px-6 py-3 text-sm font-semibold border-b-2 transition-colors ${
                 selectedTab === 'advanced'
-                  ? 'border-cyan-500 text-cyan-400'
+                  ? 'border-primary text-primary'
                   : 'border-transparent text-slate-400 hover:text-slate-200'
               }`}
               onClick={() => setSelectedTab('advanced')}
@@ -892,7 +892,7 @@ export default function Profile() {
                   key={tab}
                   className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
                     activeAnalyticsTab === tab
-                      ? 'bg-cyan-500 text-slate-900'
+                      ? 'bg-primary text-slate-900'
                       : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
                   }`}
                   onClick={() => setActiveAnalyticsTab(tab)}
@@ -995,7 +995,7 @@ export default function Profile() {
                     {categoryLabels.map((cat, i) => (
                       <div key={cat} className="bg-slate-700/50 rounded-lg p-4 border border-slate-600">
                         <div className="text-sm text-slate-400 mb-1">{cat}</div>
-                        <div className="text-2xl font-bold text-cyan-400">{categoryWpmData[i]} WPM</div>
+                        <div className="text-2xl font-bold text-primary">{categoryWpmData[i]} WPM</div>
                       </div>
                     ))}
                   </div>
@@ -1013,7 +1013,7 @@ export default function Profile() {
             className={`px-6 py-3 rounded-lg font-semibold transition-all ${
               (!testResults || testResults.length === 0 || !bestWpm || bestWpm === 0)
                 ? 'bg-slate-700 text-slate-500 cursor-not-allowed'
-                : 'bg-cyan-500 text-slate-900 hover:bg-cyan-400'
+                : 'bg-primary text-slate-900 hover:opacity-90'
             }`}
           >
             Download Certificate
@@ -1088,7 +1088,7 @@ export default function Profile() {
 // Modern Stat Card Component
 function ModernStatCard({ icon: Icon, label, value, color = 'cyan' }: { icon: any; label: string; value: React.ReactNode; color?: 'cyan' | 'emerald' | 'amber' }) {
   const colorClasses = {
-    cyan: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/20',
+    cyan: 'text-primary bg-primary/10 border-primary/20',
     emerald: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
     amber: 'text-amber-400 bg-amber-500/10 border-amber-500/20',
   };
@@ -1109,7 +1109,7 @@ function StatCard({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="bg-slate-800/50 rounded-xl border border-slate-700 p-4 hover:border-slate-600 transition-all">
       <div className="text-xs font-medium text-slate-400 mb-2 uppercase tracking-wide leading-tight">{label}</div>
-      <div className="text-xl font-bold text-cyan-400 leading-tight">{value}</div>
+      <div className="text-xl font-bold text-primary leading-tight">{value}</div>
     </div>
   );
 }

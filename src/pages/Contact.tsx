@@ -58,7 +58,7 @@ export default function Contact() {
         <div className="w-full max-w-md mx-auto">
           <div className="text-center mb-6">
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-700 mb-4">
-          <Mail className="w-8 h-8 text-cyan-400" />
+          <Mail className="w-8 h-8 text-primary" />
         </div>
         <h1 className="text-2xl font-bold text-slate-100 mb-2">Contact Us</h1>
         <p className="text-sm text-slate-400">
@@ -75,7 +75,7 @@ export default function Contact() {
             id="name"
             type="text"
             placeholder="Your name"
-            className="w-full border border-slate-600 bg-slate-700 text-slate-100 placeholder-slate-400 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition"
+            className="w-full border border-slate-600 bg-slate-700 text-slate-100 placeholder-slate-400 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
             value={name}
             onChange={e => setName(e.target.value)}
             required
@@ -90,7 +90,7 @@ export default function Contact() {
             id="email"
             type="email"
             placeholder="your.email@example.com"
-            className="w-full border border-slate-600 bg-slate-700 text-slate-100 placeholder-slate-400 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition"
+            className="w-full border border-slate-600 bg-slate-700 text-slate-100 placeholder-slate-400 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
             value={email}
             onChange={e => setEmail(e.target.value)}
             required
@@ -114,7 +114,7 @@ export default function Contact() {
 
         <button
           type="submit"
-          className="w-full bg-cyan-500 text-slate-900 rounded-lg px-6 py-3 font-semibold hover:bg-cyan-400 transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full bg-primary text-slate-900 rounded-lg px-6 py-3 font-semibold hover:opacity-90 transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           disabled={status === 'loading'}
         >
           {status === 'loading' ? (
@@ -148,7 +148,7 @@ export default function Contact() {
       <div className="mt-6 pt-6 border-t border-slate-700">
         <p className="text-xs text-slate-400 text-center">
           You can also reach us directly at{' '}
-          <a href="mailto:support@typingthrust.com" className="text-cyan-400 hover:underline font-medium">
+          <a href="mailto:support@typingthrust.com" className="text-primary hover:underline font-medium">
             support@typingthrust.com
           </a>
         </p>

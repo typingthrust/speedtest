@@ -136,7 +136,7 @@ const Navbar: React.FC = () => {
               }}
               className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-slate-200 hover:bg-slate-800 rounded-lg transition-colors"
             >
-              <Award className="w-5 h-5 text-cyan-400" />
+              <Award className="w-5 h-5 text-primary" />
               <span className="font-medium">Gamification</span>
             </button>
 

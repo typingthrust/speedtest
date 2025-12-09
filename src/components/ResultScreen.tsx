@@ -33,7 +33,7 @@ interface ResultScreenProps {
 function getPerformanceRating(wpm: number, accuracy: number): { grade: string; label: string; color: string } {
   const score = (wpm * 0.6) + (accuracy * 0.4);
   if (score >= 90) return { grade: 'S', label: 'Exceptional', color: 'text-emerald-400' };
-  if (score >= 75) return { grade: 'A', label: 'Excellent', color: 'text-cyan-400' };
+  if (score >= 75) return { grade: 'A', label: 'Excellent', color: 'text-primary' };
   if (score >= 60) return { grade: 'B', label: 'Good', color: 'text-blue-400' };
   if (score >= 45) return { grade: 'C', label: 'Average', color: 'text-amber-400' };
   if (score >= 30) return { grade: 'D', label: 'Needs Work', color: 'text-orange-400' };
@@ -93,13 +93,13 @@ const CircularProgress: React.FC<{ value: number; max: number; size?: number; la
 const StatCard: React.FC<{ icon: React.ReactNode; label: string; value: string | number; subValue?: string; highlight?: boolean }> = ({
   icon, label, value, subValue, highlight
 }) => (
-  <div className={`flex items-center gap-3 px-4 py-3 rounded-xl ${highlight ? 'bg-cyan-500/10 border border-cyan-500/30' : 'bg-slate-800/50'}`}>
-    <div className={`p-2 rounded-lg ${highlight ? 'bg-cyan-500/20 text-cyan-400' : 'bg-slate-700 text-slate-400'}`}>
+  <div className={`flex items-center gap-3 px-4 py-3 rounded-xl ${highlight ? 'bg-primary/10 border border-primary/30' : 'bg-slate-800/50'}`}>
+    <div className={`p-2 rounded-lg ${highlight ? 'bg-primary/20 text-primary' : 'bg-slate-700 text-slate-400'}`}>
       {icon}
     </div>
     <div>
       <div className="text-xs text-slate-500 uppercase tracking-wider">{label}</div>
-      <div className={`text-lg font-semibold ${highlight ? 'text-cyan-400' : 'text-slate-200'}`}>
+      <div className={`text-lg font-semibold ${highlight ? 'text-primary' : 'text-slate-200'}`}>
         {value}
         {subValue && <span className="text-sm text-slate-500 ml-1">{subValue}</span>}
       </div>
@@ -248,7 +248,7 @@ const ResultScreen: React.FC<ResultScreenProps> = ({
 
           {/* Main Stats - Circular Progress */}
           <div className="flex flex-wrap justify-center gap-8 mb-8">
-            <CircularProgress value={wpm} max={150} size={140} label="WPM" color="text-cyan-400" />
+            <CircularProgress value={wpm} max={150} size={140} label="WPM" color="text-primary" />
             <CircularProgress value={accuracy} max={100} size={140} label="ACC %" color="text-emerald-400" />
             {consistencyValue !== null && (
               <CircularProgress value={consistencyValue} max={100} size={140} label="CONS %" color="text-violet-400" />
@@ -267,7 +267,7 @@ const ResultScreen: React.FC<ResultScreenProps> = ({
           {chartData && (
             <div className="bg-slate-800/50 rounded-2xl p-4 mb-8 border border-slate-700/50">
               <div className="flex items-center gap-2 mb-4">
-                <TrendingUp className="w-4 h-4 text-cyan-400" />
+                <TrendingUp className="w-4 h-4 text-primary" />
                 <span className="text-sm font-medium text-slate-300">Performance Over Time</span>
               </div>
               <div className="h-[180px]">
@@ -331,7 +331,7 @@ const ResultScreen: React.FC<ResultScreenProps> = ({
           <div className="flex justify-center gap-4">
             <button
               onClick={onRetry}
-              className="flex items-center gap-2 px-6 py-3 bg-cyan-500 hover:bg-cyan-400 text-slate-900 rounded-xl font-semibold transition-all hover:scale-105 active:scale-95"
+              className="flex items-center gap-2 px-6 py-3 bg-primary hover:opacity-90 text-slate-900 rounded-xl font-semibold transition-all hover:scale-105 active:scale-95"
             >
               <RotateCcw className="w-5 h-5" />
               Try Again

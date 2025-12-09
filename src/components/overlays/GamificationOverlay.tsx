@@ -105,12 +105,12 @@ export default function GamificationOverlay() {
           <h2 className="text-lg font-semibold text-slate-100 mb-1">XP & Level</h2>
           <div className="flex items-center gap-4 w-full max-w-xs">
             <div className="flex flex-col items-center">
-              <span className="text-3xl font-extrabold text-cyan-400">{state.level}</span>
+              <span className="text-3xl font-extrabold text-primary">{state.level}</span>
               <span className="text-xs text-slate-400 font-bold uppercase tracking-wide">Level</span>
             </div>
             <div className="flex-1 flex flex-col gap-1">
               <div className="w-full bg-slate-600 rounded-full h-3 relative overflow-hidden" aria-label="XP Progress Bar">
-                <div className="absolute left-0 top-0 h-3 rounded-full bg-cyan-400 transition-all" style={{ width: `${Math.min(100, (state.xp % 100))}%` }} />
+                <div className="absolute left-0 top-0 h-3 rounded-full bg-primary transition-all" style={{ width: `${Math.min(100, (state.xp % 100))}%` }} />
               </div>
               <div className="flex justify-between text-xs text-slate-400 mt-1">
                 <span>{state.xp % 100}/100 XP</span>
@@ -126,15 +126,15 @@ export default function GamificationOverlay() {
             {/* Background line (behind circles) */}
             <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-2 bg-slate-600 rounded-full z-0" />
             {/* Progress line (behind circles) */}
-            <div className="absolute left-0 top-1/2 -translate-y-1/2 h-2 bg-cyan-500 rounded-full transition-all z-0" style={{ width: `${Math.min(100, ((state.level-1)/9)*100)}%` }} />
+            <div className="absolute left-0 top-1/2 -translate-y-1/2 h-2 bg-primary rounded-full transition-all z-0" style={{ width: `${Math.min(100, ((state.level-1)/9)*100)}%` }} />
             {/* Level circles (above lines) */}
             {[1,2,3,4,5,6,7,8,9,10].map(lvl => (
               <div key={lvl} className="absolute z-10" style={{ left: `${(lvl-1)*11.11}%`, top: '50%', transform: 'translate(-50%, -50%)' }}>
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 transition-all duration-300 font-semibold text-sm ${state.level === lvl ? 'bg-cyan-500 border-cyan-500 text-slate-900' : lvl < state.level ? 'bg-cyan-400 border-cyan-400 text-slate-900' : 'bg-slate-600 border-slate-500 text-slate-400'}`}>{lvl}</div>
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 transition-all duration-300 font-semibold text-sm ${state.level === lvl ? 'bg-primary border-primary text-slate-900' : lvl < state.level ? 'bg-primary/80 border-primary/80 text-slate-900' : 'bg-slate-600 border-slate-500 text-slate-400'}`}>{lvl}</div>
               </div>
             ))}
           </div>
-          <div className="text-sm text-slate-300">Current Level: <span className="font-bold text-cyan-400">{state.level}</span></div>
+          <div className="text-sm text-slate-300">Current Level: <span className="font-bold text-primary">{state.level}</span></div>
         </div>
         {/* Badges Section */}
         <div className="w-full bg-slate-700/80 rounded-2xl shadow-sm border border-slate-600 p-6 flex flex-col gap-2 items-center" aria-label="Badges">
@@ -175,7 +175,7 @@ export default function GamificationOverlay() {
           if (userIndex !== -1) {
             return (
               <div className="w-full bg-slate-700/80 rounded-2xl shadow-sm border border-slate-600 p-6 flex flex-col gap-2 items-center" aria-label="Global Rank">
-                <span className="text-sm text-slate-300 font-medium flex items-center gap-1"><Award className="w-5 h-5 text-cyan-400" />Your Global Rank: <span className="font-bold text-cyan-400">#{userIndex + 1}</span></span>
+                <span className="text-sm text-slate-300 font-medium flex items-center gap-1"><Award className="w-5 h-5 text-primary" />Your Global Rank: <span className="font-bold text-primary">#{userIndex + 1}</span></span>
               </div>
             );
           }

@@ -515,7 +515,7 @@ const TypingArea: React.FC<TypingAreaProps & { mode?: string; godModeIndex?: num
             display: 'inline-block',
             width: '2px',
             height: '0.85em',
-            background: 'hsl(180, 80%, 60%)', // cyan-400
+            background: 'hsl(var(--primary))', // theme primary
             borderRadius: '1px',
             animation: 'monkey-blink 1s steps(1) infinite',
             verticalAlign: 'text-bottom',
@@ -536,7 +536,7 @@ function AnimatedUnderlineTabs({ tabs, activeIndex, onChange }: { tabs: string[]
           onClick={() => onChange(idx)}
           className={
             'relative bg-transparent border-none outline-none px-2 py-1 text-lg font-medium transition-colors duration-200 ' +
-            (activeIndex === idx ? 'text-cyan-400 font-bold' : 'text-slate-400 hover:text-slate-200')
+            (activeIndex === idx ? 'text-primary font-bold' : 'text-slate-400 hover:text-slate-200')
           }
           style={{ background: 'none' }}
         >
@@ -545,7 +545,7 @@ function AnimatedUnderlineTabs({ tabs, activeIndex, onChange }: { tabs: string[]
             {activeIndex === idx && (
               <motion.div
                 layoutId="underline"
-                className="absolute left-0 right-0 -bottom-1 h-[2.5px] rounded-full bg-cyan-400"
+                className="absolute left-0 right-0 -bottom-1 h-[2.5px] rounded-full bg-primary"
                 initial={{ opacity: 0, y: 4 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 4 }}
@@ -566,9 +566,9 @@ const AnimatedChip = ({ selected, onClick, children }: { selected: boolean; onCl
     onClick={onClick}
     className={`relative px-6 py-2 rounded-xl font-semibold text-base transition-all duration-200
       ${selected
-        ? "bg-cyan-500 text-slate-900 shadow-lg scale-105"
+        ? "bg-primary text-slate-900 shadow-lg scale-105"
         : "bg-slate-700 text-slate-200 hover:bg-slate-600 hover:scale-105"}
-      focus:outline-none focus:ring-2 focus:ring-cyan-500`}
+      focus:outline-none focus:ring-2 focus:ring-primary`}
     whileTap={{ scale: 0.97 }}
     whileHover={{ scale: 1.07 }}
     transition={{ type: "spring", stiffness: 300, damping: 20 }}
@@ -578,7 +578,7 @@ const AnimatedChip = ({ selected, onClick, children }: { selected: boolean; onCl
     {selected && (
       <motion.div
         layoutId="chip-underline"
-        className="absolute left-3 right-3 bottom-1 h-1 rounded-b-xl bg-cyan-400"
+        className="absolute left-3 right-3 bottom-1 h-1 rounded-b-xl bg-primary"
         style={{ marginTop: 2 }}
       />
     )}
@@ -844,7 +844,7 @@ const MemoChar = memo(function MemoChar({ char, index, userInput, currentIndex }
         transition={{ duration: 0.06, ease: 'easeOut' }}
       >
         <motion.span
-          className="bg-cyan-500 text-slate-900 transform scale-110"
+          className="bg-primary text-slate-900 transform scale-110"
           layoutId="caret-char"
           transition={{ duration: 0.06, ease: 'easeOut' }}
         >
@@ -858,7 +858,7 @@ const MemoChar = memo(function MemoChar({ char, index, userInput, currentIndex }
             top: 0,
             width: '2px',
             height: '100%',
-            background: 'hsl(180, 80%, 60%)', // cyan-400
+            background: 'hsl(var(--primary))', // theme primary
             display: 'inline-block',
             verticalAlign: 'middle',
           }}
@@ -1705,7 +1705,7 @@ const Index = () => {
           transition={{ duration: 0.06, ease: 'easeOut' }}
         >
           <motion.span
-            className="bg-cyan-500 text-slate-900 transform scale-110"
+            className="bg-primary text-slate-900 transform scale-110"
             layoutId="caret-char"
             transition={{ duration: 0.06, ease: 'easeOut' }}
           >
@@ -1719,7 +1719,7 @@ const Index = () => {
               top: 0,
               width: '2px',
               height: '100%',
-              background: 'hsl(180, 80%, 60%)', // cyan-400
+              background: 'hsl(var(--primary))', // theme primary
               display: 'inline-block',
               verticalAlign: 'middle',
             }}
@@ -2147,7 +2147,7 @@ const Index = () => {
               className="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-slate-800/90 border border-slate-700 text-slate-200 hover:bg-slate-700/90 transition-all duration-200"
             >
               <div className="flex items-center gap-3">
-                <SlidersHorizontal className="w-5 h-5 text-cyan-400" />
+                <SlidersHorizontal className="w-5 h-5 text-primary" />
                 <span className="font-medium">
                   {(() => {
                     const categories = [
@@ -2223,7 +2223,7 @@ const Index = () => {
               return (
                 <React.Fragment key={cat.heading}>
                   <button
-                    className={`text-base font-medium border-none bg-transparent outline-none whitespace-nowrap transition-colors duration-150 flex-shrink-0 px-2 py-1 ${(isOpen || isSelected) ? 'text-cyan-400 underline underline-offset-4' : 'text-slate-400 hover:text-slate-200'}`}
+                    className={`text-base font-medium border-none bg-transparent outline-none whitespace-nowrap transition-colors duration-150 flex-shrink-0 px-2 py-1 ${(isOpen || isSelected) ? 'text-primary underline underline-offset-4' : 'text-slate-400 hover:text-slate-200'}`}
                     style={{ minWidth: 48, display: 'flex', alignItems: 'center' }}
                     onClick={() => {
                       setOpenCategory(isOpen ? null : cat.heading);
@@ -2232,7 +2232,7 @@ const Index = () => {
                   >
                     {cat.heading}
                     {isOpen && (
-                      <svg className="ml-1 w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
+                      <svg className="ml-1 w-4 h-4 text-primary" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
                     )}
                   </button>
                   {isOpen && (
@@ -2242,7 +2242,7 @@ const Index = () => {
                         return (
                           <button
                             key={item.value}
-                            className={`px-3 py-1 rounded-lg font-medium text-sm transition-all duration-150 flex-shrink-0 whitespace-nowrap ${isActive ? 'bg-cyan-500 text-slate-900' : 'text-slate-300 hover:bg-slate-700'}`}
+                            className={`px-3 py-1 rounded-lg font-medium text-sm transition-all duration-150 flex-shrink-0 whitespace-nowrap ${isActive ? 'bg-primary text-slate-900' : 'text-slate-300 hover:bg-slate-700'}`}
                             style={{ minWidth: 40 }}
                             onClick={() => { 
                               handleModeChange(String(item.value)); 
@@ -2265,7 +2265,7 @@ const Index = () => {
               {currentMode === 'time' ? (
                 <>
               <button
-                    className={`px-2 py-1 text-base font-medium border-none bg-transparent outline-none whitespace-nowrap transition-colors duration-150 flex-shrink-0 ${openSetting === 'duration' ? 'text-cyan-400 underline underline-offset-4' : 'text-slate-400 hover:text-slate-200'}`}
+                    className={`px-2 py-1 text-base font-medium border-none bg-transparent outline-none whitespace-nowrap transition-colors duration-150 flex-shrink-0 ${openSetting === 'duration' ? 'text-primary underline underline-offset-4' : 'text-slate-400 hover:text-slate-200'}`}
                     onClick={() => {
                       setOpenSetting(openSetting === 'duration' ? null : 'duration');
                       setOpenCategory(null); // Close categories when opening Duration
@@ -2277,7 +2277,7 @@ const Index = () => {
               {openSetting === 'duration' && [15, 30, 60, 120].map(sec => (
                 <button
                   key={sec}
-                      className={`px-2 py-1 rounded-lg font-medium transition-all duration-150 flex-shrink-0 whitespace-nowrap ${timeLimit === Number(sec) ? 'bg-cyan-500 text-slate-900' : 'text-slate-300 hover:bg-slate-700'}`}
+                      className={`px-2 py-1 rounded-lg font-medium transition-all duration-150 flex-shrink-0 whitespace-nowrap ${timeLimit === Number(sec) ? 'bg-primary text-slate-900' : 'text-slate-300 hover:bg-slate-700'}`}
                   style={{ minWidth: 40 }}
                   onClick={() => { setTimeLimit(Number(sec)); resetTest(Number(sec)); setOpenSetting(null); }}
                 >
@@ -2304,7 +2304,7 @@ const Index = () => {
                 </div>
               )}
               <button
-                className={`px-2 py-1 text-base font-medium border-none bg-transparent outline-none whitespace-nowrap transition-colors duration-150 flex-shrink-0 ${openSetting === 'difficulty' ? 'text-cyan-400 underline underline-offset-4' : 'text-slate-400 hover:text-slate-200'}`}
+                className={`px-2 py-1 text-base font-medium border-none bg-transparent outline-none whitespace-nowrap transition-colors duration-150 flex-shrink-0 ${openSetting === 'difficulty' ? 'text-primary underline underline-offset-4' : 'text-slate-400 hover:text-slate-200'}`}
                 onClick={() => {
                   setOpenSetting(openSetting === 'difficulty' ? null : 'difficulty');
                   setOpenCategory(null); // Close categories when opening Difficulty
@@ -2321,7 +2321,7 @@ const Index = () => {
               ].map(item => (
                 <button
                   key={item.value}
-                  className={`px-2 py-1 rounded-lg font-medium transition-all duration-150 flex-shrink-0 whitespace-nowrap ${difficulty === String(item.value) ? 'bg-cyan-500 text-slate-900' : 'text-slate-300 hover:bg-slate-700'}`}
+                  className={`px-2 py-1 rounded-lg font-medium transition-all duration-150 flex-shrink-0 whitespace-nowrap ${difficulty === String(item.value) ? 'bg-primary text-slate-900' : 'text-slate-300 hover:bg-slate-700'}`}
                   style={{ minWidth: 40 }}
                   onClick={() => { setDifficulty(String(item.value)); resetTest(); setOpenSetting(null); }}
                 >
@@ -2436,7 +2436,7 @@ const Index = () => {
                             hasActive ? 'bg-slate-800/50' : 'bg-slate-800/30 hover:bg-slate-800/50'
                           }`}
                         >
-                          <span className={`font-medium ${hasActive ? 'text-cyan-400' : 'text-slate-200'}`}>
+                          <span className={`font-medium ${hasActive ? 'text-primary' : 'text-slate-200'}`}>
                             {cat.heading}
                           </span>
                           <svg
@@ -2465,7 +2465,7 @@ const Index = () => {
                                   }}
                                   className={`w-full text-left px-4 py-2.5 rounded-lg transition-all ${
                                     isActive
-                                      ? 'bg-cyan-500 text-slate-900 font-semibold'
+                                      ? 'bg-primary text-slate-900 font-semibold'
                                       : 'text-slate-300 hover:bg-slate-700/50'
                                   }`}
                                 >
@@ -2545,7 +2545,7 @@ const Index = () => {
         {currentMode === 'time' && (
           <div className="flex justify-center mt-8">
             <span
-              className={`text-6xl font-extrabold transition-all duration-300 ${isTyping ? 'text-cyan-400' : 'text-slate-500 opacity-70'}`}
+              className={`text-6xl font-extrabold transition-all duration-300 ${isTyping ? 'text-primary' : 'text-slate-500 opacity-70'}`}
               style={{ letterSpacing: '0.05em' }}
             >
             {timeLeft}
@@ -2566,7 +2566,7 @@ const Index = () => {
                 className="w-full flex justify-center mb-8"
               >
             <button
-                  className="flex items-center gap-2 text-slate-300 hover:text-slate-100 text-base font-medium px-3 py-1 rounded-lg bg-slate-800/80 border border-slate-700 shadow-sm transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                  className="flex items-center gap-2 text-slate-300 hover:text-slate-100 text-base font-medium px-3 py-1 rounded-lg bg-slate-800/80 border border-slate-700 shadow-sm transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-primary"
               onClick={() => setLangModalOpen(true)}
               tabIndex={0}
               style={{ userSelect: 'none' }}
@@ -2598,7 +2598,7 @@ const Index = () => {
                   {globalLanguages.filter(l => l.label.toLowerCase().includes(langSearch.toLowerCase())).map(l => (
                     <button
                       key={l.value}
-                      className={`w-full text-left px-6 py-2 text-slate-300 hover:bg-slate-700 focus:bg-slate-700 transition-all duration-100 lowercase rounded-lg focus:outline-none ${language === l.value ? 'font-bold text-cyan-400 bg-slate-700' : ''}`}
+                      className={`w-full text-left px-6 py-2 text-slate-300 hover:bg-slate-700 focus:bg-slate-700 transition-all duration-100 lowercase rounded-lg focus:outline-none ${language === l.value ? 'font-bold text-primary bg-slate-700' : ''}`}
                       onClick={() => { setLanguage(l.value); setCurrentMode('words'); setLangModalOpen(false); setShowIndian(false); setLangSearch(""); }}
                       tabIndex={0}
                     >
@@ -2610,7 +2610,7 @@ const Index = () => {
                   {indianLanguages.filter(l => l.label.toLowerCase().includes(langSearch.toLowerCase())).map(l => (
                     <button
                       key={l.value}
-                      className={`w-full text-left px-6 py-2 text-slate-300 hover:bg-slate-700 focus:bg-slate-700 transition-all duration-100 lowercase rounded-lg focus:outline-none ${language === l.value ? 'font-bold text-cyan-400 bg-slate-700' : ''}`}
+                      className={`w-full text-left px-6 py-2 text-slate-300 hover:bg-slate-700 focus:bg-slate-700 transition-all duration-100 lowercase rounded-lg focus:outline-none ${language === l.value ? 'font-bold text-primary bg-slate-700' : ''}`}
                       onClick={() => { setLanguage(l.value); setCurrentMode('words'); setLangModalOpen(false); setShowIndian(false); setLangSearch(""); }}
                       tabIndex={0}
                     >
@@ -2682,7 +2682,7 @@ const Index = () => {
           {/* Stats Display with XP and Streak inline */}
           <div className="flex justify-center gap-6 sm:gap-10 md:gap-12 lg:gap-16 text-base w-full mx-auto flex-wrap px-4 mt-8 sm:mt-10 md:mt-12">
             <div className="text-center px-2 sm:px-4">
-              <div className="text-2xl font-mono font-bold text-cyan-400">{accuracy ?? 100}%</div>
+              <div className="text-2xl font-mono font-bold text-primary">{accuracy ?? 100}%</div>
               <div className="text-sm text-slate-400 mt-1">Accuracy</div>
             </div>
             <div className="text-center px-2 sm:px-4">
@@ -2691,17 +2691,17 @@ const Index = () => {
             </div>
             {gamificationEnabled && gamification && (
               <div className="text-center px-2 sm:px-4">
-                <div className="text-2xl font-mono font-bold text-cyan-400">{gamification.streak ?? 0}</div>
+                <div className="text-2xl font-mono font-bold text-primary">{gamification.streak ?? 0}</div>
                 <div className="text-sm text-slate-400 mt-1">Streak</div>
               </div>
             )}
             {gamificationEnabled && gamification && (
               <div className="text-center px-2 sm:px-4">
-                <div className="text-2xl font-mono font-bold text-cyan-400">{(gamification.xp ?? 0) % 100}</div>
+                <div className="text-2xl font-mono font-bold text-primary">{(gamification.xp ?? 0) % 100}</div>
                 <div className="text-sm text-slate-400 flex items-center justify-center gap-1 mt-1">XP
                   <div className="w-12 h-1 bg-slate-700 rounded-full overflow-hidden ml-2">
                     <motion.div
-                      className="h-1 bg-cyan-400 rounded-full"
+                      className="h-1 bg-primary rounded-full"
                       initial={false}
                       animate={{ width: `${Math.min(100, Math.max(0, ((gamification.xp ?? 0) % 100)))}%` }}
                       transition={{ type: 'spring', stiffness: 200, damping: 24 }}

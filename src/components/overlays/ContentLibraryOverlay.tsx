@@ -130,13 +130,13 @@ export default function ContentLibraryOverlay({ onContentSelect }: { onContentSe
         </header>
 
         <div
-          className={`w-full flex flex-col items-center justify-center p-8 border-2 border-dashed rounded-lg transition-all duration-200 cursor-pointer ${dragActive ? 'border-cyan-400 bg-cyan-900/20' : 'border-slate-600 bg-slate-700/50 hover:border-slate-500'}`}
+          className={`w-full flex flex-col items-center justify-center p-8 border-2 border-dashed rounded-lg transition-all duration-200 cursor-pointer ${dragActive ? 'border-primary bg-primary/10' : 'border-slate-600 bg-slate-700/50 hover:border-slate-500'}`}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
           onClick={() => document.getElementById('file-upload-input')?.click()}
         >
-          <UploadCloud className={`w-10 h-10 mb-2 ${dragActive ? 'text-cyan-400' : 'text-slate-400'}`} />
+          <UploadCloud className={`w-10 h-10 mb-2 ${dragActive ? 'text-primary' : 'text-slate-400'}`} />
           <span className="text-base font-semibold text-slate-300">{customFile ? customFile.name : 'Drag & drop a file here'}</span>
           <span className="text-sm text-slate-500">or click to browse</span>
           <input
@@ -149,7 +149,7 @@ export default function ContentLibraryOverlay({ onContentSelect }: { onContentSe
         </div>
 
         <textarea
-          className="w-full border border-slate-600 rounded-lg p-3 text-base bg-slate-700 text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition mt-2"
+          className="w-full border border-slate-600 rounded-lg p-3 text-base bg-slate-700 text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary transition mt-2"
           rows={5}
           placeholder="Or paste your custom content here..."
           value={customText}
@@ -157,7 +157,7 @@ export default function ContentLibraryOverlay({ onContentSelect }: { onContentSe
         />
         
         <button
-          className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-semibold transition-all duration-200 ${added ? 'bg-green-500 text-slate-900' : 'bg-cyan-500 text-slate-900 hover:bg-cyan-400'}`}
+          className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-semibold transition-all duration-200 ${added ? 'bg-green-500 text-slate-900' : 'bg-primary text-slate-900 hover:opacity-90'}`}
           onClick={handleAddCustom}
           disabled={!customText.trim() || uploading}
         >

@@ -229,15 +229,15 @@ export default function AuthOverlay() {
               {/* Stats */}
               <div className="flex flex-row justify-center gap-8 w-full bg-slate-700 border border-slate-600 rounded-xl p-5">
                 <div className="text-center">
-                  <div className="text-2xl font-mono font-bold text-cyan-400">{wpm}</div>
+                  <div className="text-2xl font-mono font-bold text-primary">{wpm}</div>
                   <div className="text-xs text-slate-400 mt-1">WPM</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-mono font-bold text-cyan-400">{accuracy}%</div>
+                  <div className="text-2xl font-mono font-bold text-primary">{accuracy}%</div>
                   <div className="text-xs text-slate-400 mt-1">Accuracy</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-mono font-bold text-cyan-400">{testsTaken}</div>
+                  <div className="text-2xl font-mono font-bold text-primary">{testsTaken}</div>
                   <div className="text-xs text-slate-400 mt-1">Tests</div>
                 </div>
               </div>
@@ -246,7 +246,7 @@ export default function AuthOverlay() {
                   await logout();
                   closeOverlay();
                 }}
-                className="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-900 rounded-lg px-4 py-3 font-semibold transition-all duration-200 shadow-sm"
+                className="w-full bg-primary hover:opacity-90 text-slate-900 rounded-lg px-4 py-3 font-semibold transition-all duration-200 shadow-sm"
               >
                 Sign Out
               </button>
@@ -289,7 +289,7 @@ export default function AuthOverlay() {
                     <div>
                       <input
                         type="email"
-                        className="w-full border-2 border-slate-600 rounded-lg px-4 py-3 text-sm bg-slate-700 text-slate-100 placeholder-slate-400 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500 focus:ring-offset-0 transition-all"
+                        className="w-full border-2 border-slate-600 rounded-lg px-4 py-3 text-sm bg-slate-700 text-slate-100 placeholder-slate-400 focus:border-primary focus:ring-2 focus:ring-primary focus:ring-offset-0 transition-all"
                         placeholder="Email address"
                         value={email}
                         onChange={e => setEmail(e.target.value)}
@@ -366,7 +366,7 @@ export default function AuthOverlay() {
                     <div>
                       <input
                         type="email"
-                        className="w-full border-2 border-slate-600 rounded-lg px-4 py-3 text-sm bg-slate-700 text-slate-100 placeholder-slate-400 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500 focus:ring-offset-0 transition-all"
+                        className="w-full border-2 border-slate-600 rounded-lg px-4 py-3 text-sm bg-slate-700 text-slate-100 placeholder-slate-400 focus:border-primary focus:ring-2 focus:ring-primary focus:ring-offset-0 transition-all"
                         placeholder="Email address"
                         value={email}
                         onChange={e => setEmail(e.target.value)}
@@ -377,7 +377,7 @@ export default function AuthOverlay() {
                     <div>
                       <input
                         type="password"
-                        className="w-full border-2 border-slate-600 rounded-lg px-4 py-3 text-sm bg-slate-700 text-slate-100 placeholder-slate-400 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500 focus:ring-offset-0 transition-all"
+                        className="w-full border-2 border-slate-600 rounded-lg px-4 py-3 text-sm bg-slate-700 text-slate-100 placeholder-slate-400 focus:border-primary focus:ring-2 focus:ring-primary focus:ring-offset-0 transition-all"
                         placeholder="Password"
                         value={password}
                         onChange={e => setPassword(e.target.value)}
@@ -446,7 +446,7 @@ export default function AuthOverlay() {
                                 setError('Account created but email not confirmed. Please check your email for the activation link, or contact support if emails aren\'t being sent.');
                               }
                             }}
-                            className="flex-1 bg-cyan-500 hover:bg-cyan-400 text-slate-900 px-4 py-2.5 rounded-lg font-semibold text-sm transition-colors"
+                            className="flex-1 bg-primary hover:opacity-90 text-slate-900 px-4 py-2.5 rounded-lg font-semibold text-sm transition-colors"
                           >
                             Try Signing In
                           </button>

@@ -24,11 +24,11 @@ export function PerTestAnalyticsSection({ currentTestData, heading, subheading }
       <p className="text-sm text-slate-400 mb-6">{subheading}</p>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-slate-700 rounded-lg p-4 text-center">
-          <div className="text-2xl font-bold text-cyan-400">{wpm}</div>
+          <div className="text-2xl font-bold text-primary">{wpm}</div>
           <div className="text-xs text-slate-400 mt-1">WPM</div>
         </div>
         <div className="bg-slate-700 rounded-lg p-4 text-center">
-          <div className="text-2xl font-bold text-cyan-400">{accuracy}%</div>
+          <div className="text-2xl font-bold text-primary">{accuracy}%</div>
           <div className="text-xs text-slate-400 mt-1">Accuracy</div>
         </div>
         <div className="bg-slate-700 rounded-lg p-4 text-center">
@@ -65,27 +65,27 @@ export default function AnalyticsSection() {
       {/* Stats Cards */}
       <div className="w-full grid grid-cols-2 md:grid-cols-3 gap-6 mb-4">
         <div className="bg-slate-800/80 backdrop-blur-lg rounded-2xl p-6 flex flex-col items-center shadow-xl border border-slate-700">
-          <div className="text-3xl font-mono font-bold text-cyan-400">{wpm}</div>
+          <div className="text-3xl font-mono font-bold text-primary">{wpm}</div>
           <div className="text-xs text-slate-400 mt-1">WPM</div>
         </div>
         <div className="bg-slate-800/80 backdrop-blur-lg rounded-2xl p-6 flex flex-col items-center shadow-xl border border-slate-700">
-          <div className="text-3xl font-mono font-bold text-cyan-400">{accuracy}%</div>
+          <div className="text-3xl font-mono font-bold text-primary">{accuracy}%</div>
           <div className="text-xs text-slate-400 mt-1">Accuracy</div>
         </div>
         <div className="bg-slate-800/80 backdrop-blur-lg rounded-2xl p-6 flex flex-col items-center shadow-xl border border-slate-700">
-          <div className="text-3xl font-mono font-bold text-cyan-400">{testsTaken}</div>
+          <div className="text-3xl font-mono font-bold text-primary">{testsTaken}</div>
           <div className="text-xs text-slate-400 mt-1">Tests</div>
         </div>
         <div className="bg-slate-800/80 backdrop-blur-lg rounded-2xl p-6 flex flex-col items-center shadow-xl border border-slate-700">
-          <div className="text-3xl font-mono font-bold text-cyan-400">{testsStarted}</div>
+          <div className="text-3xl font-mono font-bold text-primary">{testsStarted}</div>
           <div className="text-xs text-slate-400 mt-1">Tests Started</div>
         </div>
         <div className="bg-slate-800/80 backdrop-blur-lg rounded-2xl p-6 flex flex-col items-center shadow-xl border border-slate-700">
-          <div className="text-3xl font-mono font-bold text-cyan-400">{testsCompleted}</div>
+          <div className="text-3xl font-mono font-bold text-primary">{testsCompleted}</div>
           <div className="text-xs text-slate-400 mt-1">Tests Completed</div>
         </div>
         <div className="bg-slate-800/80 backdrop-blur-lg rounded-2xl p-6 flex flex-col items-center shadow-xl border border-slate-700">
-          <div className="text-3xl font-mono font-bold text-cyan-400">{timeTyping}s</div>
+          <div className="text-3xl font-mono font-bold text-primary">{timeTyping}s</div>
           <div className="text-xs text-slate-400 mt-1">Time Typing</div>
         </div>
       </div>

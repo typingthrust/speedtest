@@ -261,7 +261,7 @@ export default function TermsOfService() {
               <div className="bg-slate-700/50 rounded-lg p-4">
                 <p className="text-base text-slate-200 mb-2">
                   <strong>Email:</strong>{' '}
-                  <a href="mailto:support@typingthrust.com" className="text-cyan-400 hover:text-cyan-300 underline">
+                  <a href="mailto:support@typingthrust.com" className="text-primary hover:opacity-80 underline">
                     support@typingthrust.com
                   </a>
                 </p>

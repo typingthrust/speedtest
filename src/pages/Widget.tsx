@@ -71,7 +71,7 @@ export default function Widget() {
     } else if (index === currentIndex) {
       return (
         <span key={index} style={{ position: 'relative', display: 'inline-block' }}>
-          <span className="bg-cyan-500 text-slate-900 transform scale-110">{char === ' ' ? '\u00A0' : char}</span>
+          <span className="bg-primary text-slate-900 transform scale-110">{char === ' ' ? '\u00A0' : char}</span>
           <span
             className="cursor-blink"
             style={{
@@ -79,7 +79,7 @@ export default function Widget() {
               left: '100%', top: 0,
               width: '2px',
               height: '100%',
-              background: 'hsl(180, 80%, 60%)',
+              background: 'hsl(var(--primary))',
               display: 'inline-block',
               verticalAlign: 'middle',
             }}
@@ -111,7 +111,7 @@ export default function Widget() {
         </div>
         <input
           ref={inputRef}
-          className="w-full border border-slate-600 bg-slate-700 text-slate-100 rounded p-2 text-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 transition"
+          className="w-full border border-slate-600 bg-slate-700 text-slate-100 rounded p-2 text-lg focus:outline-none focus:ring-2 focus:ring-primary transition"
           type="text"
           value={userInput}
           onChange={handleInputChange}
@@ -120,10 +120,10 @@ export default function Widget() {
           disabled={userInput === sampleText}
         />
         <div className="mt-6 flex flex-wrap justify-center gap-6 text-base font-medium text-slate-200 bg-slate-700 border border-slate-600 rounded-lg p-3">
-          <div><span className="text-cyan-400">WPM:</span> {isNaN(wpm) || !isFinite(wpm) ? 0 : wpm}</div>
-          <div><span className="text-cyan-400">Accuracy:</span> {isNaN(accuracy) || !isFinite(accuracy) ? 100 : accuracy}%</div>
-          <div><span className="text-cyan-400">Time:</span> {timeElapsed}s</div>
-          <div><span className="text-cyan-400">Errors:</span> {errors}</div>
+          <div><span className="text-primary">WPM:</span> {isNaN(wpm) || !isFinite(wpm) ? 0 : wpm}</div>
+          <div><span className="text-primary">Accuracy:</span> {isNaN(accuracy) || !isFinite(accuracy) ? 100 : accuracy}%</div>
+          <div><span className="text-primary">Time:</span> {timeElapsed}s</div>
+          <div><span className="text-primary">Errors:</span> {errors}</div>
         </div>
       </div>
     </div>

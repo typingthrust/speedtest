@@ -114,7 +114,7 @@ function AnalyticsOverlay() {
         {TABS.map(t => (
           <button
             key={t.key}
-            className={`flex items-center gap-2 px-6 py-3 text-base font-semibold rounded-t-xl transition-all duration-200 focus:outline-none ${tab === t.key ? 'bg-slate-800 shadow text-cyan-400' : 'text-slate-400 hover:text-cyan-400 hover:bg-slate-700'}`}
+            className={`flex items-center gap-2 px-6 py-3 text-base font-semibold rounded-t-xl transition-all duration-200 focus:outline-none ${tab === t.key ? 'bg-slate-800 shadow text-primary' : 'text-slate-400 hover:text-primary hover:bg-slate-700'}`}
             onClick={() => setTab(t.key)}
             style={{borderBottom: tab === t.key ? '2.5px solid #22d3ee' : '2.5px solid transparent'}}
           >

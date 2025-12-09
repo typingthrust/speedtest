@@ -90,7 +90,7 @@ const ResetPassword: React.FC = () => {
 
           {loading ? (
             <div className="text-center py-8">
-              <div className="inline-block w-8 h-8 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+              <div className="inline-block w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
               <p className="text-slate-400">Verifying reset link...</p>
             </div>
           ) : error && !sessionSet ? (
@@ -128,7 +128,7 @@ const ResetPassword: React.FC = () => {
                 </label>
                 <input
                   type="password"
-                  className="w-full border-2 border-slate-600 rounded-lg px-4 py-3 text-sm bg-slate-700 text-slate-100 placeholder-slate-400 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500 focus:ring-offset-0 transition-all"
+                  className="w-full border-2 border-slate-600 rounded-lg px-4 py-3 text-sm bg-slate-700 text-slate-100 placeholder-slate-400 focus:border-primary focus:ring-2 focus:ring-primary focus:ring-offset-0 transition-all"
                   placeholder="Enter new password (min. 6 characters)"
                   value={password}
                   onChange={e => setPassword(e.target.value)}
@@ -143,7 +143,7 @@ const ResetPassword: React.FC = () => {
                 </label>
                 <input
                   type="password"
-                  className="w-full border-2 border-slate-600 rounded-lg px-4 py-3 text-sm bg-slate-700 text-slate-100 placeholder-slate-400 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500 focus:ring-offset-0 transition-all"
+                  className="w-full border-2 border-slate-600 rounded-lg px-4 py-3 text-sm bg-slate-700 text-slate-100 placeholder-slate-400 focus:border-primary focus:ring-2 focus:ring-primary focus:ring-offset-0 transition-all"
                   placeholder="Confirm new password"
                   value={confirmPassword}
                   onChange={e => setConfirmPassword(e.target.value)}
@@ -158,7 +158,7 @@ const ResetPassword: React.FC = () => {
               )}
               <button
                 type="submit"
-                className="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-900 rounded-lg px-4 py-3 font-semibold transition-all duration-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full bg-primary hover:opacity-90 text-slate-900 rounded-lg px-4 py-3 font-semibold transition-all duration-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 disabled={isResetting}
               >
                 {isResetting ? (

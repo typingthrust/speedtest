@@ -47,7 +47,7 @@ export default function Blog() {
           {articles.map(article => (
             <li key={article.slug} className="bg-slate-800 rounded-lg p-6 border border-slate-700 hover:shadow-lg transition">
               <a href={`#${article.slug}`} className="block">
-                <h2 className="text-2xl font-semibold text-cyan-400 mb-1">{article.title}</h2>
+                <h2 className="text-2xl font-semibold text-primary mb-1">{article.title}</h2>
                 <p className="text-slate-400 text-sm">{article.summary}</p>
               </a>
             </li>

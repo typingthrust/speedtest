@@ -49,9 +49,33 @@ const KeyboardHeatmap: React.FC<KeyboardHeatmapProps> = ({ keyStats, keyDetails 
   const allCounts = Object.values(stats);
   const maxCount = Math.max(1, ...allCounts);
   const minCount = Math.min(0, ...allCounts);
-  // Color scale: dark slate (low) to cyan (high) for dark theme
+  // Color scale: dark slate (low) to theme primary (high) for dark theme
   const colorLow = '#334155'; // slate-700
-  const colorHigh = '#06b6d4'; // cyan-500
+  // Get theme primary color and convert to hex for interpolation
+  const getThemeColorHex = () => {
+    const root = document.documentElement;
+    const primary = getComputedStyle(root).getPropertyValue('--primary').trim();
+    if (primary) {
+      const hsl = primary.split(' ').map(v => parseFloat(v));
+      if (hsl.length === 3) {
+        const [h, s, l] = hsl;
+        const c = (1 - Math.abs(2 * l / 100 - 1)) * s / 100;
+        const x = c * (1 - Math.abs((h / 60) % 2 - 1));
+        const m = l / 100 - c / 2;
+        let r = 0, g = 0, b = 0;
+        if (h < 60) { r = c; g = x; b = 0; }
+        else if (h < 120) { r = x; g = c; b = 0; }
+        else if (h < 180) { r = 0; g = c; b = x; }
+        else if (h < 240) { r = 0; g = x; b = c; }
+        else if (h < 300) { r = x; g = 0; b = c; }
+        else { r = c; g = 0; b = x; }
+        const toHex = (n: number) => Math.round((n + m) * 255).toString(16).padStart(2, '0');
+        return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+      }
+    }
+    return '#3b82f6'; // fallback to blue-500
+  };
+  const colorHigh = getThemeColorHex();
 
   return (
     <div className="w-full max-w-2xl mx-auto mt-2 p-4 bg-slate-800 rounded-2xl shadow flex flex-col items-center">
@@ -59,8 +83,8 @@ const KeyboardHeatmap: React.FC<KeyboardHeatmapProps> = ({ keyStats, keyDetails 
       <div className="flex gap-4 mb-4 text-xs text-slate-400">
         <span className="flex items-center"><span className="inline-block w-4 h-4 rounded mr-1" style={{background:'#334155'}}></span>Low</span>
         <span className="flex items-center"><span className="inline-block w-4 h-4 rounded mr-1" style={{background:'#475569'}}></span>Medium</span>
-        <span className="flex items-center"><span className="inline-block w-4 h-4 rounded mr-1" style={{background:'#22d3ee'}}></span>High</span>
-        <span className="flex items-center"><span className="inline-block w-4 h-4 rounded mr-1" style={{background:'#06b6d4'}}></span>Most</span>
+        <span className="flex items-center"><span className="inline-block w-4 h-4 rounded mr-1" style={{background:`hsl(var(--primary) / 0.6)`}}></span>High</span>
+        <span className="flex items-center"><span className="inline-block w-4 h-4 rounded mr-1" style={{background:`hsl(var(--primary))`}}></span>Most</span>
       </div>
       {/* Remove any extra box or border around the keyboard area */}
       <div className="space-y-2">

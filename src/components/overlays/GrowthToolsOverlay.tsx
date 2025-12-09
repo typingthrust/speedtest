@@ -52,7 +52,7 @@ export default function GrowthToolsOverlay() {
         <section className="w-full">
           <h3 className="text-base font-semibold mb-2 text-slate-300">Join Our Community</h3>
           <div className="flex justify-center gap-3 mb-1">
-            <a href="https://discord.gg/your-discord" target="_blank" rel="noopener" className="flex items-center gap-2 bg-slate-700 hover:bg-slate-600 text-slate-100 px-5 py-2 rounded-lg font-semibold shadow transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-cyan-500">
+            <a href="https://discord.gg/your-discord" target="_blank" rel="noopener" className="flex items-center gap-2 bg-slate-700 hover:bg-slate-600 text-slate-100 px-5 py-2 rounded-lg font-semibold shadow transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-primary">
               <FaDiscord className="w-5 h-5" style={{ color: '#94a3b8' }} />
               Discord
             </a>
@@ -67,9 +67,9 @@ export default function GrowthToolsOverlay() {
         <section className="w-full">
           <h3 className="text-base font-semibold mb-2 text-slate-300">Embeddable Widget</h3>
           <div className="flex items-center gap-2 mb-1">
-            <textarea className="w-full border border-slate-600 bg-slate-700 text-slate-100 rounded p-2 text-xs focus:outline-none focus:ring-2 focus:ring-cyan-500" rows={2} value={widgetCode} readOnly />
+            <textarea className="w-full border border-slate-600 bg-slate-700 text-slate-100 rounded p-2 text-xs focus:outline-none focus:ring-2 focus:ring-primary" rows={2} value={widgetCode} readOnly />
             <button
-              className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold transition-colors duration-150 ${copiedWidget ? 'bg-green-500 text-slate-900' : 'bg-cyan-500 text-slate-900 hover:bg-cyan-400'}`}
+              className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold transition-colors duration-150 ${copiedWidget ? 'bg-green-500 text-slate-900' : 'bg-primary text-slate-900 hover:opacity-90'}`}
               onClick={handleCopyWidget}
               type="button"
             >
