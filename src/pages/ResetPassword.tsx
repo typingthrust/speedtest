@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
+import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
+import { ArrowLeft, CheckCircle, AlertCircle } from 'lucide-react';
 
 const ResetPassword: React.FC = () => {
   const navigate = useNavigate();
@@ -10,6 +13,7 @@ const ResetPassword: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [sessionSet, setSessionSet] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
 
   // Extract tokens from URL hash
   useEffect(() => {
@@ -50,9 +54,9 @@ const ResetPassword: React.FC = () => {
       setError('Passwords do not match.');
       return;
     }
-    setLoading(true);
+    setIsResetting(true);
     const { error: updateError } = await supabase.auth.updateUser({ password });
-    setLoading(false);
+    setIsResetting(false);
     if (updateError) {
       setError(updateError.message);
     } else {
@@ -60,52 +64,117 @@ const ResetPassword: React.FC = () => {
       // Sign out the user and redirect to login after a short delay
       setTimeout(async () => {
         await supabase.auth.signOut();
-        navigate('/?showLogin=1'); // You can use this param to trigger the login modal
-      }, 2000);
+        navigate('/');
+      }, 3000);
     }
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-slate-900">
-      <div className="bg-slate-800 p-6 rounded shadow-md w-full max-w-md border border-slate-700">
-        <h2 className="text-2xl font-bold mb-4 text-center text-slate-100">Reset Your Password</h2>
-        {loading ? (
-          <div className="text-center text-slate-400">Loading...</div>
-        ) : error ? (
-          <div className="text-red-400 text-center">{error}</div>
-        ) : success ? (
-          <div className="text-green-300 text-center">Password reset successful! Please sign in with your new password.</div>
-        ) : sessionSet ? (
-          <form onSubmit={handleSubmit}>
-            <label className="block mb-2 font-medium text-slate-300">New Password</label>
-            <input
-              type="password"
-              className="w-full p-2 border border-slate-600 bg-slate-700 text-slate-100 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-cyan-500"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              required
-              minLength={6}
-            />
-            <label className="block mb-2 font-medium text-slate-300">Confirm New Password</label>
-            <input
-              type="password"
-              className="w-full p-2 border border-slate-600 bg-slate-700 text-slate-100 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-cyan-500"
-              value={confirmPassword}
-              onChange={e => setConfirmPassword(e.target.value)}
-              required
-              minLength={6}
-            />
-            {error && <div className="text-red-400 mb-2">{error}</div>}
-            <button
-              type="submit"
-              className="w-full bg-cyan-500 text-slate-900 py-2 rounded font-semibold hover:bg-cyan-400 transition"
-              disabled={loading}
-            >
-              {loading ? 'Resetting...' : 'Reset Password'}
-            </button>
-          </form>
-        ) : null}
+    <div className="min-h-screen bg-slate-900 flex flex-col">
+      <Navbar />
+      <div className="flex-1 flex items-center justify-center px-4 py-12">
+        <div className="w-full max-w-md bg-slate-800/50 rounded-xl border border-slate-700 shadow-xl p-6 sm:p-8">
+          {/* Back Button */}
+          <Link
+            to="/"
+            className="inline-flex items-center gap-2 text-slate-400 hover:text-slate-100 transition-colors mb-6 text-sm"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Home
+          </Link>
+
+          <h2 className="text-2xl font-bold mb-2 text-center text-slate-100">Reset Your Password</h2>
+          <p className="text-sm text-slate-400 text-center mb-6">
+            Enter your new password below
+          </p>
+
+          {loading ? (
+            <div className="text-center py-8">
+              <div className="inline-block w-8 h-8 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+              <p className="text-slate-400">Verifying reset link...</p>
+            </div>
+          ) : error && !sessionSet ? (
+            <div className="bg-red-900/30 border border-red-500/50 rounded-lg p-4 mb-4">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-red-300 font-semibold mb-1">Invalid Reset Link</p>
+                  <p className="text-red-200 text-sm">{error}</p>
+                  <Link
+                    to="/"
+                    className="inline-block mt-3 text-sm text-red-300 hover:text-red-200 underline"
+                  >
+                    Return to home page
+                  </Link>
+                </div>
+              </div>
+            </div>
+          ) : success ? (
+            <div className="bg-green-900/30 border border-green-500/50 rounded-lg p-6 text-center">
+              <CheckCircle className="w-12 h-12 text-green-400 mx-auto mb-4" />
+              <p className="text-green-300 font-semibold mb-2 text-lg">Password Reset Successful!</p>
+              <p className="text-green-200 text-sm mb-4">
+                Your password has been updated. You can now sign in with your new password.
+              </p>
+              <p className="text-green-200 text-xs">
+                Redirecting to home page...
+              </p>
+            </div>
+          ) : sessionSet ? (
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block mb-2 text-sm font-medium text-slate-300">
+                  New Password
+                </label>
+                <input
+                  type="password"
+                  className="w-full border-2 border-slate-600 rounded-lg px-4 py-3 text-sm bg-slate-700 text-slate-100 placeholder-slate-400 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500 focus:ring-offset-0 transition-all"
+                  placeholder="Enter new password (min. 6 characters)"
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  required
+                  minLength={6}
+                  autoFocus
+                />
+              </div>
+              <div>
+                <label className="block mb-2 text-sm font-medium text-slate-300">
+                  Confirm New Password
+                </label>
+                <input
+                  type="password"
+                  className="w-full border-2 border-slate-600 rounded-lg px-4 py-3 text-sm bg-slate-700 text-slate-100 placeholder-slate-400 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500 focus:ring-offset-0 transition-all"
+                  placeholder="Confirm new password"
+                  value={confirmPassword}
+                  onChange={e => setConfirmPassword(e.target.value)}
+                  required
+                  minLength={6}
+                />
+              </div>
+              {error && (
+                <div className="bg-red-900/30 border border-red-500/50 text-red-300 text-sm rounded-lg px-4 py-2">
+                  {error}
+                </div>
+              )}
+              <button
+                type="submit"
+                className="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-900 rounded-lg px-4 py-3 font-semibold transition-all duration-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                disabled={isResetting}
+              >
+                {isResetting ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-slate-900 border-t-transparent rounded-full animate-spin"></div>
+                    Resetting...
+                  </>
+                ) : (
+                  'Reset Password'
+                )}
+              </button>
+            </form>
+          ) : null}
+        </div>
       </div>
+      <Footer />
     </div>
   );
 };

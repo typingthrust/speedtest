@@ -21,6 +21,7 @@ export default function AuthOverlay() {
   const [loginAttempts, setLoginAttempts] = useState(0);
   const [emailConfirmationRequired, setEmailConfirmationRequired] = useState(false);
   const [resendingEmail, setResendingEmail] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -117,11 +118,12 @@ export default function AuthOverlay() {
     closeOverlay();
   };
 
-  const handleForgotPassword = async () => {
+  const handleForgotPassword = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     setResetError('');
     setResetSent(false);
     if (!email) {
-      setResetError('Enter your email above first.');
+      setResetError('Please enter your email address.');
       return;
     }
     try {
@@ -130,8 +132,10 @@ export default function AuthOverlay() {
       });
       if (error) throw error;
       setResetSent(true);
+      setResetError('');
     } catch (err: any) {
-      setResetError(err.message || 'Failed to send reset email');
+      setResetError(err.message || 'Failed to send reset email. Please try again.');
+      setResetSent(false);
     }
   };
 
@@ -273,39 +277,123 @@ export default function AuthOverlay() {
                 </div>
               </div>
 
-              {/* Email/Password Form */}
-              <form onSubmit={signup ? handleEmailSignup : handleEmailLogin} className="space-y-4">
-                <div>
-                  <input
-                    type="email"
-                    className="w-full border-2 border-slate-600 rounded-lg px-4 py-3 text-sm bg-slate-700 text-slate-100 placeholder-slate-400 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500 focus:ring-offset-0 transition-all"
-                    placeholder="Email address"
-                    value={email}
-                    onChange={e => setEmail(e.target.value)}
-                    required
-                    disabled={loading || (signup && signupSuccess)}
-                  />
-                </div>
-                <div>
-                  <input
-                    type="password"
-                    className="w-full border-2 border-slate-600 rounded-lg px-4 py-3 text-sm bg-slate-700 text-slate-100 placeholder-slate-400 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500 focus:ring-offset-0 transition-all"
-                    placeholder="Password"
-                    value={password}
-                    onChange={e => setPassword(e.target.value)}
-                    required
-                    disabled={loading || (signup && signupSuccess)}
-                    minLength={6}
-                  />
-                </div>
-                
-                {error && (
-                  <div className="bg-red-900/30 border border-red-500/50 text-red-300 text-sm rounded-lg px-4 py-2">
-                    {error}
+              {/* Forgot Password Form */}
+              {showForgotPassword && !signup ? (
+                <div className="space-y-4">
+                  <div className="text-center mb-4">
+                    <h3 className="text-lg font-semibold text-slate-100 mb-2">Reset Password</h3>
+                    <p className="text-sm text-slate-400">Enter your email address and we'll send you a password reset link.</p>
                   </div>
-                )}
-                
-                {signup && signupSuccess && !signupExists && (
+                  
+                  <form onSubmit={handleForgotPassword} className="space-y-4">
+                    <div>
+                      <input
+                        type="email"
+                        className="w-full border-2 border-slate-600 rounded-lg px-4 py-3 text-sm bg-slate-700 text-slate-100 placeholder-slate-400 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500 focus:ring-offset-0 transition-all"
+                        placeholder="Email address"
+                        value={email}
+                        onChange={e => setEmail(e.target.value)}
+                        required
+                        disabled={loading || resetSent}
+                        autoFocus
+                      />
+                    </div>
+
+                    {resetSent && (
+                      <div className="bg-green-900/30 border border-green-500/50 text-green-300 text-sm rounded-lg px-4 py-4">
+                        <p className="font-semibold mb-2">✓ Password reset email sent!</p>
+                        <p className="text-sm mb-3 leading-relaxed">
+                          Check your inbox at <strong className="text-green-200">{email}</strong> for the password reset link.
+                        </p>
+                        <div className="bg-yellow-900/30 border border-yellow-500/50 rounded-lg p-3">
+                          <p className="text-xs font-semibold text-yellow-300 mb-2">⚠️ Not seeing the email?</p>
+                          <p className="text-xs text-yellow-200 leading-relaxed mb-2">
+                            📬 <strong>Check your SPAM/JUNK folder first!</strong> Password reset emails often go there.
+                          </p>
+                          <p className="text-xs text-yellow-200 leading-relaxed">
+                            The reset link will expire in 1 hour. If you don't receive it, try again or contact support.
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setShowForgotPassword(false);
+                            setResetSent(false);
+                            setResetError('');
+                          }}
+                          className="mt-3 w-full bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-lg px-4 py-2.5 font-semibold text-sm transition-colors"
+                        >
+                          Back to Sign In
+                        </button>
+                      </div>
+                    )}
+
+                    {resetError && (
+                      <div className="bg-red-900/30 border border-red-500/50 text-red-300 text-sm rounded-lg px-4 py-2">
+                        {resetError}
+                      </div>
+                    )}
+
+                    {!resetSent && (
+                      <>
+                        <button
+                          type="submit"
+                          className="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-900 rounded-lg px-4 py-3 font-semibold transition-all duration-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                          disabled={loading || !email}
+                        >
+                          {loading ? 'Sending...' : 'Send Reset Link'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setShowForgotPassword(false);
+                            setResetSent(false);
+                            setResetError('');
+                            setEmail('');
+                          }}
+                          className="w-full text-sm text-slate-400 hover:text-slate-200 font-medium"
+                        >
+                          Back to Sign In
+                        </button>
+                      </>
+                    )}
+                  </form>
+                </div>
+              ) : (
+                <>
+                  {/* Email/Password Form */}
+                  <form onSubmit={signup ? handleEmailSignup : handleEmailLogin} className="space-y-4">
+                    <div>
+                      <input
+                        type="email"
+                        className="w-full border-2 border-slate-600 rounded-lg px-4 py-3 text-sm bg-slate-700 text-slate-100 placeholder-slate-400 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500 focus:ring-offset-0 transition-all"
+                        placeholder="Email address"
+                        value={email}
+                        onChange={e => setEmail(e.target.value)}
+                        required
+                        disabled={loading || (signup && signupSuccess)}
+                      />
+                    </div>
+                    <div>
+                      <input
+                        type="password"
+                        className="w-full border-2 border-slate-600 rounded-lg px-4 py-3 text-sm bg-slate-700 text-slate-100 placeholder-slate-400 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500 focus:ring-offset-0 transition-all"
+                        placeholder="Password"
+                        value={password}
+                        onChange={e => setPassword(e.target.value)}
+                        required
+                        disabled={loading || (signup && signupSuccess)}
+                        minLength={6}
+                      />
+                    </div>
+                    
+                    {error && (
+                      <div className="bg-red-900/30 border border-red-500/50 text-red-300 text-sm rounded-lg px-4 py-2">
+                        {error}
+                      </div>
+                    )}
+                    
+                    {signup && signupSuccess && !signupExists && (
                   <div className="bg-blue-900/30 border border-blue-500/50 text-blue-200 text-sm rounded-lg px-4 py-4">
                     {emailConfirmationRequired ? (
                       <div>
@@ -391,40 +479,35 @@ export default function AuthOverlay() {
                   </div>
                 )}
 
-                {!signup && resetSent && (
-                  <div className="bg-green-900/30 border border-green-500/50 text-green-300 text-sm rounded-lg px-4 py-2">
-                    Password reset email sent! Check your inbox.
-                  </div>
-                )}
-                
-                {!signup && resetError && (
-                  <div className="bg-red-900/30 border border-red-500/50 text-red-300 text-sm rounded-lg px-4 py-2">
-                    {resetError}
-                  </div>
-                )}
-
-                <button
-                  type="submit"
-                  className="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-900 rounded-lg px-4 py-3 font-semibold transition-all duration-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                  disabled={loading || (signup && signupSuccess)}
-                >
-                  {loading ? 'Please wait...' : (signup ? 'Create Account' : 'Sign In')}
-                </button>
-
-                {/* Forgot password link */}
-                {!signup && (
-                  <div className="flex justify-end">
                     <button
-                      type="button"
-                      className="text-sm text-slate-400 hover:text-slate-200 hover:underline font-medium"
-                      onClick={handleForgotPassword}
-                      disabled={loading}
+                      type="submit"
+                      className="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-900 rounded-lg px-4 py-3 font-semibold transition-all duration-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                      disabled={loading || (signup && signupSuccess)}
                     >
-                      Forgot password?
+                      {loading ? 'Please wait...' : (signup ? 'Create Account' : 'Sign In')}
                     </button>
-                  </div>
-                )}
-              </form>
+
+                    {/* Forgot password link */}
+                    {!signup && (
+                      <div className="flex justify-end">
+                        <button
+                          type="button"
+                          className="text-sm text-slate-400 hover:text-slate-200 hover:underline font-medium transition-colors"
+                          onClick={() => {
+                            setShowForgotPassword(true);
+                            setError('');
+                            setResetError('');
+                            setResetSent(false);
+                          }}
+                          disabled={loading}
+                        >
+                          Forgot password?
+                        </button>
+                      </div>
+                    )}
+                  </form>
+                </>
+              )}
 
               {/* Toggle Sign Up/Sign In */}
               <div className="pt-2 border-t border-slate-700">
@@ -436,6 +519,7 @@ export default function AuthOverlay() {
                     setSignupExists(false);
                     setResetSent(false);
                     setResetError('');
+                    setShowForgotPassword(false);
                   }}
                   className="w-full text-sm text-slate-400 hover:text-slate-200 font-medium"
                   type="button"
