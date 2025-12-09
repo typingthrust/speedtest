@@ -120,7 +120,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     // Also update --primary to use theme color
     document.documentElement.style.setProperty('--primary', colors.primary);
     document.documentElement.style.setProperty('--ring', colors.primary);
-    // Update background and card colors (ONLY backgrounds change with theme)
+    // Update background and card colors
     document.documentElement.style.setProperty('--background', colors.background);
     document.documentElement.style.setProperty('--card', colors.card);
     document.documentElement.style.setProperty('--border', colors.border);
@@ -128,8 +128,32 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     document.documentElement.style.setProperty('--secondary', colors.muted);
     document.documentElement.style.setProperty('--accent', colors.muted);
     document.documentElement.style.setProperty('--input', colors.border);
-    // IMPORTANT: Text colors stay light/white - DO NOT change with theme
-    // --foreground, --muted-foreground, etc. remain constant for readability
+    
+    // Calculate text colors based on background brightness (like monkeytype)
+    // Extract lightness from HSL background color
+    const bgLightness = parseFloat(colors.background.split(' ')[2]);
+    const cardLightness = parseFloat(colors.card.split(' ')[2]);
+    
+    // Use the same hue as the theme for text colors, but adjust lightness for contrast
+    // Extract hue and saturation from theme background
+    const bgParts = colors.background.split(' ');
+    const themeHue = bgParts[0];
+    const themeSaturation = bgParts[1];
+    
+    // If background is dark (lightness < 25%), use light text with theme tint
+    // If background is light (lightness >= 25%), use dark text with theme tint
+    if (bgLightness < 25) {
+      // Dark background - use light text with subtle theme tint
+      // Light text: high lightness (85-95%), low saturation (5-15%) to keep it readable
+      document.documentElement.style.setProperty('--foreground', `${themeHue} ${Math.min(15, parseFloat(themeSaturation))}% 92%`); // Light text with theme tint
+      document.documentElement.style.setProperty('--muted-foreground', `${themeHue} ${Math.min(20, parseFloat(themeSaturation))}% 60%`); // Medium gray with theme tint
+      document.documentElement.style.setProperty('--card-foreground', `${themeHue} ${Math.min(15, parseFloat(themeSaturation))}% 92%`); // Light text with theme tint
+    } else {
+      // Light background - use dark text with theme tint
+      document.documentElement.style.setProperty('--foreground', `${themeHue} ${Math.min(30, parseFloat(themeSaturation))}% 15%`); // Dark text with theme tint
+      document.documentElement.style.setProperty('--muted-foreground', `${themeHue} ${Math.min(25, parseFloat(themeSaturation))}% 45%`); // Medium gray with theme tint
+      document.documentElement.style.setProperty('--card-foreground', `${themeHue} ${Math.min(30, parseFloat(themeSaturation))}% 15%`); // Dark text with theme tint
+    }
   }, [theme]);
 
   const setTheme = (newTheme: ThemeColor) => {
