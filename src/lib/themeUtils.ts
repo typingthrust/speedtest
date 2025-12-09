@@ -55,6 +55,24 @@ export const themeColors: Record<ThemeColor, {
     primaryLight: 'bg-pink-400',
     primaryText: 'text-pink-500',
   },
+  grey: {
+    primary: 'bg-gray-500',
+    primaryHover: 'hover:bg-gray-600',
+    primaryLight: 'bg-gray-400',
+    primaryText: 'text-gray-500',
+  },
+  dark: {
+    primary: 'bg-gray-700',
+    primaryHover: 'hover:bg-gray-800',
+    primaryLight: 'bg-gray-600',
+    primaryText: 'text-gray-300',
+  },
+  white: {
+    primary: 'bg-blue-600',
+    primaryHover: 'hover:bg-blue-700',
+    primaryLight: 'bg-blue-500',
+    primaryText: 'text-blue-600',
+  },
 };
 
 // Get theme color classes

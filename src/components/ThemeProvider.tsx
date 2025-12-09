@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 
-export type ThemeColor = 'blue' | 'green' | 'purple' | 'orange' | 'red' | 'teal' | 'indigo' | 'pink';
+export type ThemeColor = 'blue' | 'green' | 'purple' | 'orange' | 'red' | 'teal' | 'indigo' | 'pink' | 'grey' | 'dark' | 'white';
 
 interface ThemeContextType {
   theme: ThemeColor;
@@ -105,6 +105,33 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
         border: '330 25% 20%', // Pink-tinted border
         muted: '330 25% 18%', // Pink-tinted muted
       },
+      grey: { 
+        primary: '0 0% 50%', // Neutral grey
+        hover: '0 0% 45%', 
+        light: '0 0% 60%',
+        background: '0 0% 12%', // Pure dark grey background
+        card: '0 0% 17%', // Slightly lighter grey card
+        border: '0 0% 20%', // Grey border
+        muted: '0 0% 18%', // Grey muted
+      },
+      dark: { 
+        primary: '0 0% 65%', // Light grey for contrast on dark
+        hover: '0 0% 60%', 
+        light: '0 0% 70%',
+        background: '0 0% 8%', // Almost black background
+        card: '0 0% 11%', // Very dark card
+        border: '0 0% 15%', // Dark border
+        muted: '0 0% 10%', // Dark muted
+      },
+      white: { 
+        primary: '217 91% 50%', // Blue for contrast on light
+        hover: '217 91% 45%', 
+        light: '217 91% 55%',
+        background: '0 0% 98%', // Almost white background
+        card: '0 0% 100%', // Pure white card
+        border: '0 0% 90%', // Light grey border
+        muted: '0 0% 95%', // Very light grey muted
+      },
     };
     
     const colors = themeValues[theme];
@@ -140,19 +167,29 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     const themeHue = bgParts[0];
     const themeSaturation = bgParts[1];
     
+    // For grey, dark, and white themes, use neutral colors (0 saturation) for better readability
+    const isNeutralTheme = theme === 'grey' || theme === 'dark' || theme === 'white';
+    const textSaturation = isNeutralTheme ? '0%' : themeSaturation;
+    
     // If background is dark (lightness < 25%), use light text with theme tint
     // If background is light (lightness >= 25%), use dark text with theme tint
     if (bgLightness < 25) {
       // Dark background - use light text with subtle theme tint
       // Light text: high lightness (85-95%), low saturation (5-15%) to keep it readable
-      document.documentElement.style.setProperty('--foreground', `${themeHue} ${Math.min(15, parseFloat(themeSaturation))}% 92%`); // Light text with theme tint
-      document.documentElement.style.setProperty('--muted-foreground', `${themeHue} ${Math.min(20, parseFloat(themeSaturation))}% 60%`); // Medium gray with theme tint
-      document.documentElement.style.setProperty('--card-foreground', `${themeHue} ${Math.min(15, parseFloat(themeSaturation))}% 92%`); // Light text with theme tint
+      // For neutral themes, use pure grey for better contrast
+      const saturation = isNeutralTheme ? '0%' : `${Math.min(15, parseFloat(themeSaturation))}%`;
+      document.documentElement.style.setProperty('--foreground', `${themeHue} ${saturation} 92%`); // Light text with theme tint
+      document.documentElement.style.setProperty('--muted-foreground', `${themeHue} ${isNeutralTheme ? '0%' : `${Math.min(20, parseFloat(themeSaturation))}%`} 60%`); // Medium gray with theme tint
+      document.documentElement.style.setProperty('--card-foreground', `${themeHue} ${saturation} 92%`); // Light text with theme tint
     } else {
-      // Light background - use dark text with theme tint
-      document.documentElement.style.setProperty('--foreground', `${themeHue} ${Math.min(30, parseFloat(themeSaturation))}% 15%`); // Dark text with theme tint
-      document.documentElement.style.setProperty('--muted-foreground', `${themeHue} ${Math.min(25, parseFloat(themeSaturation))}% 45%`); // Medium gray with theme tint
-      document.documentElement.style.setProperty('--card-foreground', `${themeHue} ${Math.min(30, parseFloat(themeSaturation))}% 15%`); // Dark text with theme tint
+      // Light background (white theme) - use dark text with theme tint
+      const saturation = isNeutralTheme ? '0%' : `${Math.min(30, parseFloat(themeSaturation))}%`;
+      // For white theme, use darker text for better contrast
+      const textLightness = theme === 'white' ? '10%' : '15%';
+      const mutedLightness = theme === 'white' ? '35%' : '45%';
+      document.documentElement.style.setProperty('--foreground', `${themeHue} ${saturation} ${textLightness}`); // Dark text with theme tint
+      document.documentElement.style.setProperty('--muted-foreground', `${themeHue} ${isNeutralTheme ? '0%' : `${Math.min(25, parseFloat(themeSaturation))}%`} ${mutedLightness}`); // Medium gray with theme tint
+      document.documentElement.style.setProperty('--card-foreground', `${themeHue} ${saturation} ${textLightness}`); // Dark text with theme tint
     }
   }, [theme]);
 
