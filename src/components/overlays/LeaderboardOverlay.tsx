@@ -1,8 +1,9 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { useOverlay } from '../OverlayProvider';
-import { X, Share2, User as UserIcon, Award } from 'lucide-react';
+import { X, Share2, User as UserIcon, Award, Loader2 } from 'lucide-react';
 import { useLeaderboard } from '../LeaderboardProvider';
 import { useAuth } from '../AuthProvider';
+import { supabase } from '../../lib/supabaseClient';
 
 const TIMEFRAMES = [
   { label: 'Weekly', value: 'weekly' },
@@ -97,8 +98,85 @@ export default function LeaderboardOverlay() {
   const { open, closeOverlay } = useOverlay();
   const { state, setTimeframe, refreshLeaderboard } = useLeaderboard();
   const [shareOpen, setShareOpen] = useState(false);
+  const [generatingDemo, setGeneratingDemo] = useState(false);
   const { user } = useAuth();
   const link = 'https://typingthrust.com/leaderboard';
+
+  // Generate demo leaderboard data using a database function
+  const generateDemoLeaderboardData = async () => {
+    setGeneratingDemo(true);
+    try {
+      // Call a database function to generate demo leaderboard data
+      // This function will bypass RLS and create demo entries
+      const { data, error } = await supabase.rpc('generate_demo_leaderboard_data');
+
+      if (error) {
+        // If the function doesn't exist, try direct insert with current approach
+        // For demo purposes, we'll create entries with fake user_ids
+        // Note: This may fail due to foreign key constraints, but we'll try
+        const demoUsers = [
+          { email: 'typer.pro@example.com', wpm: 145, xp: 12500 },
+          { email: 'speed.demon@example.com', wpm: 138, xp: 11200 },
+          { email: 'keyboard.master@example.com', wpm: 132, xp: 9800 },
+          { email: 'fast.fingers@example.com', wpm: 128, xp: 8700 },
+          { email: 'typing.champ@example.com', wpm: 125, xp: 7600 },
+          { email: 'quick.typer@example.com', wpm: 118, xp: 6500 },
+          { email: 'speed.racer@example.com', wpm: 115, xp: 5400 },
+          { email: 'word.wizard@example.com', wpm: 112, xp: 4800 },
+          { email: 'keyboard.king@example.com', wpm: 108, xp: 4200 },
+          { email: 'typing.ninja@example.com', wpm: 105, xp: 3800 },
+        ];
+
+        const timeframes: ('weekly' | 'monthly' | 'yearly' | 'all')[] = ['weekly', 'monthly', 'yearly', 'all'];
+        const entries = [];
+
+        for (const timeframe of timeframes) {
+          for (let i = 0; i < demoUsers.length; i++) {
+            const demoUser = demoUsers[i];
+            // Add some variation for different timeframes
+            const wpmVariation = Math.floor(Math.random() * 10) - 5; // -5 to +5
+            const wpm = Math.max(50, demoUser.wpm + wpmVariation);
+            const xpVariation = Math.floor(Math.random() * 500) - 250; // -250 to +250
+            const xp = Math.max(0, demoUser.xp + xpVariation);
+
+            // Generate a fake UUID for demo purposes (format: 00000000-0000-0000-0000-XXXXXXXXXXXX)
+            const fakeUserId = `00000000-0000-0000-0000-${String(i).padStart(12, '0')}`;
+
+            entries.push({
+              user_id: fakeUserId,
+              email: demoUser.email,
+              wpm: wpm,
+              xp: xp,
+              timeframe: timeframe,
+            });
+          }
+        }
+
+        // Try to insert demo data
+        const { error: insertError } = await supabase
+          .from('leaderboard')
+          .upsert(entries, {
+            onConflict: 'user_id,timeframe',
+          });
+
+        if (insertError) {
+          console.error('Error generating demo leaderboard data:', insertError);
+          alert('Error: Cannot insert demo data due to database constraints. Please create a database function "generate_demo_leaderboard_data" to bypass RLS, or check the console for details.');
+        } else {
+          console.log('✅ Successfully generated demo leaderboard data!');
+          await refreshLeaderboard();
+        }
+      } else {
+        console.log('✅ Successfully generated demo leaderboard data using database function!');
+        await refreshLeaderboard();
+      }
+    } catch (error) {
+      console.error('Error generating demo leaderboard data:', error);
+      alert('Error generating demo data. Check console for details.');
+    } finally {
+      setGeneratingDemo(false);
+    }
+  };
 
   // Refresh leaderboard when overlay opens
   useEffect(() => {
@@ -126,13 +204,29 @@ export default function LeaderboardOverlay() {
       <section className="w-full flex flex-col gap-6 items-center">
         <header className="w-full flex flex-row items-center justify-between mb-2 pr-14">
           <h1 className="text-2xl font-bold text-slate-100">Leaderboard</h1>
-          <button
-            className="flex items-center gap-1 px-4 py-2 rounded-lg bg-cyan-500 text-slate-900 font-semibold hover:bg-cyan-400 transition"
-            onClick={() => setShareOpen(true)}
-            aria-label="Share leaderboard"
-          >
-            <Share2 className="w-5 h-5" /> Share
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-slate-700 text-slate-300 text-sm font-medium hover:bg-slate-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={generateDemoLeaderboardData}
+              disabled={generatingDemo}
+              aria-label="Generate demo data"
+            >
+              {generatingDemo ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" /> Generating...
+                </>
+              ) : (
+                'Generate Demo Data'
+              )}
+            </button>
+            <button
+              className="flex items-center gap-1 px-4 py-2 rounded-lg bg-cyan-500 text-slate-900 font-semibold hover:bg-cyan-400 transition"
+              onClick={() => setShareOpen(true)}
+              aria-label="Share leaderboard"
+            >
+              <Share2 className="w-5 h-5" /> Share
+            </button>
+          </div>
         </header>
         {/* Timeframe Filters */}
         <div className="flex gap-2 mb-4">
