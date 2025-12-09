@@ -64,14 +64,14 @@ export default function Widget() {
     let className = 'transition-all duration-150 ease-out inline-block ';
     if (index < userInput.length) {
       if (userInput[index] === char) {
-        className += 'text-slate-200 transform scale-105';
+        className += 'text-foreground transform scale-105';
       } else {
         className += 'text-red-400 transform scale-110';
       }
     } else if (index === currentIndex) {
       return (
         <span key={index} style={{ position: 'relative', display: 'inline-block' }}>
-          <span className="bg-primary text-slate-900 transform scale-110">{char === ' ' ? '\u00A0' : char}</span>
+          <span className="bg-primary text-primary-foreground transform scale-110">{char === ' ' ? '\u00A0' : char}</span>
           <span
             className="cursor-blink"
             style={{
@@ -87,7 +87,7 @@ export default function Widget() {
         </span>
       );
     } else {
-      className += 'text-slate-400';
+      className += 'text-foreground/60';
     }
     return (
       <span key={index} className={className}>
