@@ -59,7 +59,7 @@ All colors MUST be HSL.
     --popover: 215 28% 16.9%; /* slate-800 */
     --popover-foreground: 210 40% 98%; /* slate-100 */
 
-    --primary: var(--theme-primary, 217 91% 60%); /* Uses theme color, defaults to blue-500 */
+    --primary: 217 91% 60%; /* Will be overridden by theme */
     --primary-foreground: 222.2 47.4% 11.2%; /* slate-900 */
 
     --secondary: 215 25.9% 16.9%; /* slate-700 */

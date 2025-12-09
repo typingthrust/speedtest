@@ -36,9 +36,13 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     };
     
     const colors = themeValues[theme];
+    // Set theme variables
     document.documentElement.style.setProperty('--theme-primary', colors.primary);
     document.documentElement.style.setProperty('--theme-primary-hover', colors.hover);
     document.documentElement.style.setProperty('--theme-primary-light', colors.light);
+    // Also update --primary to use theme color
+    document.documentElement.style.setProperty('--primary', colors.primary);
+    document.documentElement.style.setProperty('--ring', colors.primary);
   }, [theme]);
 
   const setTheme = (newTheme: ThemeColor) => {
