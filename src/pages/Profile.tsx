@@ -613,6 +613,7 @@ export default function Profile() {
   };
   const sessionTimeChartOptions = {
     responsive: true,
+    maintainAspectRatio: false,
     plugins: { legend: { display: false }, tooltip: { enabled: true, backgroundColor: '#1e293b', titleColor: '#f1f5f9', bodyColor: '#f1f5f9', borderColor: '#475569', borderWidth: 1 } },
     scales: { x: { grid: { color: '#475569' }, ticks: { color: '#94a3b8' } }, y: { grid: { color: '#475569' }, ticks: { color: '#94a3b8' }, beginAtZero: true } },
   };
@@ -636,6 +637,7 @@ export default function Profile() {
   };
   const wpmVarianceChartOptions = {
     responsive: true,
+    maintainAspectRatio: false,
     plugins: { legend: { display: false }, tooltip: { enabled: true, backgroundColor: '#1e293b', titleColor: '#f1f5f9', bodyColor: '#f1f5f9', borderColor: '#475569', borderWidth: 1 } },
     scales: { x: { grid: { color: '#475569' }, ticks: { color: '#94a3b8' } }, y: { grid: { color: '#475569' }, ticks: { color: '#94a3b8' }, beginAtZero: true } },
   };
@@ -664,6 +666,7 @@ export default function Profile() {
   };
   const categoryChartOptions = {
     responsive: true,
+    maintainAspectRatio: false,
     plugins: { legend: { display: false }, tooltip: { enabled: true, backgroundColor: '#1e293b', titleColor: '#f1f5f9', bodyColor: '#f1f5f9', borderColor: '#475569', borderWidth: 1 } },
     scales: { x: { grid: { color: '#475569' }, ticks: { color: '#94a3b8' } }, y: { grid: { color: '#475569' }, ticks: { color: '#94a3b8' }, beginAtZero: true } },
   };
@@ -904,7 +907,7 @@ export default function Profile() {
               {activeAnalyticsTab === 'Speed Trends' && (
                 <div>
                   <h2 className="text-xl font-semibold text-slate-100 mb-4 text-left">Speed Trends</h2>
-                  <div className="h-72">
+                  <div className="h-72 w-full">
                     {history.length === 0 ? (
                       <div className="flex items-center justify-center h-full text-slate-400">
                         No tests completed yet
@@ -923,7 +926,7 @@ export default function Profile() {
               {activeAnalyticsTab === 'Accuracy' && (
                 <div>
                   <h2 className="text-xl font-semibold text-slate-100 mb-4 text-left">Error Distribution by Key</h2>
-                  <div className="h-72">
+                  <div className="h-72 w-full">
                     {history.length === 0 ? (
                       <div className="flex items-center justify-center h-full text-slate-400">
                         No tests completed yet
@@ -946,7 +949,7 @@ export default function Profile() {
               {activeAnalyticsTab === 'Time Insights' && (
                 <div>
                   <h2 className="text-xl font-semibold text-slate-100 mb-4 text-left">Time Insights</h2>
-                  <div className="h-72">
+                  <div className="h-72 w-full">
                     {sessionTimes.length > 0 ? (
                       <Line data={sessionTimeChartData} options={sessionTimeChartOptions} />
                     ) : (
@@ -961,7 +964,7 @@ export default function Profile() {
               {activeAnalyticsTab === 'Consistency' && (
                 <div>
                   <h2 className="text-xl font-semibold text-slate-100 mb-4 text-left">Consistency</h2>
-                  <div className="h-72 mb-4">
+                  <div className="h-72 w-full mb-4">
                     {wpmVarianceData.length > 1 ? (
                       <Line data={wpmVarianceChartData} options={wpmVarianceChartOptions} />
                     ) : (
@@ -979,7 +982,7 @@ export default function Profile() {
               {activeAnalyticsTab === 'Category Breakdown' && (
                 <div>
                   <h2 className="text-xl font-semibold text-slate-100 mb-4 text-left">Category Breakdown</h2>
-                  <div className="h-72 mb-6">
+                  <div className="h-72 w-full mb-6">
                     {categoryLabels.length > 0 ? (
                       <Bar data={categoryChartData} options={categoryChartOptions} />
                     ) : (
