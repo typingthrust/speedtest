@@ -2128,7 +2128,7 @@ const Index = () => {
         )}
       </AnimatePresence>
       {/* Main Content */}
-      <div className="flex-1 flex flex-col items-center justify-center space-y-4 w-full" style={{ paddingTop: '5rem', paddingBottom: '2rem', minHeight: 'calc(100vh - 200px)' }}>
+      <div className="flex-1 flex flex-col items-center justify-center space-y-4 w-full pt-4 sm:pt-20 pb-8" style={{ minHeight: 'calc(100vh - 200px)' }}>
         {/* Ultra-Minimal Settings Summary Bar - Modern Mode Tabs - Hides when typing */}
         <AnimatePresence>
           {!isTyping && (
@@ -2137,11 +2137,11 @@ const Index = () => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.3 }}
-              className="w-full flex justify-center mt-2 px-2 sm:px-0"
+              className="w-full flex justify-center px-2 sm:px-0"
               style={{ position: 'relative', zIndex: 10 }}
             >
           {/* Mobile: Single Settings Button */}
-          <div className="sm:hidden w-full px-4">
+          <div className="sm:hidden w-full px-4 -mt-4">
             <button
               onClick={() => setMobileDrawerOpen(true)}
               className="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-slate-800/90 border border-slate-700 text-slate-200 hover:bg-slate-700/90 transition-all duration-200"
