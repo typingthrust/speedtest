@@ -53,6 +53,7 @@ const KeyboardHeatmap: React.FC<KeyboardHeatmapProps> = ({ keyStats, keyDetails 
   const colorLow = '#334155'; // slate-700
   // Get theme primary color and convert to hex for interpolation
   const getThemeColorHex = () => {
+    if (typeof window === 'undefined') return '#3b82f6'; // SSR fallback
     const root = document.documentElement;
     const primary = getComputedStyle(root).getPropertyValue('--primary').trim();
     if (primary) {
