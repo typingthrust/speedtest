@@ -104,14 +104,14 @@ export default function Widget() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-background" style={{ minHeight: 320, minWidth: 320 }}>
-      <div className="w-full max-w-xl mx-auto p-4 rounded-xl shadow border border-slate-700 bg-slate-800">
-        <h2 className="text-xl font-bold text-slate-100 mb-4 text-center">Typing Test</h2>
-        <div className="mb-4 text-lg font-mono bg-slate-700 rounded p-4 min-h-[64px] text-slate-100" style={{ wordBreak: 'break-word' }}>
+      <div className="w-full max-w-xl mx-auto p-4 rounded-xl shadow border border-border bg-card">
+        <h2 className="text-xl font-bold text-foreground mb-4 text-center">Typing Test</h2>
+        <div className="mb-4 text-lg font-mono bg-muted rounded p-4 min-h-[64px] text-foreground" style={{ wordBreak: 'break-word' }}>
           {sampleText.split('').map((char, index) => renderCharacter(char, index))}
         </div>
         <input
           ref={inputRef}
-          className="w-full border border-slate-600 bg-slate-700 text-slate-100 rounded p-2 text-lg focus:outline-none focus:ring-2 focus:ring-primary transition"
+          className="w-full border border-border bg-muted text-foreground rounded p-2 text-lg focus:outline-none focus:ring-2 focus:ring-primary transition"
           type="text"
           value={userInput}
           onChange={handleInputChange}
@@ -119,7 +119,7 @@ export default function Widget() {
           autoFocus
           disabled={userInput === sampleText}
         />
-        <div className="mt-6 flex flex-wrap justify-center gap-6 text-base font-medium text-slate-200 bg-slate-700 border border-slate-600 rounded-lg p-3">
+        <div className="mt-6 flex flex-wrap justify-center gap-6 text-base font-medium text-foreground bg-muted border border-border rounded-lg p-3">
           <div><span className="text-primary">WPM:</span> {isNaN(wpm) || !isFinite(wpm) ? 0 : wpm}</div>
           <div><span className="text-primary">Accuracy:</span> {isNaN(accuracy) || !isFinite(accuracy) ? 100 : accuracy}%</div>
           <div><span className="text-primary">Time:</span> {timeElapsed}s</div>

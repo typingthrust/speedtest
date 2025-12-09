@@ -81,8 +81,8 @@ const CircularProgress: React.FC<{ value: number; max: number; size?: number; la
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-2xl font-bold text-slate-100">{value}</span>
-          <span className="text-xs text-slate-400 uppercase tracking-wider">{label}</span>
+          <span className="text-2xl font-bold text-foreground">{value}</span>
+          <span className="text-xs text-muted-foreground uppercase tracking-wider">{label}</span>
         </div>
       </div>
     </div>
@@ -98,10 +98,10 @@ const StatCard: React.FC<{ icon: React.ReactNode; label: string; value: string |
       {icon}
     </div>
     <div>
-      <div className="text-xs text-slate-500 uppercase tracking-wider">{label}</div>
-      <div className={`text-lg font-semibold ${highlight ? 'text-primary' : 'text-slate-200'}`}>
+      <div className="text-xs text-muted-foreground uppercase tracking-wider">{label}</div>
+      <div className={`text-lg font-semibold ${highlight ? 'text-primary' : 'text-foreground'}`}>
         {value}
-        {subValue && <span className="text-sm text-slate-500 ml-1">{subValue}</span>}
+        {subValue && <span className="text-sm text-muted-foreground ml-1">{subValue}</span>}
       </div>
     </div>
   </div>
@@ -234,7 +234,7 @@ const ResultScreen: React.FC<ResultScreenProps> = ({
           <div className="text-center mb-8">
             <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full bg-card border border-border ${performance.color}`}>
               <span className="text-3xl font-black">{performance.grade}</span>
-              <span className="text-sm font-medium text-slate-400">{performance.label}</span>
+              <span className="text-sm font-medium text-muted-foreground">{performance.label}</span>
             </div>
           </div>
 
@@ -268,7 +268,7 @@ const ResultScreen: React.FC<ResultScreenProps> = ({
             <div className="bg-card/50 rounded-2xl p-4 mb-8 border border-border/50">
               <div className="flex items-center gap-2 mb-4">
                 <TrendingUp className="w-4 h-4 text-primary" />
-                <span className="text-sm font-medium text-slate-300">Performance Over Time</span>
+                <span className="text-sm font-medium text-foreground/80">Performance Over Time</span>
               </div>
               <div className="h-[180px]">
                 <Line data={chartData} options={chartOptions} />
@@ -279,19 +279,19 @@ const ResultScreen: React.FC<ResultScreenProps> = ({
           {/* Error Analysis */}
           {(topErrorKeys.length > 0 || (errorTypes && Object.values(errorTypes).some(v => v > 0))) && (
             <div className="bg-card/50 rounded-2xl p-4 mb-8 border border-border/50">
-              <div className="text-sm font-medium text-slate-300 mb-4">Error Analysis</div>
+              <div className="text-sm font-medium text-foreground/80 mb-4">Error Analysis</div>
               <div className="flex flex-wrap gap-6">
                 {/* Problem Keys */}
                 {topErrorKeys.length > 0 && (
                   <div>
-                    <div className="text-xs text-slate-500 mb-2">Problem Keys</div>
+                    <div className="text-xs text-muted-foreground mb-2">Problem Keys</div>
                     <div className="flex gap-2">
                       {topErrorKeys.map(({ key, count }) => (
                         <div key={key} className="flex flex-col items-center">
                           <div className="w-10 h-10 bg-red-500/20 border border-red-500/30 rounded-lg flex items-center justify-center text-red-400 font-mono font-bold">
                             {key}
                           </div>
-                          <span className="text-xs text-slate-500 mt-1">{count}</span>
+                          <span className="text-xs text-muted-foreground mt-1">{count}</span>
                         </div>
                       ))}
                     </div>
@@ -300,11 +300,11 @@ const ResultScreen: React.FC<ResultScreenProps> = ({
                 {/* Error Types */}
                 {errorTypes && Object.values(errorTypes).some(v => v > 0) && (
                   <div>
-                    <div className="text-xs text-slate-500 mb-2">Error Types</div>
+                    <div className="text-xs text-muted-foreground mb-2">Error Types</div>
                     <div className="flex gap-3">
                       {errorTypes.punctuation > 0 && (
                         <div className="px-3 py-1.5 bg-muted/50 rounded-lg text-sm">
-                          <span className="text-slate-400">Punctuation:</span>
+                          <span className="text-muted-foreground">Punctuation:</span>
                           <span className="text-red-400 ml-1 font-semibold">{errorTypes.punctuation}</span>
                         </div>
                       )}
@@ -331,14 +331,14 @@ const ResultScreen: React.FC<ResultScreenProps> = ({
           <div className="flex justify-center gap-4">
             <button
               onClick={onRetry}
-              className="flex items-center gap-2 px-6 py-3 bg-primary hover:opacity-90 text-slate-900 rounded-xl font-semibold transition-all hover:scale-105 active:scale-95"
+              className="flex items-center gap-2 px-6 py-3 bg-primary hover:opacity-90 text-primary-foreground rounded-xl font-semibold transition-all hover:scale-105 active:scale-95"
             >
               <RotateCcw className="w-5 h-5" />
               Try Again
             </button>
             <button
               onClick={handleCopy}
-              className="flex items-center gap-2 px-6 py-3 bg-slate-800 hover:bg-slate-700 text-slate-100 rounded-xl font-semibold transition-all border border-slate-700 hover:border-slate-600"
+              className="flex items-center gap-2 px-6 py-3 bg-card hover:bg-muted text-foreground rounded-xl font-semibold transition-all border border-border hover:border-border/80"
             >
               <Copy className="w-5 h-5" />
               {copied ? 'Copied!' : 'Copy Result'}
@@ -349,7 +349,7 @@ const ResultScreen: React.FC<ResultScreenProps> = ({
 
       {/* Toast notification */}
       {copied && (
-        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-slate-800 text-slate-100 px-4 py-2 rounded-xl shadow-xl border border-slate-700 text-sm font-medium z-50">
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-card text-foreground px-4 py-2 rounded-xl shadow-xl border border-border text-sm font-medium z-50">
           Result copied to clipboard!
         </div>
       )}

@@ -59,7 +59,7 @@ function MinimalGamificationOverlay({ open, onClose, children }: { open: boolean
       >
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-slate-400 hover:text-slate-200 text-xl p-2 rounded-full focus:outline-none z-10"
+          className="absolute top-4 right-4 text-muted-foreground hover:text-foreground text-xl p-2 rounded-full focus:outline-none z-10"
           aria-label="Close gamification"
         >
           <X className="w-6 h-6" />
@@ -98,21 +98,21 @@ export default function GamificationOverlay() {
     <MinimalGamificationOverlay open={open === 'gamification'} onClose={closeOverlay}>
       <section className="w-full flex flex-col gap-6 items-center" aria-label="Gamification Progress" tabIndex={-1}>
         <header className="w-full flex flex-row items-center justify-between mb-2 pr-14">
-          <h1 className="text-2xl font-bold text-slate-100" tabIndex={0}>Gamification</h1>
+          <h1 className="text-2xl font-bold text-foreground" tabIndex={0}>Gamification</h1>
         </header>
         {/* XP & Level Section */}
         <div className="w-full bg-muted/80 rounded-2xl shadow-sm border border-border p-6 flex flex-col gap-2 items-center" aria-label="XP and Level">
-          <h2 className="text-lg font-semibold text-slate-100 mb-1">XP & Level</h2>
+          <h2 className="text-lg font-semibold text-foreground mb-1">XP & Level</h2>
           <div className="flex items-center gap-4 w-full max-w-xs">
             <div className="flex flex-col items-center">
               <span className="text-3xl font-extrabold text-primary">{state.level}</span>
-              <span className="text-xs text-slate-400 font-bold uppercase tracking-wide">Level</span>
+              <span className="text-xs text-muted-foreground font-bold uppercase tracking-wide">Level</span>
             </div>
             <div className="flex-1 flex flex-col gap-1">
               <div className="w-full bg-slate-600 rounded-full h-3 relative overflow-hidden" aria-label="XP Progress Bar">
                 <div className="absolute left-0 top-0 h-3 rounded-full bg-primary transition-all" style={{ width: `${Math.min(100, (state.xp % 100))}%` }} />
               </div>
-              <div className="flex justify-between text-xs text-slate-400 mt-1">
+              <div className="flex justify-between text-xs text-muted-foreground mt-1">
                 <span>{state.xp % 100}/100 XP</span>
                 <span className="font-bold">{state.xp >= 100 ? 'Level Up!' : ''}</span>
               </div>
@@ -130,17 +130,17 @@ export default function GamificationOverlay() {
             {/* Level circles (above lines) */}
             {[1,2,3,4,5,6,7,8,9,10].map(lvl => (
               <div key={lvl} className="absolute z-10" style={{ left: `${(lvl-1)*11.11}%`, top: '50%', transform: 'translate(-50%, -50%)' }}>
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 transition-all duration-300 font-semibold text-sm ${state.level === lvl ? 'bg-primary border-primary text-slate-900' : lvl < state.level ? 'bg-primary/80 border-primary/80 text-slate-900' : 'bg-slate-600 border-slate-500 text-slate-400'}`}>{lvl}</div>
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 transition-all duration-300 font-semibold text-sm ${state.level === lvl ? 'bg-primary border-primary text-primary-foreground' : lvl < state.level ? 'bg-primary/80 border-primary/80 text-primary-foreground' : 'bg-muted border-border text-muted-foreground'}`}>{lvl}</div>
               </div>
             ))}
           </div>
-          <div className="text-sm text-slate-300">Current Level: <span className="font-bold text-primary">{state.level}</span></div>
+          <div className="text-sm text-foreground/80">Current Level: <span className="font-bold text-primary">{state.level}</span></div>
         </div>
         {/* Badges Section */}
         <div className="w-full bg-slate-700/80 rounded-2xl shadow-sm border border-slate-600 p-6 flex flex-col gap-2 items-center" aria-label="Badges">
           <h2 className="text-lg font-semibold text-slate-100 mb-1">Badges</h2>
           {allBadges.length === 0 ? (
-            <span className="text-slate-400 text-sm">No badges available.</span>
+            <span className="text-muted-foreground text-sm">No badges available.</span>
           ) : (
             <div className="flex flex-wrap gap-4 justify-center relative">
               {allBadges.map(badge => {
@@ -150,11 +150,11 @@ export default function GamificationOverlay() {
                   <div key={badge.key} className={`group relative w-14 h-14 rounded-full flex items-center justify-center shadow transition-all duration-300 z-10 ${earned ? 'bg-muted/80 text-foreground' : 'bg-muted text-muted-foreground grayscale'}` } tabIndex={0} aria-label={badge.name + (earned ? '' : ' (Locked)')}>
                     <Icon className="w-7 h-7 relative z-0" />
                     {!earned && (
-                      <Lock className="absolute w-5 h-5 text-slate-500 top-1 right-1 opacity-80 z-10" />
+                      <Lock className="absolute w-5 h-5 text-muted-foreground top-1 right-1 opacity-80 z-10" />
                     )}
                     <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 rounded-lg bg-background text-foreground text-xs opacity-0 group-hover:opacity-100 group-focus:opacity-100 group-active:opacity-100 transition-opacity whitespace-nowrap z-[100] shadow-2xl pointer-events-none border border-border">
                       <span className="font-bold block">{badge.name}</span>
-                      <span className="font-normal text-slate-300 text-[10px]">{earned ? '' : '(Locked) '}{badge.description}</span>
+                      <span className="font-normal text-foreground/80 text-[10px]">{earned ? '' : '(Locked) '}{badge.description}</span>
                     </span>
                   </div>
                 );
@@ -175,7 +175,7 @@ export default function GamificationOverlay() {
           if (userIndex !== -1) {
             return (
               <div className="w-full bg-slate-700/80 rounded-2xl shadow-sm border border-slate-600 p-6 flex flex-col gap-2 items-center" aria-label="Global Rank">
-                <span className="text-sm text-slate-300 font-medium flex items-center gap-1"><Award className="w-5 h-5 text-primary" />Your Global Rank: <span className="font-bold text-primary">#{userIndex + 1}</span></span>
+                <span className="text-sm text-foreground/80 font-medium flex items-center gap-1"><Award className="w-5 h-5 text-primary" />Your Global Rank: <span className="font-bold text-primary">#{userIndex + 1}</span></span>
               </div>
             );
           }

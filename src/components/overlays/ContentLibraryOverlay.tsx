@@ -125,8 +125,8 @@ export default function ContentLibraryOverlay({ onContentSelect }: { onContentSe
     <MinimalContentLibraryOverlay open={open === 'content-library'} onClose={closeOverlay}>
       <section className="w-full flex flex-col gap-4 items-center">
         <header className="w-full mb-2 text-center">
-          <h1 className="text-2xl font-bold text-slate-100">Upload Custom Content</h1>
-          <p className="text-sm text-slate-400 mt-1">Upload a .txt file, drag and drop, or paste your own text below.</p>
+          <h1 className="text-2xl font-bold text-foreground">Upload Custom Content</h1>
+          <p className="text-sm text-muted-foreground mt-1">Upload a .txt file, drag and drop, or paste your own text below.</p>
         </header>
 
         <div
@@ -136,9 +136,9 @@ export default function ContentLibraryOverlay({ onContentSelect }: { onContentSe
           onDrop={handleDrop}
           onClick={() => document.getElementById('file-upload-input')?.click()}
         >
-          <UploadCloud className={`w-10 h-10 mb-2 ${dragActive ? 'text-primary' : 'text-slate-400'}`} />
-          <span className="text-base font-semibold text-slate-300">{customFile ? customFile.name : 'Drag & drop a file here'}</span>
-          <span className="text-sm text-slate-500">or click to browse</span>
+          <UploadCloud className={`w-10 h-10 mb-2 ${dragActive ? 'text-primary' : 'text-muted-foreground'}`} />
+          <span className="text-base font-semibold text-foreground/80">{customFile ? customFile.name : 'Drag & drop a file here'}</span>
+          <span className="text-sm text-muted-foreground">or click to browse</span>
           <input
             id="file-upload-input"
             type="file"
@@ -157,7 +157,7 @@ export default function ContentLibraryOverlay({ onContentSelect }: { onContentSe
         />
         
         <button
-          className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-semibold transition-all duration-200 ${added ? 'bg-green-500 text-slate-900' : 'bg-primary text-slate-900 hover:opacity-90'}`}
+          className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-semibold transition-all duration-200 ${added ? 'bg-green-500 text-slate-900' : 'bg-primary text-primary-foreground hover:opacity-90'}`}
           onClick={handleAddCustom}
           disabled={!customText.trim() || uploading}
         >

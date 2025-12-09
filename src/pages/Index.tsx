@@ -227,11 +227,11 @@ const TypingArea: React.FC<TypingAreaProps & { mode?: string; godModeIndex?: num
           const isIncorrect = isTyped && visibleText[idx] !== typed[idx];
           const isCurrent = idx === typed.length;
           
-          let className = 'text-slate-400';
+          let className = 'text-foreground/60';
           
-          if (isCorrect) className = 'text-slate-100';
+          if (isCorrect) className = 'text-foreground';
           else if (isIncorrect) className = 'text-red-400'; // Soft red, no background
-          else if (isCurrent) className = 'text-slate-100';
+          else if (isCurrent) className = 'text-foreground';
           
           // Render caret for current character
           if (isCurrent) {
@@ -295,11 +295,11 @@ const TypingArea: React.FC<TypingAreaProps & { mode?: string; godModeIndex?: num
           const isIncorrect = isTyped && userInput[idx] !== char;
           const isCurrent = idx === userInput.length;
           
-          let className = 'text-slate-400';
+          let className = 'text-foreground/60';
           
-          if (isCorrect) className = 'text-slate-100';
+          if (isCorrect) className = 'text-foreground';
           else if (isIncorrect) className = 'text-red-400'; // Soft red, no background
-          else if (isCurrent) className = 'text-slate-100';
+          else if (isCurrent) className = 'text-foreground';
           
           // Render the caret inline with the current character
           if (isCurrent) {
@@ -384,11 +384,11 @@ const TypingArea: React.FC<TypingAreaProps & { mode?: string; godModeIndex?: num
           const isIncorrect = isTyped && userInput[idx] !== char;
           const isCurrent = idx === userInput.length;
           
-          let className = 'text-slate-400';
+          let className = 'text-foreground/60';
           
-          if (isCorrect) className = 'text-slate-100';
+          if (isCorrect) className = 'text-foreground';
           else if (isIncorrect) className = 'text-red-400'; // Soft red, no background
-          else if (isCurrent) className = 'text-slate-100';
+          else if (isCurrent) className = 'text-foreground';
           
           // Render the caret inline with the current character
           if (isCurrent) {
@@ -471,12 +471,12 @@ const TypingArea: React.FC<TypingAreaProps & { mode?: string; godModeIndex?: num
         const isIncorrect = isTyped && userInput[idx] !== char;
         const isCurrent = idx === userInput.length;
         
-        // Professional dark theme colors: slate untyped, light typed correct, red incorrect
-        let className = 'text-slate-400'; // Untyped - medium slate
+        // Professional dark theme colors: theme-aware untyped, light typed correct, red incorrect
+        let className = 'text-foreground/60'; // Untyped - muted foreground
         
-        if (isCorrect) className = 'text-slate-100'; // Correct - light slate
+        if (isCorrect) className = 'text-foreground'; // Correct - foreground
         else if (isIncorrect) className = 'text-red-400'; // Wrong - soft red, no background
-        else if (isCurrent) className = 'text-slate-100';
+        else if (isCurrent) className = 'text-foreground';
         
         // Render the caret inline with the current character
         if (isCurrent) {
@@ -490,7 +490,7 @@ const TypingArea: React.FC<TypingAreaProps & { mode?: string; godModeIndex?: num
                   top: '0.15em',
                   width: '2px',
                   height: '0.85em',
-                  background: 'hsl(188, 94%, 60%)', // Cyan accent caret
+                  background: 'hsl(var(--primary))', // Theme primary caret
                   borderRadius: '1px',
             animation: 'monkey-blink 1s steps(1) infinite',
                   zIndex: 2,
@@ -536,7 +536,7 @@ function AnimatedUnderlineTabs({ tabs, activeIndex, onChange }: { tabs: string[]
           onClick={() => onChange(idx)}
           className={
             'relative bg-transparent border-none outline-none px-2 py-1 text-lg font-medium transition-colors duration-200 ' +
-            (activeIndex === idx ? 'text-primary font-bold' : 'text-slate-400 hover:text-slate-200')
+            (activeIndex === idx ? 'text-primary font-bold' : 'text-foreground/60 hover:text-foreground')
           }
           style={{ background: 'none' }}
         >
@@ -566,7 +566,7 @@ const AnimatedChip = ({ selected, onClick, children }: { selected: boolean; onCl
     onClick={onClick}
     className={`relative px-6 py-2 rounded-xl font-semibold text-base transition-all duration-200
       ${selected
-        ? "bg-primary text-slate-900 shadow-lg scale-105"
+        ? "bg-primary text-primary-foreground shadow-lg scale-105"
         : "bg-muted text-foreground hover:bg-muted/80 hover:scale-105"}
       focus:outline-none focus:ring-2 focus:ring-primary`}
     whileTap={{ scale: 0.97 }}
@@ -606,7 +606,7 @@ const AnimatedSettingsSection = ({
     style={{ outline: 'none' }}
   >
     <div
-      className={`text-lg font-bold text-slate-200 px-6 py-3 rounded-xl cursor-pointer transition-colors duration-200 ${
+      className={`text-lg font-bold text-foreground px-6 py-3 rounded-xl cursor-pointer transition-colors duration-200 ${
         expanded ? 'bg-card' : 'bg-card/50'
       }`}
       style={{backdropFilter: expanded ? 'blur(4px)' : undefined, WebkitBackdropFilter: expanded ? 'blur(4px)' : undefined}}
@@ -653,7 +653,7 @@ const SettingsCard = ({
     transition={{ type: 'spring', stiffness: 300, damping: 30 }}
   >
     <div
-      className={`w-full px-4 py-4 rounded-2xl text-center font-semibold text-lg transition-colors duration-200 text-slate-200 ${
+      className={`w-full px-4 py-4 rounded-2xl text-center font-semibold text-lg transition-colors duration-200 text-foreground ${
         expanded ? 'bg-card/90 backdrop-blur-md border border-border' : 'bg-card/50 border border-transparent'
       }`}
       style={{ minHeight: 56 }}
@@ -828,7 +828,7 @@ const MemoChar = memo(function MemoChar({ char, index, userInput, currentIndex }
   let className = 'transition-all duration-150 ease-out inline-block ';
   if (index < userInput.length) {
     if (userInput[index] === char) {
-      className += 'text-slate-100 transform scale-105';
+      className += 'text-foreground transform scale-105';
     } else {
       className += 'text-red-500 bg-red-100'; // Incorrect - red, no pulse
     }
@@ -844,7 +844,7 @@ const MemoChar = memo(function MemoChar({ char, index, userInput, currentIndex }
         transition={{ duration: 0.06, ease: 'easeOut' }}
       >
         <motion.span
-          className="bg-primary text-slate-900 transform scale-110"
+          className="bg-primary text-primary-foreground transform scale-110"
           layoutId="caret-char"
           transition={{ duration: 0.06, ease: 'easeOut' }}
         >
@@ -871,7 +871,7 @@ const MemoChar = memo(function MemoChar({ char, index, userInput, currentIndex }
       </motion.span>
     );
   } else {
-    className += 'text-slate-400';
+    className += 'text-foreground/60';
   }
   return (
     <span key={index} className={className}>
@@ -1688,7 +1688,7 @@ const Index = () => {
     if (index < userInput.length) {
       // Typed characters
       if (userInput[index] === char) {
-        className += 'text-slate-100 transform scale-105'; // Correct - slight scale up
+        className += 'text-foreground transform scale-105'; // Correct - slight scale up
       } else {
         className += 'text-red-500 bg-red-100'; // Incorrect - red, no pulse
       }
@@ -1705,7 +1705,7 @@ const Index = () => {
           transition={{ duration: 0.06, ease: 'easeOut' }}
         >
           <motion.span
-            className="bg-primary text-slate-900 transform scale-110"
+            className="bg-primary text-primary-foreground transform scale-110"
             layoutId="caret-char"
             transition={{ duration: 0.06, ease: 'easeOut' }}
           >
@@ -1733,7 +1733,7 @@ const Index = () => {
       );
     } else {
       // Untyped characters
-      className += 'text-slate-400';
+      className += 'text-foreground/60';
     }
     
     return (
@@ -2223,7 +2223,7 @@ const Index = () => {
               return (
                 <React.Fragment key={cat.heading}>
                   <button
-                    className={`text-base font-medium border-none bg-transparent outline-none whitespace-nowrap transition-colors duration-150 flex-shrink-0 px-2 py-1 ${(isOpen || isSelected) ? 'text-primary underline underline-offset-4' : 'text-slate-400 hover:text-slate-200'}`}
+                    className={`text-base font-medium border-none bg-transparent outline-none whitespace-nowrap transition-colors duration-150 flex-shrink-0 px-2 py-1 ${(isOpen || isSelected) ? 'text-primary underline underline-offset-4' : 'text-foreground/60 hover:text-foreground'}`}
                     style={{ minWidth: 48, display: 'flex', alignItems: 'center' }}
                     onClick={() => {
                       setOpenCategory(isOpen ? null : cat.heading);
@@ -2265,7 +2265,7 @@ const Index = () => {
               {currentMode === 'time' ? (
                 <>
               <button
-                    className={`px-2 py-1 text-base font-medium border-none bg-transparent outline-none whitespace-nowrap transition-colors duration-150 flex-shrink-0 ${openSetting === 'duration' ? 'text-primary underline underline-offset-4' : 'text-slate-400 hover:text-slate-200'}`}
+                    className={`px-2 py-1 text-base font-medium border-none bg-transparent outline-none whitespace-nowrap transition-colors duration-150 flex-shrink-0 ${openSetting === 'duration' ? 'text-primary underline underline-offset-4' : 'text-foreground/60 hover:text-foreground'}`}
                     onClick={() => {
                       setOpenSetting(openSetting === 'duration' ? null : 'duration');
                       setOpenCategory(null); // Close categories when opening Duration
@@ -2288,7 +2288,7 @@ const Index = () => {
               ) : (
                 <div className="relative group">
               <button
-                    className="px-2 py-1 text-base font-medium border-none bg-transparent outline-none whitespace-nowrap transition-colors duration-150 flex-shrink-0 text-slate-500 cursor-not-allowed opacity-50"
+                    className="px-2 py-1 text-base font-medium border-none bg-transparent outline-none whitespace-nowrap transition-colors duration-150 flex-shrink-0 text-muted-foreground cursor-not-allowed opacity-50"
                     style={{ minWidth: 48 }}
                     disabled
                     title={`Duration is only available for Timed mode. Current mode: ${currentMode === 'words' ? 'Words' : currentMode === 'quote' ? 'Quotes' : currentMode === 'zen' ? 'Zen' : currentMode === 'coding' ? 'Coding' : currentMode === 'custom' ? 'Custom' : currentMode === 'zenwriting' ? 'Zen Writing' : currentMode === 'god' ? 'God Mode' : currentMode === 'syntax' ? 'Syntax' : currentMode === 'essay' ? 'Essay' : currentMode === 'notimer' ? 'No Timer' : currentMode === 'softtheme' ? 'Soft Theme' : currentMode === 'hardwords' ? 'Hard Words' : currentMode === 'foreign' ? 'Foreign Language' : 'Other'}`}
@@ -2304,7 +2304,7 @@ const Index = () => {
                 </div>
               )}
               <button
-                className={`px-2 py-1 text-base font-medium border-none bg-transparent outline-none whitespace-nowrap transition-colors duration-150 flex-shrink-0 ${openSetting === 'difficulty' ? 'text-primary underline underline-offset-4' : 'text-slate-400 hover:text-slate-200'}`}
+                className={`px-2 py-1 text-base font-medium border-none bg-transparent outline-none whitespace-nowrap transition-colors duration-150 flex-shrink-0 ${openSetting === 'difficulty' ? 'text-primary underline underline-offset-4' : 'text-foreground/60 hover:text-foreground'}`}
                 onClick={() => {
                   setOpenSetting(openSetting === 'difficulty' ? null : 'difficulty');
                   setOpenCategory(null); // Close categories when opening Difficulty
@@ -2371,7 +2371,7 @@ const Index = () => {
               >
                 {/* Header */}
                 <div className="flex items-center justify-between p-4 border-b border-border bg-background" style={{ marginTop: 0, paddingTop: '1rem', paddingBottom: '1rem' }}>
-                  <h2 className="text-xl font-semibold text-slate-100">Settings</h2>
+                  <h2 className="text-xl font-semibold text-foreground">Settings</h2>
                   <button
                     onClick={() => setMobileDrawerOpen(false)}
                     className="p-2 rounded-lg hover:bg-card text-muted-foreground hover:text-foreground transition-colors"
@@ -2436,11 +2436,11 @@ const Index = () => {
                             hasActive ? 'bg-card/50' : 'bg-card/30 hover:bg-card/50'
                           }`}
                         >
-                          <span className={`font-medium ${hasActive ? 'text-primary' : 'text-slate-200'}`}>
+                          <span className={`font-medium ${hasActive ? 'text-primary' : 'text-foreground'}`}>
                             {cat.heading}
                           </span>
                           <svg
-                            className={`w-5 h-5 text-slate-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                            className={`w-5 h-5 text-muted-foreground transition-transform ${isExpanded ? 'rotate-180' : ''}`}
                             fill="none"
                             stroke="currentColor"
                             strokeWidth="2"
@@ -2465,7 +2465,7 @@ const Index = () => {
                                   }}
                                   className={`w-full text-left px-4 py-2.5 rounded-lg transition-all ${
                                     isActive
-                                      ? 'bg-primary text-slate-900 font-semibold'
+                                      ? 'bg-primary text-primary-foreground font-semibold'
                                       : 'text-foreground/80 hover:bg-muted/50'
                                   }`}
                                 >
@@ -2483,7 +2483,7 @@ const Index = () => {
                   {currentMode === 'time' && (
                     <div className="border border-border rounded-lg overflow-hidden mt-4">
                       <div className="p-4 bg-card/30">
-                        <h3 className="font-medium text-slate-200 mb-3">Duration</h3>
+                        <h3 className="font-medium text-foreground mb-3">Duration</h3>
                         <div className="grid grid-cols-4 gap-2">
                           {[15, 30, 60, 120].map((sec) => (
                             <button
@@ -2494,8 +2494,8 @@ const Index = () => {
                               }}
                               className={`py-2.5 rounded-lg font-medium transition-all ${
                                 timeLimit === sec
-                                  ? 'bg-cyan-500 text-slate-900 font-semibold'
-                                  : 'bg-slate-700/50 text-slate-300 hover:bg-slate-700'
+                                  ? 'bg-primary text-primary-foreground font-semibold'
+                                  : 'bg-muted/50 text-foreground/80 hover:bg-muted'
                               }`}
                             >
                               {sec}s
@@ -2509,7 +2509,7 @@ const Index = () => {
                   {/* Difficulty */}
                   <div className="border border-slate-700 rounded-lg overflow-hidden mt-4">
                     <div className="p-4 bg-slate-800/30">
-                      <h3 className="font-medium text-slate-200 mb-3">Difficulty</h3>
+                      <h3 className="font-medium text-foreground mb-3">Difficulty</h3>
                       <div className="grid grid-cols-2 gap-2">
                         {[
                           { label: 'Easy', value: 'short' },
@@ -2526,8 +2526,8 @@ const Index = () => {
                             }}
                             className={`py-2.5 rounded-lg font-medium transition-all ${
                               difficulty === String(item.value)
-                                ? 'bg-cyan-500 text-slate-900 font-semibold'
-                                : 'bg-slate-700/50 text-slate-300 hover:bg-slate-700'
+                                ? 'bg-primary text-primary-foreground font-semibold'
+                                : 'bg-muted/50 text-foreground/80 hover:bg-muted'
                             }`}
                           >
                             {item.label}
@@ -2545,7 +2545,7 @@ const Index = () => {
         {currentMode === 'time' && (
           <div className="flex justify-center mt-8">
             <span
-              className={`text-6xl font-extrabold transition-all duration-300 ${isTyping ? 'text-primary' : 'text-slate-500 opacity-70'}`}
+              className={`text-6xl font-extrabold transition-all duration-300 ${isTyping ? 'text-primary' : 'text-muted-foreground opacity-70'}`}
               style={{ letterSpacing: '0.05em' }}
             >
             {timeLeft}
@@ -2566,12 +2566,12 @@ const Index = () => {
                 className="w-full flex justify-center mb-8"
               >
             <button
-                  className="flex items-center gap-2 text-slate-300 hover:text-slate-100 text-base font-medium px-3 py-1 rounded-lg bg-slate-800/80 border border-slate-700 shadow-sm transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="flex items-center gap-2 text-foreground/80 hover:text-foreground text-base font-medium px-3 py-1 rounded-lg bg-card/80 border border-border shadow-sm transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-primary"
               onClick={() => setLangModalOpen(true)}
               tabIndex={0}
               style={{ userSelect: 'none' }}
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3C7.03 3 3 7.03 3 12s4.03 9 9 9 9-4.03 9-9-4.03-9-9-9zm0 0c2.21 0 4 4.03 4 9s-1.79 9-4 9-4-4.03-4-9 1.79-9 4-9z" /></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3C7.03 3 3 7.03 3 12s4.03 9 9 9 9-4.03 9-9-4.03-9-9-9zm0 0c2.21 0 4 4.03 4 9s-1.79 9-4 9-4-4.03-4-9 1.79-9 4-9z" /></svg>
               <span className="tracking-wide">Language: <span className="font-semibold lowercase">{[...globalLanguages, ...indianLanguages].find(l => l.value === language)?.label || language}</span></span>
             </button>
               </motion.div>
@@ -2581,15 +2581,15 @@ const Index = () => {
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
               <div className="bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md mx-auto p-0 relative animate-fade-in">
                 <div className="flex items-center px-6 py-4 border-b border-slate-700">
-                  <svg xmlns='http://www.w3.org/2000/svg' className='h-5 w-5 text-slate-400 mr-2' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 3C7.03 3 3 7.03 3 12s4.03 9 9 9 9-4.03 9-9-4.03-9-9-9zm0 0c2.21 0 4 4.03 4 9s-1.79 9-4 9-4-4.03-4-9 1.79-9 4-9z' /></svg>
+                  <svg xmlns='http://www.w3.org/2000/svg' className='h-5 w-5 text-muted-foreground mr-2' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 3C7.03 3 3 7.03 3 12s4.03 9 9 9 9-4.03 9-9-4.03-9-9-9zm0 0c2.21 0 4 4.03 4 9s-1.79 9-4 9-4-4.03-4-9 1.79-9 4-9z' /></svg>
                   <input
                     type="text"
                     placeholder="Language..."
-                    className="flex-1 bg-transparent outline-none text-slate-200 text-base font-mono placeholder-slate-500"
+                    className="flex-1 bg-transparent outline-none text-foreground text-base font-mono placeholder-muted-foreground"
                     value={langSearch}
                     onChange={e => setLangSearch(e.target.value)}
                   />
-                  <button className="ml-2 text-slate-400 hover:text-slate-200" onClick={() => setLangModalOpen(false)} aria-label="Close">
+                  <button className="ml-2 text-muted-foreground hover:text-foreground" onClick={() => setLangModalOpen(false)} aria-label="Close">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                   </button>
                 </div>
@@ -2598,7 +2598,7 @@ const Index = () => {
                   {globalLanguages.filter(l => l.label.toLowerCase().includes(langSearch.toLowerCase())).map(l => (
                     <button
                       key={l.value}
-                      className={`w-full text-left px-6 py-2 text-slate-300 hover:bg-slate-700 focus:bg-slate-700 transition-all duration-100 lowercase rounded-lg focus:outline-none ${language === l.value ? 'font-bold text-primary bg-slate-700' : ''}`}
+                      className={`w-full text-left px-6 py-2 text-foreground/80 hover:bg-muted focus:bg-muted transition-all duration-100 lowercase rounded-lg focus:outline-none ${language === l.value ? 'font-bold text-primary bg-muted' : ''}`}
                       onClick={() => { setLanguage(l.value); setCurrentMode('words'); setLangModalOpen(false); setShowIndian(false); setLangSearch(""); }}
                       tabIndex={0}
                     >
@@ -2606,11 +2606,11 @@ const Index = () => {
                     </button>
                   ))}
                   {/* Divider for Indian languages */}
-                  <div className="px-6 py-2 text-xs text-slate-500 uppercase tracking-wider">Indian Languages</div>
+                  <div className="px-6 py-2 text-xs text-muted-foreground uppercase tracking-wider">Indian Languages</div>
                   {indianLanguages.filter(l => l.label.toLowerCase().includes(langSearch.toLowerCase())).map(l => (
                     <button
                       key={l.value}
-                      className={`w-full text-left px-6 py-2 text-slate-300 hover:bg-slate-700 focus:bg-slate-700 transition-all duration-100 lowercase rounded-lg focus:outline-none ${language === l.value ? 'font-bold text-primary bg-slate-700' : ''}`}
+                      className={`w-full text-left px-6 py-2 text-foreground/80 hover:bg-muted focus:bg-muted transition-all duration-100 lowercase rounded-lg focus:outline-none ${language === l.value ? 'font-bold text-primary bg-muted' : ''}`}
                       onClick={() => { setLanguage(l.value); setCurrentMode('words'); setLangModalOpen(false); setShowIndian(false); setLangSearch(""); }}
                       tabIndex={0}
                     >
@@ -2683,7 +2683,7 @@ const Index = () => {
           <div className="flex justify-center gap-6 sm:gap-10 md:gap-12 lg:gap-16 text-base w-full mx-auto flex-wrap px-4 mt-8 sm:mt-10 md:mt-12">
             <div className="text-center px-2 sm:px-4">
               <div className="text-2xl font-mono font-bold text-primary">{accuracy ?? 100}%</div>
-              <div className="text-sm text-slate-400 mt-1">Accuracy</div>
+              <div className="text-sm text-muted-foreground mt-1">Accuracy</div>
             </div>
             <div className="text-center px-2 sm:px-4">
               <div className="text-2xl font-mono font-bold text-red-400">{errors ?? 0}</div>
@@ -2716,13 +2716,13 @@ const Index = () => {
             <button
               onClick={() => resetTest()}
               disabled={showResults}
-              className="flex items-center gap-3 px-6 py-3 text-slate-300 hover:text-slate-100 hover:bg-slate-800 rounded-lg transition-all duration-200 hover:scale-105 mx-auto disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+              className="flex items-center gap-3 px-6 py-3 text-foreground/80 hover:text-foreground hover:bg-card rounded-lg transition-all duration-200 hover:scale-105 mx-auto disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
               style={{ display: 'flex' }}
               aria-label="Reset typing test"
             >
               <RotateCcw className="w-5 h-5" />
               <span className="font-medium">Reset Test</span>
-              <span className="text-sm text-slate-500">(Tab + Shift)</span>
+              <span className="text-sm text-muted-foreground">(Tab + Shift)</span>
             </button>
           </div>
         </div>

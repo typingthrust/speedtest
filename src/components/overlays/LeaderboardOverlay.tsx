@@ -42,7 +42,7 @@ function MinimalLeaderboardOverlay({ open, onClose, children }: { open: boolean;
         {/* X Close Button absolutely positioned, not in header */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-slate-400 hover:text-slate-200 text-xl p-2 rounded-full focus:outline-none z-10"
+          className="absolute top-4 right-4 text-muted-foreground hover:text-foreground text-xl p-2 rounded-full focus:outline-none z-10"
           aria-label="Close leaderboard"
         >
           <X className="w-6 h-6" />

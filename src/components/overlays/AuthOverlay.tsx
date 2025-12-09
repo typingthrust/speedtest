@@ -209,7 +209,7 @@ export default function AuthOverlay() {
         </button>
         
         <div className="w-full px-8 pt-8 pb-6">
-          <h2 className="text-2xl font-bold text-slate-100 text-center mb-6">
+          <h2 className="text-2xl font-bold text-foreground text-center mb-6">
             {user ? 'Profile' : signup ? 'Create Account' : 'Sign In'}
           </h2>
           
@@ -220,17 +220,17 @@ export default function AuthOverlay() {
               {user.avatar_url ? (
                 <img src={user.avatar_url} alt="avatar" className="w-20 h-20 rounded-full border-2 border-slate-600 shadow-md" />
               ) : (
-                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center text-3xl font-bold text-slate-200">
+                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-muted to-muted/80 flex items-center justify-center text-3xl font-bold text-foreground">
                   {user.username ? user.username[0].toUpperCase() : (user.email ? user.email[0].toUpperCase() : '?')}
                 </div>
               )}
               {/* Username/email */}
-              <div className="text-xl font-bold text-slate-100">{user.username || user.email || 'User'}</div>
+              <div className="text-xl font-bold text-foreground">{user.username || user.email || 'User'}</div>
               {/* Stats */}
               <div className="flex flex-row justify-center gap-8 w-full bg-muted border border-border rounded-xl p-5">
                 <div className="text-center">
                   <div className="text-2xl font-mono font-bold text-primary">{wpm}</div>
-                  <div className="text-xs text-slate-400 mt-1">WPM</div>
+                  <div className="text-xs text-muted-foreground mt-1">WPM</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-mono font-bold text-primary">{accuracy}%</div>
@@ -246,7 +246,7 @@ export default function AuthOverlay() {
                   await logout();
                   closeOverlay();
                 }}
-                className="w-full bg-primary hover:opacity-90 text-slate-900 rounded-lg px-4 py-3 font-semibold transition-all duration-200 shadow-sm"
+                className="w-full bg-primary hover:opacity-90 text-primary-foreground rounded-lg px-4 py-3 font-semibold transition-all duration-200 shadow-sm"
               >
                 Sign Out
               </button>
@@ -281,8 +281,8 @@ export default function AuthOverlay() {
               {showForgotPassword && !signup ? (
                 <div className="space-y-4">
                   <div className="text-center mb-4">
-                    <h3 className="text-lg font-semibold text-slate-100 mb-2">Reset Password</h3>
-                    <p className="text-sm text-slate-400">Enter your email address and we'll send you a password reset link.</p>
+                    <h3 className="text-lg font-semibold text-foreground mb-2">Reset Password</h3>
+                    <p className="text-sm text-muted-foreground">Enter your email address and we'll send you a password reset link.</p>
                   </div>
                   
                   <form onSubmit={handleForgotPassword} className="space-y-4">
@@ -338,7 +338,7 @@ export default function AuthOverlay() {
                       <>
                         <button
                           type="submit"
-                          className="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-900 rounded-lg px-4 py-3 font-semibold transition-all duration-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="w-full bg-primary hover:opacity-90 text-primary-foreground rounded-lg px-4 py-3 font-semibold transition-all duration-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                           disabled={loading || !email}
                         >
                           {loading ? 'Sending...' : 'Send Reset Link'}
@@ -351,7 +351,7 @@ export default function AuthOverlay() {
                             setResetError('');
                             setEmail('');
                           }}
-                          className="w-full text-sm text-slate-400 hover:text-slate-200 font-medium"
+                          className="w-full text-sm text-muted-foreground hover:text-foreground font-medium"
                         >
                           Back to Sign In
                         </button>
@@ -446,7 +446,7 @@ export default function AuthOverlay() {
                                 setError('Account created but email not confirmed. Please check your email for the activation link, or contact support if emails aren\'t being sent.');
                               }
                             }}
-                            className="flex-1 bg-primary hover:opacity-90 text-slate-900 px-4 py-2.5 rounded-lg font-semibold text-sm transition-colors"
+                            className="flex-1 bg-primary hover:opacity-90 text-primary-foreground px-4 py-2.5 rounded-lg font-semibold text-sm transition-colors"
                           >
                             Try Signing In
                           </button>
@@ -458,7 +458,7 @@ export default function AuthOverlay() {
                               setEmailConfirmationRequired(false);
                               setError('');
                             }}
-                            className="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-200 px-4 py-2.5 rounded-lg font-semibold text-sm transition-colors"
+                            className="flex-1 bg-muted hover:bg-muted/80 text-foreground px-4 py-2.5 rounded-lg font-semibold text-sm transition-colors"
                           >
                             Switch to Sign In
                 </button>
@@ -481,7 +481,7 @@ export default function AuthOverlay() {
 
                     <button
                       type="submit"
-                      className="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-900 rounded-lg px-4 py-3 font-semibold transition-all duration-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full bg-primary hover:opacity-90 text-primary-foreground rounded-lg px-4 py-3 font-semibold transition-all duration-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                       disabled={loading || (signup && signupSuccess)}
                     >
                       {loading ? 'Please wait...' : (signup ? 'Create Account' : 'Sign In')}

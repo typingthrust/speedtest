@@ -13,7 +13,8 @@
 -- 3. Then run this function creation script
 --
 -- 4. After testing, you can optionally restore the constraint:
---    ALTER TABLE leaderboard ALTER COLUMN user_id SET NOT NULL;
+--    ALTER TABLE leaderboard ALTER COLUMN user_id SET NOT NULL;xDfc e4r.
+
 --    ALTER TABLE leaderboard ADD CONSTRAINT leaderboard_user_id_fkey 
 --      FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
 

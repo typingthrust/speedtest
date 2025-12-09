@@ -249,7 +249,7 @@ export default function Profile() {
       <div className="min-h-screen bg-background flex flex-col">
         <Navbar />
         <div className="flex-1 flex items-center justify-center">
-          <div className="text-slate-400">Loading profile data...</div>
+          <div className="text-muted-foreground">Loading profile data...</div>
         </div>
       </div>
     );
@@ -258,10 +258,10 @@ export default function Profile() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background">
         <div className="bg-card p-8 rounded-xl shadow-md text-center border border-border">
-          <h2 className="text-2xl font-bold mb-4 text-slate-100">No Account Found</h2>
-          <p className="mb-6 text-slate-400">Please log in to access your profile and analytics.</p>
+          <h2 className="text-2xl font-bold mb-4 text-foreground">No Account Found</h2>
+          <p className="mb-6 text-muted-foreground">Please log in to access your profile and analytics.</p>
           <button
-            className="bg-primary text-slate-900 px-6 py-2 rounded-lg font-semibold hover:opacity-90 transition"
+            className="bg-primary text-primary-foreground px-6 py-2 rounded-lg font-semibold hover:opacity-90 transition"
             onClick={() => openOverlay('auth')}
           >
             Log In
@@ -715,20 +715,20 @@ export default function Profile() {
         <div className="mb-8">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
             <div className="flex-1">
-              <h1 className="text-3xl sm:text-4xl font-bold text-slate-100 mb-2 text-left">Profile</h1>
-              <p className="text-slate-400 text-sm text-left">Track your typing progress and achievements</p>
+              <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-2 text-left">Profile</h1>
+              <p className="text-muted-foreground text-sm text-left">Track your typing progress and achievements</p>
             </div>
             <div className="flex items-center gap-3 flex-shrink-0">
               {user.avatar_url ? (
                 <img src={user.avatar_url} alt="avatar" className="w-12 h-12 rounded-full border-2 border-slate-600 flex-shrink-0" />
               ) : (
-                <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-xl font-bold text-slate-900 flex-shrink-0">
+                <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-xl font-bold text-primary-foreground flex-shrink-0">
                   {user.username ? user.username[0].toUpperCase() : (user.email ? user.email[0].toUpperCase() : '?')}
                 </div>
               )}
               <div className="text-left min-w-0">
-                <div className="text-sm font-semibold text-slate-100 truncate">{user.username || user.email || 'User'}</div>
-                <div className="text-xs text-slate-400">Level {level}</div>
+                <div className="text-sm font-semibold text-foreground truncate">{user.username || user.email || 'User'}</div>
+                <div className="text-xs text-muted-foreground">Level {level}</div>
               </div>
             </div>
           </div>
@@ -765,8 +765,8 @@ export default function Profile() {
           <div className="bg-gradient-to-r from-card to-card/50 rounded-xl border border-border p-6 mb-6">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
               <div className="flex-1">
-                <h3 className="text-lg font-semibold text-slate-100 mb-1 text-left">Level {level}</h3>
-                <p className="text-sm text-slate-400 text-left">{xp} XP • {progress}% to Level {level + 1}</p>
+                <h3 className="text-lg font-semibold text-foreground mb-1 text-left">Level {level}</h3>
+                <p className="text-sm text-muted-foreground text-left">{xp} XP • {progress}% to Level {level + 1}</p>
               </div>
               {badges && badges.length > 0 && (
                 <div className="flex flex-wrap gap-2">
@@ -795,13 +795,13 @@ export default function Profile() {
         {/* Filters */}
         <div className="mb-6">
           <div className="flex flex-wrap items-center gap-3 mb-4">
-            <span className="text-sm font-medium text-slate-400 whitespace-nowrap">Duration:</span>
+            <span className="text-sm font-medium text-muted-foreground whitespace-nowrap">Duration:</span>
             {durations.map(d => (
               <button
                 key={d.value}
                 className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
                   selectedDuration === d.value
-                    ? 'bg-primary text-slate-900 shadow-lg shadow-primary/20'
+                    ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20'
                     : 'bg-card text-foreground/80 hover:bg-muted border border-border'
                 }`}
                 onClick={() => setSelectedDuration(d.value)}
@@ -811,13 +811,13 @@ export default function Profile() {
             ))}
           </div>
           <div className="flex flex-wrap items-center gap-3">
-            <span className="text-sm font-medium text-slate-400 whitespace-nowrap">Time Range:</span>
+            <span className="text-sm font-medium text-muted-foreground whitespace-nowrap">Time Range:</span>
             {ranges.map(r => (
               <button
                 key={r.value}
                 className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
                   selectedRange === r.value
-                    ? 'bg-primary text-slate-900 shadow-lg shadow-primary/20'
+                    ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20'
                     : 'bg-card text-foreground/80 hover:bg-muted border border-border'
                 }`}
                 onClick={() => setSelectedRange(r.value)}
@@ -835,7 +835,7 @@ export default function Profile() {
               className={`px-6 py-3 text-sm font-semibold border-b-2 transition-colors ${
                 selectedTab === 'overview'
                   ? 'border-primary text-primary'
-                  : 'border-transparent text-slate-400 hover:text-slate-200'
+                  : 'border-transparent text-muted-foreground hover:text-foreground'
               }`}
               onClick={() => setSelectedTab('overview')}
             >
@@ -845,7 +845,7 @@ export default function Profile() {
               className={`px-6 py-3 text-sm font-semibold border-b-2 transition-colors ${
                 selectedTab === 'advanced'
                   ? 'border-primary text-primary'
-                  : 'border-transparent text-slate-400 hover:text-slate-200'
+                  : 'border-transparent text-muted-foreground hover:text-foreground'
               }`}
               onClick={() => setSelectedTab('advanced')}
             >
@@ -859,7 +859,7 @@ export default function Profile() {
           <div className="space-y-6">
             {/* Progress Chart */}
             <div className="bg-card/50 rounded-xl border border-border p-6">
-              <h2 className="text-xl font-semibold text-slate-100 mb-4 text-left">Progress Over Time</h2>
+              <h2 className="text-xl font-semibold text-foreground mb-4 text-left">Progress Over Time</h2>
               <div className="h-64">
                 {filteredHistory.length > 1 ? (
                   <Line data={chartData} options={chartOptions} />
