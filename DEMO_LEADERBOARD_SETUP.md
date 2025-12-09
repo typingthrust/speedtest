@@ -31,13 +31,16 @@ To enable demo leaderboard data generation, you need to temporarily modify the t
    - Click the "Generate Demo Data" button
    - The leaderboard will be populated with 10 demo users across all timeframes
 
-5. **Optional: Restore Constraints (After Testing)**
-   - If you want to restore the original constraints after testing:
-   ```sql
-   ALTER TABLE leaderboard ALTER COLUMN user_id SET NOT NULL;
-   ALTER TABLE leaderboard ADD CONSTRAINT leaderboard_user_id_fkey 
-     FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
-   ```
+5. **Cleanup Demo Data and Restore Constraints**
+   - When you're done testing, run the cleanup script:
+   - Open the file `cleanup-demo-leaderboard.sql` in this project
+   - Copy **ALL** the SQL code
+   - Paste it into Supabase SQL Editor
+   - Click **Run** (or press Ctrl+Enter)
+   - This will:
+     - Delete all demo entries (emails ending in `@example.com`)
+     - Restore the `NOT NULL` constraint on `user_id`
+     - Restore the foreign key constraint to `auth.users`
 
 ## What the Function Does:
 
