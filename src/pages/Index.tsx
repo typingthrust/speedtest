@@ -1156,13 +1156,61 @@ const Index = () => {
     // ...other languages remain unchanged
   };
 
-  // On language or difficulty change, update currentText
+  // Function to modify text based on punctuation and numbers preferences
+  const modifyTextForOptions = (text: string): string => {
+    if (!text) return text;
+    
+    let modifiedText = text;
+    
+    // Remove punctuation if disabled
+    if (!includePunctuation) {
+      // Remove common punctuation marks but keep spaces
+      modifiedText = modifiedText.replace(/[.,!?;:'"()\[\]{}\-_=+<>\/\\|`~@#$%^&*]/g, '');
+      // Clean up multiple spaces that might result
+      modifiedText = modifiedText.replace(/\s+/g, ' ').trim();
+    }
+    // If includePunctuation is true, keep text as-is (don't modify)
+    
+    // Handle numbers
+    if (!includeNumbers) {
+      // Remove all digits (0-9)
+      modifiedText = modifiedText.replace(/[0-9]/g, '');
+      // Clean up multiple spaces that might result
+      modifiedText = modifiedText.replace(/\s+/g, ' ').trim();
+    } else {
+      // If numbers are enabled, ensure some numbers exist in the text
+      const hasNumbers = /[0-9]/.test(modifiedText);
+      if (!hasNumbers && modifiedText.length > 10) {
+        // Add numbers to the text by inserting them between words
+        const words = modifiedText.split(' ');
+        const numbers = ['1', '2', '3', '4', '5', '10', '20', '50', '100', '2024'];
+        let numberIndex = 0;
+        const wordsWithNumbers: string[] = [];
+        
+        for (let i = 0; i < words.length; i++) {
+          wordsWithNumbers.push(words[i]);
+          // Add a number after every 4-6 words
+          if (i > 0 && (i + 1) % 5 === 0 && i < words.length - 1) {
+            wordsWithNumbers.push(numbers[numberIndex % numbers.length]);
+            numberIndex++;
+          }
+        }
+        modifiedText = wordsWithNumbers.join(' ');
+      }
+    }
+    
+    return modifiedText;
+  };
+
+  // On language, difficulty, mode, or option changes, update currentText
   useEffect(() => {
     // Only update currentText if not in custom mode
     if (currentMode !== 'custom') {
     const newText = generateNewText(currentMode, difficulty, language);
+    // Apply punctuation and numbers modifications
+    const modifiedText = modifyTextForOptions(newText);
     // Trim and normalize spaces to prevent wrapping issues - remove trailing spaces from each line
-    const normalizedText = newText
+    const normalizedText = modifiedText
       .split('\n')
       .map(line => line.trimEnd())
       .join('\n')
@@ -1171,7 +1219,7 @@ const Index = () => {
     setCurrentText(normalizedText);
     }
     // Optionally reset userInput, errors, etc. here if desired
-  }, [language, difficulty, currentMode]);
+  }, [language, difficulty, currentMode, includePunctuation, includeNumbers]);
 
   // On initial load, set currentText to default
   useEffect(() => {
@@ -1536,11 +1584,23 @@ const Index = () => {
     setWpm(0);
     setAccuracy(100);
     setWpmHistory([{ t: 0, wpm: 0 }]);
+    
+    // Regenerate text with current options
+    if (currentMode !== 'custom') {
+      const newText = generateNewText(currentMode, difficulty, language);
+      const modifiedText = modifyTextForOptions(newText);
+      const normalizedText = modifiedText
+        .split('\n')
+        .map(line => line.trimEnd())
+        .join('\n')
+        .trim()
+        .replace(/\s+/g, ' ');
+      setCurrentText(normalizedText);
+    }
     setKeystrokeStats({ total: 0, correct: 0, incorrect: 0, extra: 0, keyCounts: {} });
     setErrorTypes({ punctuation: 0, case: 0, number: 0, other: 0 });
     setConsistency(null);
     setChartData([{ x: 0, y: 0, acc: 100 }]);
-    setCurrentText(generateNewText(currentMode, difficulty, language));
     // Reset line scrolling
     if (containerRef.current) {
       containerRef.current.scrollTo({ top: 0, behavior: 'instant' });
@@ -1554,7 +1614,7 @@ const Index = () => {
         inputRef.current.focus();
       }
     }, 100);
-  }, [currentMode, timeLimit, difficulty, language]);
+  }, [currentMode, timeLimit, difficulty, language, includePunctuation, includeNumbers]);
 
   // Focus input when clicking on container
   const handleContainerClick = () => {
@@ -1861,7 +1921,14 @@ const Index = () => {
       setOpenSetting(null);
     }
     const newText = generateNewText(newMode, difficulty, language);
-    setCurrentText(newText);
+    const modifiedText = modifyTextForOptions(newText);
+    const normalizedText = modifiedText
+      .split('\n')
+      .map(line => line.trimEnd())
+      .join('\n')
+      .trim()
+      .replace(/\s+/g, ' ');
+    setCurrentText(normalizedText);
     setTimeLeft(newMode === 'time' ? timeLimit : 0);
   };
 
@@ -2480,6 +2547,43 @@ const Index = () => {
                       </div>
                     </div>
                   )}
+
+                  {/* Punctuation & Numbers Toggles */}
+                  <div className="rounded-lg overflow-hidden bg-card/50 border border-border/50">
+                    <div className="p-4">
+                      <h3 className="text-sm font-medium text-foreground mb-3">Options</h3>
+                      <div className="flex flex-col gap-2">
+                        <button
+                          onClick={() => {
+                            setIncludePunctuation(!includePunctuation);
+                            resetTest();
+                          }}
+                          className={`w-full py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
+                            includePunctuation
+                              ? 'bg-primary/20 text-primary border border-primary/30'
+                              : 'bg-muted/50 text-foreground/70 hover:text-foreground hover:bg-muted'
+                          }`}
+                        >
+                          <span>@</span>
+                          <span>punctuation</span>
+                        </button>
+                        <button
+                          onClick={() => {
+                            setIncludeNumbers(!includeNumbers);
+                            resetTest();
+                          }}
+                          className={`w-full py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
+                            includeNumbers
+                              ? 'bg-primary/20 text-primary border border-primary/30'
+                              : 'bg-muted/50 text-foreground/70 hover:text-foreground hover:bg-muted'
+                          }`}
+                        >
+                          <span>#</span>
+                          <span>numbers</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
 
                   {/* Difficulty */}
                   <div className="rounded-lg overflow-hidden bg-card/50 border border-border/50">

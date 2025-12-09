@@ -1230,21 +1230,40 @@ export default function Profile() {
       <div className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         {/* Profile Header Section */}
         <div className="mb-6 sm:mb-8">
-          <div className="flex flex-col gap-4 mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+            {/* Left: Avatar and User Info */}
             <div className="flex items-center gap-3 sm:gap-4">
-                {user?.avatar_url || user?.user_metadata?.avatar_url ? (
+              {user?.avatar_url || user?.user_metadata?.avatar_url ? (
                 <img src={user?.avatar_url || user?.user_metadata?.avatar_url} alt="avatar" className="w-14 h-14 sm:w-16 sm:h-16 rounded-full border border-border flex-shrink-0" />
-                ) : (
+              ) : (
                 <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-primary flex items-center justify-center text-lg sm:text-xl font-semibold text-primary-foreground flex-shrink-0">
-                    {(user?.username || user?.user_metadata?.username) ? (user?.username || user?.user_metadata?.username)?.[0]?.toUpperCase() : (user?.email ? user?.email[0]?.toUpperCase() : '?')}
-                  </div>
-                )}
+                  {(user?.username || user?.user_metadata?.username) ? (user?.username || user?.user_metadata?.username)?.[0]?.toUpperCase() : (user?.email ? user?.email[0]?.toUpperCase() : '?')}
+                </div>
+              )}
               <div className="flex-1 min-w-0">
-                <h1 className="text-xl sm:text-2xl font-bold text-foreground truncate">{(user?.username || user?.user_metadata?.username) || user?.email || 'User'}</h1>
-                <p className="text-xs sm:text-sm text-muted-foreground">Level {level} • {xp} XP</p>
+                <h1 className="text-xl sm:text-2xl font-bold text-foreground truncate mb-0.5">
+                  {(user?.username || user?.user_metadata?.username) || user?.email || 'User'}
+                </h1>
+                {user?.email && (user?.username || user?.user_metadata?.username) && (
+                  <p className="text-xs sm:text-sm text-muted-foreground truncate">
+                    {user.email}
+                  </p>
+                )}
+              </div>
+            </div>
+            
+            {/* Right: Level and XP Badge */}
+            <div className="flex items-center gap-2 sm:flex-shrink-0">
+              <div className="px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg bg-card border border-border flex items-center gap-2">
+                <Award className="w-4 h-4 text-primary flex-shrink-0" />
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-semibold text-foreground">Level {level}</span>
+                  <span className="text-muted-foreground">•</span>
+                  <span className="text-xs sm:text-sm text-muted-foreground">{xp} XP</span>
                 </div>
               </div>
-                </div>
+            </div>
+          </div>
 
           {/* Quick Stats Row */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6">
