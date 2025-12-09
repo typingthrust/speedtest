@@ -2344,9 +2344,9 @@ const Index = () => {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.2 }}
-                className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[60] sm:hidden"
+                className="fixed bg-black/80 backdrop-blur-sm z-[60] sm:hidden"
                 onClick={() => setMobileDrawerOpen(false)}
-                style={{ top: 0, left: 0, right: 0, bottom: 0, zIndex: 60 }}
+                style={{ top: 0, left: 0, right: 0, bottom: 0, zIndex: 60, margin: 0, padding: 0 }}
               />
               {/* Drawer */}
               <motion.div
@@ -2354,11 +2354,23 @@ const Index = () => {
                 animate={{ x: 0 }}
                 exit={{ x: '100%' }}
                 transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-                className="fixed top-0 right-0 w-full max-w-sm bg-slate-900 border-l border-slate-700 z-[70] sm:hidden flex flex-col shadow-2xl"
-                style={{ top: 0, height: '100vh', zIndex: 70, backgroundColor: '#0f172a' }}
+                className="fixed right-0 w-full max-w-sm bg-slate-900 border-l border-slate-700 z-[70] sm:hidden flex flex-col shadow-2xl"
+                style={{ 
+                  top: 0, 
+                  left: 'auto', 
+                  bottom: 0, 
+                  height: '100dvh',
+                  minHeight: '100vh',
+                  zIndex: 70, 
+                  backgroundColor: '#0f172a', 
+                  margin: 0, 
+                  padding: 0,
+                  paddingTop: 0,
+                  marginTop: 0
+                }}
               >
                 {/* Header */}
-                <div className="flex items-center justify-between p-4 border-b border-slate-700 bg-slate-900" style={{ backgroundColor: '#0f172a' }}>
+                <div className="flex items-center justify-between p-4 border-b border-slate-700 bg-slate-900" style={{ backgroundColor: '#0f172a', marginTop: 0, paddingTop: '1rem', paddingBottom: '1rem' }}>
                   <h2 className="text-xl font-semibold text-slate-100">Settings</h2>
                   <button
                     onClick={() => setMobileDrawerOpen(false)}
