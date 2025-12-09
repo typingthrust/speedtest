@@ -49,22 +49,23 @@ function MinimalGamificationOverlay({ open, onClose, children }: { open: boolean
   return (
     <div
       ref={backdropRef}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-background/60 backdrop-blur-[12px]"
-      style={{ WebkitBackdropFilter: 'blur(12px)' }}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+      style={{ WebkitBackdropFilter: 'blur(8px)' }}
+      onClick={(e) => e.target === backdropRef.current && onClose()}
     >
       <div
         ref={overlayRef}
-        className="relative w-full max-w-lg mx-4 sm:mx-auto bg-card/90 rounded-xl border border-border shadow-lg flex flex-col items-center min-h-[40vh] max-h-[90vh] min-w-0 sm:min-w-[320px] p-0"
-        style={{ boxShadow: '0 4px 32px 0 rgba(0,0,0,0.5)', border: '1px solid rgba(51, 65, 85, 0.5)' }}
+        className="relative w-full max-w-lg bg-card border border-border rounded-xl shadow-2xl flex flex-col items-center max-h-[90vh] min-w-0 sm:min-w-[320px] overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
       >
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-muted-foreground hover:text-foreground text-xl p-2 rounded-full focus:outline-none z-10"
+          className="absolute top-4 right-4 text-muted-foreground hover:text-foreground p-2 rounded-full hover:bg-card/50 transition-colors z-10"
           aria-label="Close gamification"
         >
-          <X className="w-6 h-6" />
+          <X className="w-5 h-5" />
         </button>
-        <div className="w-full h-full px-8 py-8 overflow-auto scrollbar-thin scrollbar-thumb-slate-600 scrollbar-track-transparent scrollbar-hide">
+        <div className="w-full h-full px-4 sm:px-6 py-6 overflow-y-auto scrollbar-hide">
           {children}
         </div>
       </div>
@@ -96,65 +97,119 @@ export default function GamificationOverlay() {
 
   return (
     <MinimalGamificationOverlay open={open === 'gamification'} onClose={closeOverlay}>
-      <section className="w-full flex flex-col gap-6 items-center" aria-label="Gamification Progress" tabIndex={-1}>
-        <header className="w-full flex flex-row items-center justify-between mb-2 pr-14">
-          <h1 className="text-2xl font-bold text-foreground" tabIndex={0}>Gamification</h1>
+      <section className="w-full flex flex-col gap-4 sm:gap-5 items-center" aria-label="Gamification Progress" tabIndex={-1}>
+        <header className="w-full flex flex-row items-center justify-between mb-1 pr-8">
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground" tabIndex={0}>Gamification</h1>
         </header>
         {/* XP & Level Section */}
-        <div className="w-full bg-muted/80 rounded-2xl shadow-sm border border-border p-6 flex flex-col gap-2 items-center" aria-label="XP and Level">
-          <h2 className="text-lg font-semibold text-foreground mb-1">XP & Level</h2>
-          <div className="flex items-center gap-4 w-full max-w-xs">
+        <div className="w-full bg-card/50 rounded-xl border border-border p-4 sm:p-5 flex flex-col gap-3 items-center" aria-label="XP and Level">
+          <h2 className="text-base sm:text-lg font-semibold text-foreground">XP & Level</h2>
+          <div className="flex items-center gap-3 sm:gap-4 w-full max-w-xs">
             <div className="flex flex-col items-center">
-              <span className="text-3xl font-extrabold text-primary">{state.level}</span>
-              <span className="text-xs text-muted-foreground font-bold uppercase tracking-wide">Level</span>
+              <span className="text-2xl sm:text-3xl font-extrabold text-primary">{state.level}</span>
+              <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Level</span>
             </div>
-            <div className="flex-1 flex flex-col gap-1">
-              <div className="w-full bg-slate-600 rounded-full h-3 relative overflow-hidden" aria-label="XP Progress Bar">
-                <div className="absolute left-0 top-0 h-3 rounded-full bg-primary transition-all" style={{ width: `${Math.min(100, (state.xp % 100))}%` }} />
+            <div className="flex-1 flex flex-col gap-1.5">
+              <div className="w-full bg-muted/50 rounded-full h-2.5 relative overflow-hidden" aria-label="XP Progress Bar">
+                <div className="absolute left-0 top-0 h-full rounded-full bg-primary transition-all" style={{ width: `${Math.min(100, (state.xp % 100))}%` }} />
               </div>
-              <div className="flex justify-between text-xs text-muted-foreground mt-1">
+              <div className="flex justify-between text-xs text-muted-foreground">
                 <span>{state.xp % 100}/100 XP</span>
-                <span className="font-bold">{state.xp >= 100 ? 'Level Up!' : ''}</span>
+                <span className="font-semibold text-primary">{state.xp >= 100 ? 'Level Up!' : ''}</span>
               </div>
             </div>
           </div>
         </div>
         {/* Levels Section */}
-        <div className="w-full bg-slate-700/80 rounded-2xl shadow-sm border border-slate-600 p-6 flex flex-col gap-2 items-center" aria-label="Levels Progression">
-          <h2 className="text-lg font-semibold text-slate-100 mb-1">Levels</h2>
-          <div className="relative w-full max-w-xs h-12 flex items-center mb-2">
-            {/* Background line (behind circles) */}
-            <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-2 bg-slate-600 rounded-full z-0" />
-            {/* Progress line (behind circles) */}
-            <div className="absolute left-0 top-1/2 -translate-y-1/2 h-2 bg-primary rounded-full transition-all z-0" style={{ width: `${Math.min(100, ((state.level-1)/9)*100)}%` }} />
-            {/* Level circles (above lines) */}
-            {[1,2,3,4,5,6,7,8,9,10].map(lvl => (
-              <div key={lvl} className="absolute z-10" style={{ left: `${(lvl-1)*11.11}%`, top: '50%', transform: 'translate(-50%, -50%)' }}>
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 transition-all duration-300 font-semibold text-sm ${state.level === lvl ? 'bg-primary border-primary text-primary-foreground' : lvl < state.level ? 'bg-primary/80 border-primary/80 text-primary-foreground' : 'bg-muted border-border text-muted-foreground'}`}>{lvl}</div>
-              </div>
-            ))}
+        <div className="w-full bg-card/50 rounded-xl border border-border p-4 sm:p-5 flex flex-col gap-4 items-center" aria-label="Levels Progression">
+          <h2 className="text-base sm:text-lg font-semibold text-foreground">Levels</h2>
+          <div className="w-full max-w-sm px-2">
+            <div className="relative w-full h-16 flex items-center">
+              {/* Level numbers - positioned absolutely, evenly spaced */}
+              {[1,2,3,4,5,6,7,8,9,10].map((lvl, index) => {
+                const isActive = state.level === lvl;
+                const isCompleted = lvl < state.level;
+                const leftPosition = `${4 + (index * (92 / 9))}%`;
+                const circleSize = 32; // w-8 = 32px (smaller circles)
+                const circleRadius = circleSize / 2;
+                
+                return (
+                  <React.Fragment key={lvl}>
+                    {/* Line segments BETWEEN circles - only show if not the last circle */}
+                    {index < 9 && (
+                      <>
+                        {/* Background line segment */}
+                        <div 
+                          className="absolute top-1/2 -translate-y-1/2 h-0.5 bg-muted/30 rounded-full"
+                          style={{ 
+                            left: `calc(${leftPosition} + ${circleRadius}px)`,
+                            width: `calc(${92 / 9}% - ${circleSize}px)`,
+                            zIndex: 0
+                          }} 
+                        />
+                        {/* Progress line segment - only show if this segment is completed */}
+                        {lvl < state.level && (
+                          <div 
+                            className="absolute top-1/2 -translate-y-1/2 h-0.5 bg-primary rounded-full transition-all duration-300"
+                            style={{ 
+                              left: `calc(${leftPosition} + ${circleRadius}px)`,
+                              width: `calc(${92 / 9}% - ${circleSize}px)`,
+                              zIndex: 1
+                            }} 
+                          />
+                        )}
+                      </>
+                    )}
+                    {/* Circle with number */}
+                    <div 
+                      className="absolute flex items-center justify-center"
+                      style={{ 
+                        left: leftPosition,
+                        top: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        zIndex: 10
+                      }}
+                    >
+                      <div 
+                        className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-all duration-200 font-semibold text-xs sm:text-sm ${
+                          isActive 
+                            ? 'bg-primary text-primary-foreground shadow-md' 
+                            : isCompleted 
+                            ? 'bg-primary/20 text-primary border-2 border-primary/40' 
+                            : 'bg-background text-muted-foreground border-2 border-border'
+                        }`}
+                      >
+                        {lvl}
+                      </div>
+                    </div>
+                  </React.Fragment>
+                );
+              })}
+            </div>
+            <div className="text-center mt-4 text-sm text-foreground/70">
+              Level <span className="font-semibold text-primary">{state.level}</span> of 10
+            </div>
           </div>
-          <div className="text-sm text-foreground/80">Current Level: <span className="font-bold text-primary">{state.level}</span></div>
         </div>
         {/* Badges Section */}
-        <div className="w-full bg-slate-700/80 rounded-2xl shadow-sm border border-slate-600 p-6 flex flex-col gap-2 items-center" aria-label="Badges">
-          <h2 className="text-lg font-semibold text-slate-100 mb-1">Badges</h2>
+        <div className="w-full bg-card/50 rounded-xl border border-border p-4 sm:p-5 flex flex-col gap-3 items-center" aria-label="Badges">
+          <h2 className="text-base sm:text-lg font-semibold text-foreground">Badges</h2>
           {allBadges.length === 0 ? (
             <span className="text-muted-foreground text-sm">No badges available.</span>
           ) : (
-            <div className="flex flex-wrap gap-4 justify-center relative">
+            <div className="flex flex-wrap gap-3 sm:gap-4 justify-center relative">
               {allBadges.map(badge => {
                 const earned = state.badges.includes(badge.name);
                 const Icon = badge.icon;
                 return (
-                  <div key={badge.key} className={`group relative w-14 h-14 rounded-full flex items-center justify-center shadow transition-all duration-300 z-10 ${earned ? 'bg-muted/80 text-foreground' : 'bg-muted text-muted-foreground grayscale'}` } tabIndex={0} aria-label={badge.name + (earned ? '' : ' (Locked)')}>
-                    <Icon className="w-7 h-7 relative z-0" />
+                  <div key={badge.key} className={`group relative w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center shadow-md transition-all duration-300 z-10 hover:scale-110 ${earned ? 'bg-card border-2 border-primary text-primary' : 'bg-muted/50 border-2 border-border text-muted-foreground grayscale opacity-60'}` } tabIndex={0} aria-label={badge.name + (earned ? '' : ' (Locked)')}>
+                    <Icon className="w-6 h-6 sm:w-7 sm:h-7 relative z-0" />
                     {!earned && (
-                      <Lock className="absolute w-5 h-5 text-muted-foreground top-1 right-1 opacity-80 z-10" />
+                      <Lock className="absolute w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground top-0.5 right-0.5 opacity-70 z-10" />
                     )}
-                    <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 rounded-lg bg-background text-foreground text-xs opacity-0 group-hover:opacity-100 group-focus:opacity-100 group-active:opacity-100 transition-opacity whitespace-nowrap z-[100] shadow-2xl pointer-events-none border border-border">
+                    <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 rounded-lg bg-card border border-border text-foreground text-xs opacity-0 group-hover:opacity-100 group-focus:opacity-100 group-active:opacity-100 transition-opacity whitespace-nowrap z-[100] shadow-xl pointer-events-none">
                       <span className="font-bold block">{badge.name}</span>
-                      <span className="font-normal text-foreground/80 text-[10px]">{earned ? '' : '(Locked) '}{badge.description}</span>
+                      <span className="font-normal text-muted-foreground text-[10px]">{earned ? '' : '(Locked) '}{badge.description}</span>
                     </span>
                   </div>
                 );
@@ -163,10 +218,12 @@ export default function GamificationOverlay() {
           )}
         </div>
         {/* Streak Section */}
-        <div className="w-full bg-slate-700/80 rounded-2xl shadow-sm border border-slate-600 p-6 flex flex-col gap-2 items-center" aria-label="Current Streak">
-          <h2 className="text-lg font-semibold text-slate-100 mb-1">Current Streak</h2>
+        <div className="w-full bg-card/50 rounded-xl border border-border p-4 sm:p-5 flex flex-col gap-2 items-center" aria-label="Current Streak">
+          <h2 className="text-base sm:text-lg font-semibold text-foreground">Current Streak</h2>
           <div className="flex items-center gap-2">
-            <span className="text-2xl font-extrabold text-orange-400"><Flame className="inline w-6 h-6 mr-1" />{typeof state.streak === 'number' ? state.streak : 0}</span>
+            <Flame className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
+            <span className="text-2xl sm:text-3xl font-extrabold text-primary">{typeof state.streak === 'number' ? state.streak : 0}</span>
+            <span className="text-sm text-muted-foreground">days</span>
           </div>
         </div>
         {/* Global Rank Section (if available) */}
@@ -174,8 +231,8 @@ export default function GamificationOverlay() {
           const userIndex = sortedLeaderboard.findIndex(entry => entry.username === currentUsername);
           if (userIndex !== -1) {
             return (
-              <div className="w-full bg-slate-700/80 rounded-2xl shadow-sm border border-slate-600 p-6 flex flex-col gap-2 items-center" aria-label="Global Rank">
-                <span className="text-sm text-foreground/80 font-medium flex items-center gap-1"><Award className="w-5 h-5 text-primary" />Your Global Rank: <span className="font-bold text-primary">#{userIndex + 1}</span></span>
+              <div className="w-full bg-card/50 rounded-xl border border-border p-4 sm:p-5 flex flex-col gap-2 items-center" aria-label="Global Rank">
+                <span className="text-sm text-foreground/80 font-medium flex items-center gap-2"><Award className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />Your Global Rank: <span className="font-bold text-primary">#{userIndex + 1}</span></span>
               </div>
             );
           }

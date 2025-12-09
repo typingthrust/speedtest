@@ -31,10 +31,10 @@ const Navbar: React.FC = () => {
   };
 
   return (
-    <nav className="w-full bg-background border-b border-border sticky top-0 z-50 shadow-sm">
-      <div className="w-full px-2 md:px-8">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
+    <nav className="w-full bg-background/80 backdrop-blur-sm sticky top-0 z-50">
+      <div className="w-full px-4 md:px-6">
+        <div className="flex items-center justify-between h-14">
+          {/* Logo - Smaller & Cleaner */}
           <Link 
             to="/" 
             onClick={() => navigate('/')}
@@ -45,21 +45,20 @@ const Navbar: React.FC = () => {
             <img
               src={logo}
               alt="TypingThrust Logo"
-              className="w-36 h-36 sm:w-40 sm:h-40 md:w-44 md:h-44 lg:w-48 lg:h-48 xl:w-52 xl:h-52 object-contain flex-shrink-0 select-none"
+              className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 object-contain flex-shrink-0 select-none"
               draggable="false"
             />
           </Link>
 
-          {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center gap-2">
-            {/* Gamification Toggle */}
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-card border border-border">
-              <Award className="w-4 h-4 text-primary" />
-              <span className="text-sm font-medium text-foreground">Gamification</span>
+          {/* Desktop Navigation - Minimal & Clean */}
+          <div className="hidden lg:flex items-center gap-1.5">
+            {/* Gamification Toggle - Compact */}
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-card/50 border border-border/50">
+              <Award className="w-3.5 h-3.5 text-primary" />
               <Switch 
                 checked={state.gamificationEnabled} 
                 onCheckedChange={setGamificationEnabled}
-                className="ml-1"
+                className="scale-90"
               />
             </div>
 
@@ -68,10 +67,9 @@ const Navbar: React.FC = () => {
               variant="ghost"
               size="sm"
               onClick={() => openOverlay('gamification')}
-              className="flex items-center gap-2 text-foreground/70 hover:text-foreground hover:bg-card"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-foreground/70 hover:text-foreground hover:bg-card/50 text-sm"
             >
               <Award className="w-4 h-4" />
-              <span className="hidden xl:inline">Gamification</span>
             </Button>
 
             {/* Leaderboard Button */}
@@ -79,10 +77,9 @@ const Navbar: React.FC = () => {
               variant="ghost"
               size="sm"
               onClick={() => openOverlay('leaderboard')}
-              className="flex items-center gap-2 text-foreground/70 hover:text-foreground hover:bg-card"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-foreground/70 hover:text-foreground hover:bg-card/50 text-sm"
             >
               <Users className="w-4 h-4" />
-              <span className="hidden xl:inline">Leaderboard</span>
             </Button>
 
             {/* Profile Button */}
@@ -90,20 +87,17 @@ const Navbar: React.FC = () => {
               variant="ghost"
               size="sm"
               onClick={handleProfileClick}
-              className="flex items-center gap-2 text-foreground/70 hover:text-foreground hover:bg-card"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-foreground/70 hover:text-foreground hover:bg-card/50 text-sm"
             >
               <UserIcon className="w-4 h-4" />
-              <span className="hidden xl:inline">
-                {user && user.id !== 'guest' ? 'Profile' : 'Sign In'}
-              </span>
             </Button>
           </div>
 
           {/* Mobile Menu Button */}
           <div className="flex lg:hidden items-center gap-2">
-            {/* Mobile Gamification Toggle - Always visible */}
-            <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-card border border-border mr-2">
-              <Award className="w-4 h-4 text-primary" />
+            {/* Mobile Gamification Toggle - Compact */}
+            <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-card/50 border border-border/50">
+              <Award className="w-3.5 h-3.5 text-primary" />
               <Switch 
                 checked={state.gamificationEnabled} 
                 onCheckedChange={setGamificationEnabled}
@@ -113,14 +107,14 @@ const Navbar: React.FC = () => {
             
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 rounded-lg hover:bg-card focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
+              className="p-2 rounded-full hover:bg-card/50 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-colors"
               aria-label="Toggle menu"
               aria-expanded={mobileMenuOpen}
             >
               {mobileMenuOpen ? (
-                <X className="w-6 h-6 text-foreground" />
+                <X className="w-5 h-5 text-foreground" />
               ) : (
-                <Menu className="w-6 h-6 text-foreground" />
+                <Menu className="w-5 h-5 text-foreground" />
               )}
             </button>
           </div>

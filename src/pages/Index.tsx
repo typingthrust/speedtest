@@ -361,18 +361,19 @@ const TypingArea: React.FC<TypingAreaProps & { mode?: string; godModeIndex?: num
         className="typing-text-area scrollbar-hide"
         style={{
           position: 'relative',
-          height: 'calc(2.25rem * 1.8 * 3 + 32px)', // Same 3-line height
+          height: 'calc(2.5rem * 1.9 * 3 + 40px)', // Same 3-line height (updated for larger font)
           width: '100%',
+          maxWidth: '100%',
           textAlign: 'left',
           wordBreak: 'normal',
           overflowWrap: 'break-word',
           whiteSpace: 'normal',
           overflowY: 'scroll',
           overflowX: 'hidden',
-          fontSize: 'clamp(1.5rem, 4.5vw, 2.25rem)', // Same larger font
+          fontSize: 'clamp(1.75rem, 5vw, 2.5rem)', // Larger, cleaner font
           fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace',
-          lineHeight: '1.8',
-          padding: '16px',
+          lineHeight: '1.9', // More spacing between lines
+          padding: '20px 24px', // More horizontal padding for wider feel
           scrollbarWidth: 'none',
           msOverflowStyle: 'none',
           scrollBehavior: 'smooth',
@@ -446,8 +447,9 @@ const TypingArea: React.FC<TypingAreaProps & { mode?: string; godModeIndex?: num
       className="typing-text-area scrollbar-hide"
       style={{
         position: 'relative',
-        height: 'calc(2.25rem * 1.8 * 3 + 32px)', // Exactly 3 lines + padding
+        height: 'calc(2.5rem * 1.9 * 3 + 40px)', // Exactly 3 lines + padding (updated for larger font)
         width: '100%',
+        maxWidth: '100%',
         textAlign: 'left',
         wordBreak: 'normal',
         overflowWrap: 'break-word',
@@ -456,10 +458,10 @@ const TypingArea: React.FC<TypingAreaProps & { mode?: string; godModeIndex?: num
         wordSpacing: 'normal',
         overflowY: 'scroll', // Allow scroll but hide scrollbar via CSS
         overflowX: 'hidden',
-        fontSize: 'clamp(1.5rem, 4.5vw, 2.25rem)', // Larger font
+        fontSize: 'clamp(1.75rem, 5vw, 2.5rem)', // Larger, cleaner font
         fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace',
-        lineHeight: '1.8',
-        padding: '16px',
+        lineHeight: '1.9', // More spacing between lines
+        padding: '20px 24px', // More horizontal padding for wider feel
         scrollbarWidth: 'none', // Firefox
         msOverflowStyle: 'none', // IE/Edge
         scrollBehavior: 'smooth', // Smooth scroll animation
@@ -2129,7 +2131,7 @@ const Index = () => {
       </AnimatePresence>
       {/* Main Content */}
       <div className="flex-1 flex flex-col items-center justify-center space-y-4 w-full pt-4 sm:pt-20 pb-8" style={{ minHeight: 'calc(100vh - 200px)' }}>
-        {/* Ultra-Minimal Settings Summary Bar - Modern Mode Tabs - Hides when typing */}
+        {/* Compact Horizontal Settings Bar - Minimal & Clean - Hides when typing */}
         <AnimatePresence>
           {!isTyping && (
             <motion.div
@@ -2137,183 +2139,154 @@ const Index = () => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.3 }}
-              className="w-full flex justify-center px-2 sm:px-0"
+              className="w-full flex justify-center px-4 sm:px-6 mb-8"
               style={{ position: 'relative', zIndex: 10 }}
             >
-          {/* Mobile: Single Settings Button */}
-          <div className="sm:hidden w-full px-4 -mt-4">
+          {/* Mobile: Clean Settings Button */}
+          <div className="sm:hidden w-full max-w-md mx-auto">
             <button
               onClick={() => setMobileDrawerOpen(true)}
-              className="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-card/90 border border-border text-foreground hover:bg-muted/90 transition-all duration-200"
+              className="w-full flex items-center justify-between px-5 py-3.5 rounded-full bg-card/60 backdrop-blur-sm border border-border/50 text-foreground hover:bg-card/80 transition-all duration-200 shadow-sm"
             >
               <div className="flex items-center gap-3">
-                <SlidersHorizontal className="w-5 h-5 text-primary" />
-                <span className="font-medium">
+                <SlidersHorizontal className="w-4 h-4 text-primary" />
+                <span className="text-sm font-medium">
                   {(() => {
-                    const categories = [
-                      { heading: 'Developers', sub: [{ value: 'coding' }, { value: 'custom' }, { value: 'syntax' }] },
-                      { heading: 'Students', sub: [{ value: 'words' }, { value: 'time' }, { value: 'essay' }] },
-                      { heading: 'Writers', sub: [{ value: 'quote' }, { value: 'custom' }, { value: 'zen' }] },
-                      { heading: 'Mindfulness', sub: [{ value: 'zen' }, { value: 'notimer' }, { value: 'softtheme' }] },
-                      { heading: 'Challenge Seekers', sub: [{ value: 'time' }, { value: 'hardwords' }, { value: 'foreign' }] },
-                    ];
-                    const found = categories.find(cat => cat.sub.some(s => s.value === currentMode));
-                    return found ? found.heading : 'Settings';
+                    const modeLabels: Record<string, string> = {
+                      'time': 'Timed',
+                      'words': 'Words',
+                      'quote': 'Quotes',
+                      'zen': 'Zen',
+                      'coding': 'Coding',
+                      'custom': 'Custom',
+                      'syntax': 'Syntax',
+                      'essay': 'Essay',
+                      'notimer': 'No Timer',
+                      'softtheme': 'Soft Theme',
+                      'hardwords': 'Hard Words',
+                      'foreign': 'Foreign',
+                    };
+                    return modeLabels[currentMode] || 'Settings';
                   })()}
                 </span>
+                {currentMode === 'time' && (
+                  <span className="text-xs text-muted-foreground">• {timeLimit}s</span>
+                )}
+                {currentMode === 'words' && (
+                  <span className="text-xs text-muted-foreground">• {wordLimit} words</span>
+                )}
               </div>
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
               </svg>
             </button>
           </div>
 
-          {/* Desktop: Original Horizontal Bar */}
+          {/* Desktop: Compact Horizontal Settings Bar - Minimal & Clean */}
           <motion.div
             layout
             transition={{ type: 'spring', stiffness: 400, damping: 32 }}
-            className="hidden sm:inline-flex flex-row flex-nowrap items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-2xl bg-card/90 border border-border shadow-md backdrop-blur-md select-none relative transition-all duration-300 mx-auto overflow-x-auto flex-nowrap scrollbar-hide"
-                style={{ width: 'fit-content', minWidth: 0, maxWidth: '100vw', position: 'relative', zIndex: 10 }}
+            className="hidden sm:flex flex-row items-center justify-center gap-2 px-5 py-3 rounded-full bg-card/50 backdrop-blur-sm border border-border/50 shadow-sm select-none transition-all duration-300"
+                style={{ width: 'fit-content', maxWidth: '90vw', position: 'relative', zIndex: 10 }}
           >
-            {/* Category Headings with Inline Sub-options */}
-            {[
-              {
-                heading: 'Developers',
-                sub: [
-                  { label: 'Coding', value: 'coding', type: 'mode' },
-                  { label: 'Custom', value: 'custom', type: 'mode' },
-                  { label: 'Syntax Challenges', value: 'syntax', type: 'mode' },
-                ],
-              },
-              {
-                heading: 'Students',
-                sub: [
-                  { label: 'Words', value: 'words', type: 'mode' },
-                  { label: 'Timed', value: 'time', type: 'mode' },
-                  { label: 'Essay Builder', value: 'essay', type: 'mode' },
-                ],
-              },
-              {
-                heading: 'Writers',
-                sub: [
-                  { label: 'Quotes', value: 'quote', type: 'mode' },
-                  { label: 'Custom', value: 'custom', type: 'mode' },
-                  { label: 'Zen Writing', value: 'zen', type: 'mode' },
-                ],
-              },
-              {
-                heading: 'Mindfulness',
-                sub: [
-                  { label: 'Zen', value: 'zen', type: 'mode' },
-                  { label: 'No Timer', value: 'notimer', type: 'mode' },
-                  { label: 'Soft Theme Mode', value: 'softtheme', type: 'mode' },
-                ],
-              },
-              {
-                heading: 'Challenge Seekers',
-                sub: [
-                  { label: 'Timed', value: 'time', type: 'mode' },
-                  { label: 'Hard Words', value: 'hardwords', type: 'mode' },
-                  { label: 'Foreign Language Practice', value: 'foreign', type: 'mode' },
-                ],
-              },
-            ].map((cat, i) => {
-              const isOpen = openCategory === cat.heading;
-              const isSelected = cat.sub.some(item => currentMode === item.value);
-              return (
-                <React.Fragment key={cat.heading}>
+            {/* Mode Selection - Compact Pills */}
+            <div className="flex items-center gap-1.5">
+              {[
+                { label: 'time', value: 'time' },
+                { label: 'words', value: 'words' },
+                { label: 'quote', value: 'quote' },
+                { label: 'zen', value: 'zen' },
+                { label: 'coding', value: 'coding' },
+                { label: 'custom', value: 'custom' },
+              ].map((mode) => {
+                const isActive = currentMode === mode.value;
+                return (
                   <button
-                    className={`text-base font-medium border-none bg-transparent outline-none whitespace-nowrap transition-colors duration-150 flex-shrink-0 px-2 py-1 ${(isOpen || isSelected) ? 'text-primary underline underline-offset-4' : 'text-foreground/60 hover:text-foreground'}`}
-                    style={{ minWidth: 48, display: 'flex', alignItems: 'center' }}
-                    onClick={() => {
-                      setOpenCategory(isOpen ? null : cat.heading);
-                      setOpenSetting(null); // Close Duration/Difficulty when opening a category
-                    }}
+                    key={mode.value}
+                    onClick={() => handleModeChange(mode.value)}
+                    className={`px-3 py-1 rounded-full text-sm font-medium transition-all duration-200 ${
+                      isActive 
+                        ? 'bg-primary text-primary-foreground shadow-md' 
+                        : 'text-foreground/70 hover:text-foreground hover:bg-muted/50'
+                    }`}
                   >
-                    {cat.heading}
-                    {isOpen && (
-                      <svg className="ml-1 w-4 h-4 text-primary" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
-                    )}
+                    {mode.label}
                   </button>
-                  {isOpen && (
-                    <div className="flex flex-row gap-1 w-full justify-center mt-2 mb-1 px-3 py-2" style={{background:'transparent',border:'none',boxShadow:'none'}}>
-                      {cat.sub.map((item) => {
-                        const isActive = currentMode === item.value;
-                        return (
-                          <button
-                            key={item.value}
-                            className={`px-3 py-1 rounded-lg font-medium text-sm transition-all duration-150 flex-shrink-0 whitespace-nowrap ${isActive ? 'bg-primary text-primary-foreground' : 'text-foreground/80 hover:bg-muted'}`}
-                            style={{ minWidth: 40 }}
-                            onClick={() => { 
-                              handleModeChange(String(item.value)); 
-                              setOpenCategory(null); 
-                              setOpenSetting(null); // Also close Duration/Difficulty when selecting a mode
-                            }}
-                          >
-                            {item.label}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  )}
-                </React.Fragment>
-              );
-            })}
-            {/* Duration and Difficulty controls */}
-            <div className="flex flex-row items-center gap-1 ml-4">
-              {/* Duration - Only available for 'time' mode */}
-              {currentMode === 'time' ? (
-                <>
-              <button
-                    className={`px-2 py-1 text-base font-medium border-none bg-transparent outline-none whitespace-nowrap transition-colors duration-150 flex-shrink-0 ${openSetting === 'duration' ? 'text-primary underline underline-offset-4' : 'text-foreground/60 hover:text-foreground'}`}
-                    onClick={() => {
-                      setOpenSetting(openSetting === 'duration' ? null : 'duration');
-                      setOpenCategory(null); // Close categories when opening Duration
-                    }}
-                style={{ minWidth: 48 }}
-              >
-                Duration
-              </button>
-              {openSetting === 'duration' && [15, 30, 60, 120].map(sec => (
-                <button
-                  key={sec}
-                      className={`px-2 py-1 rounded-lg font-medium transition-all duration-150 flex-shrink-0 whitespace-nowrap ${timeLimit === Number(sec) ? 'bg-primary text-primary-foreground' : 'text-foreground/80 hover:bg-muted'}`}
-                  style={{ minWidth: 40 }}
-                  onClick={() => { setTimeLimit(Number(sec)); resetTest(Number(sec)); setOpenSetting(null); }}
-                >
-                  {sec + 's'}
-                </button>
-              ))}
-                </>
-              ) : (
-                <div className="relative group">
-              <button
-                    className="px-2 py-1 text-base font-medium border-none bg-transparent outline-none whitespace-nowrap transition-colors duration-150 flex-shrink-0 text-muted-foreground cursor-not-allowed opacity-50"
-                    style={{ minWidth: 48 }}
-                    disabled
-                    title={`Duration is only available for Timed mode. Current mode: ${currentMode === 'words' ? 'Words' : currentMode === 'quote' ? 'Quotes' : currentMode === 'zen' ? 'Zen' : currentMode === 'coding' ? 'Coding' : currentMode === 'custom' ? 'Custom' : currentMode === 'zenwriting' ? 'Zen Writing' : currentMode === 'god' ? 'God Mode' : currentMode === 'syntax' ? 'Syntax' : currentMode === 'essay' ? 'Essay' : currentMode === 'notimer' ? 'No Timer' : currentMode === 'softtheme' ? 'Soft Theme' : currentMode === 'hardwords' ? 'Hard Words' : currentMode === 'foreign' ? 'Foreign Language' : 'Other'}`}
+                );
+              })}
+            </div>
+
+            {/* Divider */}
+            <div className="w-px h-5 bg-border/50 mx-1" />
+
+            {/* Duration/Word Count - Only show relevant options */}
+            {currentMode === 'time' ? (
+              <div className="flex items-center gap-1">
+                {[15, 30, 60, 120].map(sec => (
+                  <button
+                    key={sec}
+                    onClick={() => { setTimeLimit(sec); resetTest(sec); }}
+                    className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
+                      timeLimit === sec
+                        ? 'bg-primary text-primary-foreground'
+                        : 'text-foreground/70 hover:text-foreground hover:bg-muted/50'
+                    }`}
                   >
-                    Duration
+                    {sec}
                   </button>
-                  <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-card text-foreground text-xs rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50 border border-border">
-                    Duration only works with Timed mode
-                    <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1">
-                      <div className="border-4 border-transparent border-t-slate-800"></div>
-                    </div>
-                  </div>
-                </div>
-              )}
-              <button
-                className={`px-2 py-1 text-base font-medium border-none bg-transparent outline-none whitespace-nowrap transition-colors duration-150 flex-shrink-0 ${openSetting === 'difficulty' ? 'text-primary underline underline-offset-4' : 'text-foreground/60 hover:text-foreground'}`}
-                onClick={() => {
-                  setOpenSetting(openSetting === 'difficulty' ? null : 'difficulty');
-                  setOpenCategory(null); // Close categories when opening Difficulty
-                }}
-                style={{ minWidth: 48 }}
-              >
-                Difficulty
-              </button>
-              {openSetting === 'difficulty' && [
+                ))}
+              </div>
+            ) : currentMode === 'words' ? (
+              <div className="flex items-center gap-1">
+                {[10, 25, 50, 100].map(words => (
+                  <button
+                    key={words}
+                    onClick={() => { setWordLimit(words); resetTest(); }}
+                    className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
+                      wordLimit === words
+                        ? 'bg-primary text-primary-foreground'
+                        : 'text-foreground/70 hover:text-foreground hover:bg-muted/50'
+                    }`}
+                  >
+                    {words}
+                  </button>
+                ))}
+              </div>
+            ) : null}
+
+            {/* Divider */}
+            {(currentMode === 'time' || currentMode === 'words') && (
+              <div className="w-px h-5 bg-border/50 mx-1" />
+            )}
+
+            {/* Toggles - Punctuation & Numbers */}
+            <button
+              onClick={() => setIncludePunctuation(!includePunctuation)}
+              className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
+                includePunctuation
+                  ? 'bg-primary/20 text-primary border border-primary/30'
+                  : 'text-foreground/70 hover:text-foreground hover:bg-muted/50'
+              }`}
+            >
+              @ punctuation
+            </button>
+            <button
+              onClick={() => setIncludeNumbers(!includeNumbers)}
+              className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
+                includeNumbers
+                  ? 'bg-primary/20 text-primary border border-primary/30'
+                  : 'text-foreground/70 hover:text-foreground hover:bg-muted/50'
+              }`}
+            >
+              # numbers
+            </button>
+
+            {/* Divider */}
+            <div className="w-px h-5 bg-border/50 mx-1" />
+
+            {/* Difficulty - Compact */}
+            <div className="flex items-center gap-1">
+              {[
                 { label: 'Easy', value: 'short' },
                 { label: 'Classic', value: 'medium' },
                 { label: 'Epic', value: 'long' },
@@ -2321,9 +2294,12 @@ const Index = () => {
               ].map(item => (
                 <button
                   key={item.value}
-                  className={`px-2 py-1 rounded-lg font-medium transition-all duration-150 flex-shrink-0 whitespace-nowrap ${difficulty === String(item.value) ? 'bg-primary text-primary-foreground' : 'text-foreground/80 hover:bg-muted'}`}
-                  style={{ minWidth: 40 }}
-                  onClick={() => { setDifficulty(String(item.value)); resetTest(); setOpenSetting(null); }}
+                  onClick={() => { setDifficulty(item.value); resetTest(); }}
+                  className={`px-2 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
+                    difficulty === item.value
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-foreground/70 hover:text-foreground hover:bg-muted/50'
+                  }`}
                 >
                   {item.label}
                 </button>
@@ -2334,7 +2310,7 @@ const Index = () => {
           )}
         </AnimatePresence>
 
-        {/* Mobile Settings Drawer */}
+        {/* Mobile Settings Drawer - Premium & Modern */}
         <AnimatePresence>
           {mobileDrawerOpen && (
             <>
@@ -2344,7 +2320,7 @@ const Index = () => {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.2 }}
-                className="fixed bg-black/80 backdrop-blur-sm z-[60] sm:hidden"
+                className="fixed bg-black/50 z-[60] sm:hidden"
                 onClick={() => setMobileDrawerOpen(false)}
                 style={{ top: 0, left: 0, right: 0, bottom: 0, zIndex: 60, margin: 0, padding: 0 }}
               />
@@ -2354,7 +2330,7 @@ const Index = () => {
                 animate={{ x: 0 }}
                 exit={{ x: '100%' }}
                 transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-                className="fixed right-0 w-full max-w-sm bg-background border-l border-border z-[70] sm:hidden flex flex-col shadow-2xl"
+                className="fixed right-0 w-full max-w-sm bg-background border-l border-border z-[70] sm:hidden flex flex-col shadow-lg"
                 style={{ 
                   top: 0, 
                   left: 'auto', 
@@ -2362,28 +2338,27 @@ const Index = () => {
                   height: '100dvh',
                   minHeight: '100vh',
                   zIndex: 70, 
-                  backgroundColor: '#0f172a', 
                   margin: 0, 
                   padding: 0,
                   paddingTop: 0,
                   marginTop: 0
                 }}
               >
-                {/* Header */}
-                <div className="flex items-center justify-between p-4 border-b border-border bg-background" style={{ marginTop: 0, paddingTop: '1rem', paddingBottom: '1rem' }}>
-                  <h2 className="text-xl font-semibold text-foreground">Settings</h2>
+                {/* Header - Clean & Simple */}
+                <div className="flex items-center justify-between px-5 py-4 border-b border-border/50">
+                  <h2 className="text-base font-medium text-foreground">Settings</h2>
                   <button
                     onClick={() => setMobileDrawerOpen(false)}
-                    className="p-2 rounded-lg hover:bg-card text-muted-foreground hover:text-foreground transition-colors"
+                    className="p-2 rounded-lg hover:bg-card/50 text-muted-foreground hover:text-foreground transition-colors"
                   >
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                     </svg>
                   </button>
                 </div>
 
-                {/* Content */}
-                <div className="flex-1 overflow-y-auto p-4 space-y-2">
+                {/* Content - Clean Scrollable */}
+                <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
                   {[
                     {
                       heading: 'Developers',
@@ -2429,18 +2404,18 @@ const Index = () => {
                     const isExpanded = mobileExpandedCategory === cat.heading;
                     const hasActive = cat.sub.some(item => currentMode === item.value);
                     return (
-                      <div key={cat.heading} className="border border-border rounded-lg overflow-hidden">
+                      <div key={cat.heading} className="rounded-lg overflow-hidden bg-card/50 border border-border/50">
                         <button
                           onClick={() => setMobileExpandedCategory(isExpanded ? null : cat.heading)}
-                          className={`w-full flex items-center justify-between p-4 text-left transition-colors ${
-                            hasActive ? 'bg-card/50' : 'bg-card/30 hover:bg-card/50'
+                          className={`w-full flex items-center justify-between px-4 py-3 text-left transition-colors ${
+                            hasActive ? 'bg-card' : 'hover:bg-card/70'
                           }`}
                         >
-                          <span className={`font-medium ${hasActive ? 'text-primary' : 'text-foreground'}`}>
+                          <span className={`text-sm font-medium ${hasActive ? 'text-primary' : 'text-foreground'}`}>
                             {cat.heading}
                           </span>
                           <svg
-                            className={`w-5 h-5 text-muted-foreground transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                            className={`w-4 h-4 text-muted-foreground transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
                             fill="none"
                             stroke="currentColor"
                             strokeWidth="2"
@@ -2450,7 +2425,7 @@ const Index = () => {
                           </svg>
                         </button>
                         {isExpanded && (
-                          <div className="p-2 space-y-1 bg-card/20">
+                          <div className="px-2 py-2 space-y-1 bg-card/30">
                             {cat.sub.map((item) => {
                               const isActive = currentMode === item.value;
                               return (
@@ -2463,10 +2438,10 @@ const Index = () => {
                                       setMobileDrawerOpen(false);
                                     }
                                   }}
-                                  className={`w-full text-left px-4 py-2.5 rounded-lg transition-all ${
+                                  className={`w-full text-left px-4 py-2.5 rounded-lg text-sm transition-colors ${
                                     isActive
-                                      ? 'bg-primary text-primary-foreground font-semibold'
-                                      : 'text-foreground/80 hover:bg-muted/50'
+                                      ? 'bg-primary text-primary-foreground font-medium'
+                                      : 'text-foreground/70 hover:text-foreground hover:bg-card/50'
                                   }`}
                                 >
                                   {item.label}
@@ -2481,9 +2456,9 @@ const Index = () => {
 
                   {/* Duration - Only for time mode */}
                   {currentMode === 'time' && (
-                    <div className="border border-border rounded-lg overflow-hidden mt-4">
-                      <div className="p-4 bg-card/30">
-                        <h3 className="font-medium text-foreground mb-3">Duration</h3>
+                    <div className="rounded-lg overflow-hidden bg-card/50 border border-border/50">
+                      <div className="p-4">
+                        <h3 className="text-sm font-medium text-foreground mb-3">Duration</h3>
                         <div className="grid grid-cols-4 gap-2">
                           {[15, 30, 60, 120].map((sec) => (
                             <button
@@ -2492,10 +2467,10 @@ const Index = () => {
                                 setTimeLimit(Number(sec));
                                 resetTest(Number(sec));
                               }}
-                              className={`py-2.5 rounded-lg font-medium transition-all ${
+                              className={`py-2.5 rounded-lg text-sm font-medium transition-colors ${
                                 timeLimit === sec
-                                  ? 'bg-primary text-primary-foreground font-semibold'
-                                  : 'bg-muted/50 text-foreground/80 hover:bg-muted'
+                                  ? 'bg-primary text-primary-foreground'
+                                  : 'bg-muted/50 text-foreground/70 hover:text-foreground hover:bg-muted'
                               }`}
                             >
                               {sec}s
@@ -2507,9 +2482,9 @@ const Index = () => {
                   )}
 
                   {/* Difficulty */}
-                  <div className="border border-slate-700 rounded-lg overflow-hidden mt-4">
-                    <div className="p-4 bg-slate-800/30">
-                      <h3 className="font-medium text-foreground mb-3">Difficulty</h3>
+                  <div className="rounded-lg overflow-hidden bg-card/50 border border-border/50">
+                    <div className="p-4">
+                      <h3 className="text-sm font-medium text-foreground mb-3">Difficulty</h3>
                       <div className="grid grid-cols-2 gap-2">
                         {[
                           { label: 'Easy', value: 'short' },
@@ -2524,10 +2499,10 @@ const Index = () => {
                               resetTest();
                               setMobileDrawerOpen(false);
                             }}
-                            className={`py-2.5 rounded-lg font-medium transition-all ${
+                            className={`py-2.5 rounded-lg text-sm font-medium transition-colors ${
                               difficulty === String(item.value)
-                                ? 'bg-primary text-primary-foreground font-semibold'
-                                : 'bg-muted/50 text-foreground/80 hover:bg-muted'
+                                ? 'bg-primary text-primary-foreground'
+                                : 'bg-muted/50 text-foreground/70 hover:text-foreground hover:bg-muted'
                             }`}
                           >
                             {item.label}
@@ -2541,21 +2516,31 @@ const Index = () => {
             </>
           )}
         </AnimatePresence>
-        {/* Timer Display */}
+        {/* Timer Display - Minimal & Clean */}
         {currentMode === 'time' && (
-          <div className="flex justify-center mt-8">
-            <span
-              className={`text-6xl font-extrabold transition-all duration-300 ${isTyping ? 'text-primary' : 'text-muted-foreground opacity-70'}`}
-              style={{ letterSpacing: '0.05em' }}
-            >
-            {timeLeft}
-            </span>
-          </div>
+          <AnimatePresence>
+            {isTyping && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.2 }}
+                className="flex justify-center mb-4"
+              >
+                <span
+                  className="text-5xl font-bold text-primary transition-all duration-300"
+                  style={{ letterSpacing: '0.02em', fontVariantNumeric: 'tabular-nums' }}
+                >
+                  {timeLeft}
+                </span>
+              </motion.div>
+            )}
+          </AnimatePresence>
         )}
 
-        {/* Typing Area - maximum width with responsive padding */}
-        <div className="w-full px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24 2xl:px-32 flex flex-col items-center justify-center" style={{ maxWidth: '1800px' }}>
-          {/* Language Selector - centered above typing text, ultra-minimal - Hides when typing */}
+        {/* Typing Area - Wide & Clean */}
+        <div className="w-full px-4 sm:px-6 md:px-12 lg:px-16 xl:px-20 flex flex-col items-center justify-center" style={{ maxWidth: '1600px' }}>
+          {/* Language Selector - Minimal - Hides when typing */}
           <AnimatePresence>
             {!isTyping && (
               <motion.div
@@ -2566,21 +2551,21 @@ const Index = () => {
                 className="w-full flex justify-center mb-8"
               >
             <button
-                  className="flex items-center gap-2 text-foreground/80 hover:text-foreground text-base font-medium px-3 py-1 rounded-lg bg-card/80 border border-border shadow-sm transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="flex items-center gap-2 text-foreground/60 hover:text-foreground text-sm font-medium px-3 py-1.5 rounded-full bg-card/30 hover:bg-card/50 border border-border/30 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-primary/50"
               onClick={() => setLangModalOpen(true)}
               tabIndex={0}
               style={{ userSelect: 'none' }}
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3C7.03 3 3 7.03 3 12s4.03 9 9 9 9-4.03 9-9-4.03-9-9-9zm0 0c2.21 0 4 4.03 4 9s-1.79 9-4 9-4-4.03-4-9 1.79-9 4-9z" /></svg>
-              <span className="tracking-wide">Language: <span className="font-semibold lowercase">{[...globalLanguages, ...indianLanguages].find(l => l.value === language)?.label || language}</span></span>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3C7.03 3 3 7.03 3 12s4.03 9 9 9 9-4.03 9-9-4.03-9-9-9zm0 0c2.21 0 4 4.03 4 9s-1.79 9-4 9-4-4.03-4-9 1.79-9 4-9z" /></svg>
+              <span className="lowercase text-xs">{[...globalLanguages, ...indianLanguages].find(l => l.value === language)?.label || language}</span>
             </button>
               </motion.div>
             )}
           </AnimatePresence>
           {langModalOpen && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-              <div className="bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md mx-auto p-0 relative animate-fade-in">
-                <div className="flex items-center px-6 py-4 border-b border-slate-700">
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={() => setLangModalOpen(false)}>
+              <div className="bg-card border border-border rounded-xl shadow-2xl w-full max-w-md mx-4 p-0 relative animate-fade-in" onClick={(e) => e.stopPropagation()}>
+                <div className="flex items-center px-5 py-4 border-b border-border">
                   <svg xmlns='http://www.w3.org/2000/svg' className='h-5 w-5 text-muted-foreground mr-2' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 3C7.03 3 3 7.03 3 12s4.03 9 9 9 9-4.03 9-9-4.03-9-9-9zm0 0c2.21 0 4 4.03 4 9s-1.79 9-4 9-4-4.03-4-9 1.79-9 4-9z' /></svg>
                   <input
                     type="text"
@@ -2589,7 +2574,7 @@ const Index = () => {
                     value={langSearch}
                     onChange={e => setLangSearch(e.target.value)}
                   />
-                  <button className="ml-2 text-muted-foreground hover:text-foreground" onClick={() => setLangModalOpen(false)} aria-label="Close">
+                  <button className="ml-2 text-muted-foreground hover:text-foreground transition-colors" onClick={() => setLangModalOpen(false)} aria-label="Close">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                   </button>
                 </div>
@@ -2598,7 +2583,7 @@ const Index = () => {
                   {globalLanguages.filter(l => l.label.toLowerCase().includes(langSearch.toLowerCase())).map(l => (
                     <button
                       key={l.value}
-                      className={`w-full text-left px-6 py-2 text-foreground/80 hover:bg-muted focus:bg-muted transition-all duration-100 lowercase rounded-lg focus:outline-none ${language === l.value ? 'font-bold text-primary bg-muted' : ''}`}
+                      className={`w-full text-left px-5 py-2.5 text-sm text-foreground/80 hover:text-foreground hover:bg-muted/50 focus:bg-muted/50 transition-all duration-150 lowercase rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 ${language === l.value ? 'font-semibold text-primary bg-muted/70' : ''}`}
                       onClick={() => { setLanguage(l.value); setCurrentMode('words'); setLangModalOpen(false); setShowIndian(false); setLangSearch(""); }}
                       tabIndex={0}
                     >
@@ -2606,11 +2591,11 @@ const Index = () => {
                     </button>
                   ))}
                   {/* Divider for Indian languages */}
-                  <div className="px-6 py-2 text-xs text-muted-foreground uppercase tracking-wider">Indian Languages</div>
+                  <div className="px-5 py-2 text-xs text-muted-foreground uppercase tracking-wider font-medium">Indian Languages</div>
                   {indianLanguages.filter(l => l.label.toLowerCase().includes(langSearch.toLowerCase())).map(l => (
                     <button
                       key={l.value}
-                      className={`w-full text-left px-6 py-2 text-foreground/80 hover:bg-muted focus:bg-muted transition-all duration-100 lowercase rounded-lg focus:outline-none ${language === l.value ? 'font-bold text-primary bg-muted' : ''}`}
+                      className={`w-full text-left px-5 py-2.5 text-sm text-foreground/80 hover:text-foreground hover:bg-muted/50 focus:bg-muted/50 transition-all duration-150 lowercase rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 ${language === l.value ? 'font-semibold text-primary bg-muted/70' : ''}`}
                       onClick={() => { setLanguage(l.value); setCurrentMode('words'); setLangModalOpen(false); setShowIndian(false); setLangSearch(""); }}
                       tabIndex={0}
                     >
@@ -2625,7 +2610,7 @@ const Index = () => {
             ref={containerRef}
             onClick={handleContainerClick}
             className="mb-6 relative cursor-text w-full"
-            style={{ maxWidth: '100%' }}
+            style={{ maxWidth: '100%', width: '100%' }}
           >
             {/* Text Display */}
             <div
@@ -2658,15 +2643,15 @@ const Index = () => {
               className="absolute inset-0 w-full h-full bg-transparent text-transparent caret-transparent outline-none resize-none border-none p-0 m-0"
               style={{ 
                 zIndex: 5, 
-                height: 'calc(2.25rem * 1.8 * 3 + 32px)', // Match typing area height
+                height: 'calc(2.5rem * 1.9 * 3 + 40px)', // Match typing area height (updated for larger font)
                 color: 'transparent', 
                 background: 'transparent', 
                 overflow: 'hidden', 
                 caretColor: 'transparent',
                 fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace',
-                fontSize: 'clamp(1.5rem, 4.5vw, 2.25rem)',
-                lineHeight: '1.8',
-                padding: '16px',
+                fontSize: 'clamp(1.75rem, 5vw, 2.5rem)',
+                lineHeight: '1.9',
+                padding: '20px',
                 whiteSpace: 'normal',
                 wordBreak: 'normal',
                 overflowWrap: 'break-word',
@@ -2679,52 +2664,64 @@ const Index = () => {
               rows={1}
             />
           </div>
-          {/* Stats Display with XP and Streak inline */}
-          <div className="flex justify-center gap-6 sm:gap-10 md:gap-12 lg:gap-16 text-base w-full mx-auto flex-wrap px-4 mt-8 sm:mt-10 md:mt-12">
-            <div className="text-center px-2 sm:px-4">
-              <div className="text-2xl font-mono font-bold text-primary">{accuracy ?? 100}%</div>
-              <div className="text-sm text-muted-foreground mt-1">Accuracy</div>
+          {/* Stats Display - Clean & Modern - Shows during typing */}
+          {!showResults && (
+            <div className="flex justify-center gap-4 sm:gap-6 md:gap-8 w-full mx-auto flex-wrap px-4 mt-6">
+            <div className="text-center min-w-[70px] px-2 py-1.5">
+              <div className="text-xl sm:text-2xl font-mono font-bold text-primary leading-tight">
+                {typeof accuracy === 'number' && !isNaN(accuracy) ? Math.max(0, Math.min(100, accuracy)) : 100}%
+              </div>
+              <div className="text-xs text-muted-foreground mt-1 uppercase tracking-wide">Accuracy</div>
             </div>
-            <div className="text-center px-2 sm:px-4">
-              <div className="text-2xl font-mono font-bold text-red-400">{errors ?? 0}</div>
-              <div className="text-sm text-slate-400 mt-1">Errors</div>
+            <div className="text-center min-w-[70px] px-2 py-1.5">
+              <div className="text-xl sm:text-2xl font-mono font-bold text-red-400 leading-tight">
+                {typeof errors === 'number' && !isNaN(errors) ? errors : 0}
+              </div>
+              <div className="text-xs text-muted-foreground mt-1 uppercase tracking-wide">Errors</div>
             </div>
             {gamificationEnabled && gamification && (
-              <div className="text-center px-2 sm:px-4">
-                <div className="text-2xl font-mono font-bold text-primary">{gamification.streak ?? 0}</div>
-                <div className="text-sm text-slate-400 mt-1">Streak</div>
+              <div className="text-center min-w-[70px] px-2 py-1.5">
+                <div className="text-xl sm:text-2xl font-mono font-bold text-primary leading-tight">
+                  {gamification.streak && typeof gamification.streak === 'number' ? gamification.streak : 0}
+                </div>
+                <div className="text-xs text-muted-foreground mt-1 uppercase tracking-wide">Streak</div>
               </div>
             )}
             {gamificationEnabled && gamification && (
-              <div className="text-center px-2 sm:px-4">
-                <div className="text-2xl font-mono font-bold text-primary">{(gamification.xp ?? 0) % 100}</div>
-                <div className="text-sm text-slate-400 flex items-center justify-center gap-1 mt-1">XP
-                  <div className="w-12 h-1 bg-slate-700 rounded-full overflow-hidden ml-2">
-                    <motion.div
-                      className="h-1 bg-primary rounded-full"
-                      initial={false}
-                      animate={{ width: `${Math.min(100, Math.max(0, ((gamification.xp ?? 0) % 100)))}%` }}
-                      transition={{ type: 'spring', stiffness: 200, damping: 24 }}
-                    />
-                  </div>
+              <div className="text-center min-w-[90px] px-2 py-1.5">
+                <div className="text-xl sm:text-2xl font-mono font-bold text-primary leading-tight">
+                  {gamification.xp && typeof gamification.xp === 'number' ? (gamification.xp % 100) : 0}
+                </div>
+                <div className="text-xs text-muted-foreground mt-1 mb-1.5 uppercase tracking-wide">XP</div>
+                <div className="w-14 h-1 bg-muted/50 rounded-full overflow-hidden mx-auto">
+                  <motion.div
+                    className="h-full bg-primary rounded-full"
+                    initial={false}
+                    animate={{ 
+                      width: `${Math.min(100, Math.max(0, gamification.xp && typeof gamification.xp === 'number' ? (gamification.xp % 100) : 0))}%` 
+                    }}
+                    transition={{ type: 'spring', stiffness: 200, damping: 24 }}
+                  />
                 </div>
               </div>
             )}
           </div>
-          {/* Reset Button */}
+          )}
+          {/* Reset Button - Clean & Minimal */}
+          {!isTyping && (
           <div className="mt-6 flex justify-center w-full">
             <button
               onClick={() => resetTest()}
               disabled={showResults}
-              className="flex items-center gap-3 px-6 py-3 text-foreground/80 hover:text-foreground hover:bg-card rounded-lg transition-all duration-200 hover:scale-105 mx-auto disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-              style={{ display: 'flex' }}
+              className="flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-foreground/70 hover:text-foreground hover:bg-card/50 rounded-lg border border-border/50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               aria-label="Reset typing test"
             >
-              <RotateCcw className="w-5 h-5" />
-              <span className="font-medium">Reset Test</span>
-              <span className="text-sm text-muted-foreground">(Tab + Shift)</span>
+              <RotateCcw className="w-4 h-4" />
+              <span>Reset Test</span>
+              <span className="text-xs text-muted-foreground ml-1">(Tab + Shift)</span>
             </button>
           </div>
+          )}
         </div>
       </div>
       {/* Footer - Hides when typing */}

@@ -42,13 +42,13 @@ export default function Contact() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
       <div className="flex-1 w-full max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         {/* Mobile Back Button */}
         <button
           onClick={() => navigate(-1)}
-          className="sm:hidden mb-6 flex items-center gap-2 text-slate-400 hover:text-slate-100 transition-colors"
+          className="sm:hidden mb-6 flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
           aria-label="Go back"
         >
           <ArrowLeft className="w-5 h-5" />
@@ -56,103 +56,103 @@ export default function Contact() {
         </button>
 
         <div className="w-full max-w-md mx-auto">
-          <div className="text-center mb-6">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-700 mb-4">
-          <Mail className="w-8 h-8 text-primary" />
-        </div>
-        <h1 className="text-2xl font-bold text-slate-100 mb-2">Contact Us</h1>
-        <p className="text-sm text-slate-400">
-          Have a question or feedback? We'd love to hear from you.
-        </p>
-      </div>
-
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label htmlFor="name" className="block text-sm font-medium text-slate-300 mb-1">
-            Name
-          </label>
-          <input
-            id="name"
-            type="text"
-            placeholder="Your name"
-            className="w-full border border-slate-600 bg-slate-700 text-slate-100 placeholder-slate-400 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
-            value={name}
-            onChange={e => setName(e.target.value)}
-            required
-          />
-        </div>
-
-        <div>
-          <label htmlFor="email" className="block text-sm font-medium text-slate-300 mb-1">
-            Email
-          </label>
-          <input
-            id="email"
-            type="email"
-            placeholder="your.email@example.com"
-            className="w-full border border-slate-600 bg-slate-700 text-slate-100 placeholder-slate-400 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            required
-          />
-        </div>
-
-        <div>
-          <label htmlFor="message" className="block text-sm font-medium text-slate-300 mb-1">
-            Message
-          </label>
-          <textarea
-            id="message"
-            placeholder="Tell us what's on your mind..."
-            rows={5}
-            className="w-full border border-slate-600 bg-slate-700 text-slate-100 placeholder-slate-400 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition resize-none"
-            value={message}
-            onChange={e => setMessage(e.target.value)}
-            required
-          />
-        </div>
-
-        <button
-          type="submit"
-          className="w-full bg-primary text-slate-900 rounded-lg px-6 py-3 font-semibold hover:opacity-90 transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-          disabled={status === 'loading'}
-        >
-          {status === 'loading' ? (
-            <>
-              <div className="w-4 h-4 border-2 border-slate-900 border-t-transparent rounded-full animate-spin" />
-              Sending...
-            </>
-          ) : (
-            <>
-              <Send className="w-4 h-4" />
-              Send Message
-            </>
-          )}
-        </button>
-
-        {status === 'success' && (
-          <div className="flex items-center gap-2 text-green-300 text-sm p-3 bg-green-900/30 rounded-lg border border-green-500/50">
-            <CheckCircle className="w-5 h-5" />
-            <span>Message sent successfully! We'll get back to you soon.</span>
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-card border border-border mb-4">
+              <Mail className="w-8 h-8 text-primary" />
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">Contact Us</h1>
+            <p className="text-sm sm:text-base text-muted-foreground">
+              Have a question or feedback? We'd love to hear from you.
+            </p>
           </div>
-        )}
 
-        {status === 'error' && (
-          <div className="flex items-center gap-2 text-red-300 text-sm p-3 bg-red-900/30 rounded-lg border border-red-500/50">
-            <AlertCircle className="w-5 h-5" />
-            <span>Something went wrong. Please try again or email us directly at support@typingthrust.com</span>
+          <form onSubmit={handleSubmit} className="space-y-5 bg-card/50 rounded-xl border border-border/50 p-6 sm:p-8">
+            <div>
+              <label htmlFor="name" className="block text-sm font-medium text-foreground mb-2">
+                Name
+              </label>
+              <input
+                id="name"
+                type="text"
+                placeholder="Your name"
+                className="w-full border border-border bg-background text-foreground placeholder-muted-foreground rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
+                value={name}
+                onChange={e => setName(e.target.value)}
+                required
+              />
+            </div>
+
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
+                Email
+              </label>
+              <input
+                id="email"
+                type="email"
+                placeholder="your.email@example.com"
+                className="w-full border border-border bg-background text-foreground placeholder-muted-foreground rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                required
+              />
+            </div>
+
+            <div>
+              <label htmlFor="message" className="block text-sm font-medium text-foreground mb-2">
+                Message
+              </label>
+              <textarea
+                id="message"
+                placeholder="Tell us what's on your mind..."
+                rows={5}
+                className="w-full border border-border bg-background text-foreground placeholder-muted-foreground rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition resize-none"
+                value={message}
+                onChange={e => setMessage(e.target.value)}
+                required
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="w-full bg-primary text-primary-foreground rounded-lg px-6 py-3 font-semibold hover:opacity-90 transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={status === 'loading'}
+            >
+              {status === 'loading' ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
+                  Sending...
+                </>
+              ) : (
+                <>
+                  <Send className="w-4 h-4" />
+                  Send Message
+                </>
+              )}
+            </button>
+
+            {status === 'success' && (
+              <div className="flex items-center gap-2 text-green-400 text-sm p-3 bg-green-500/10 rounded-lg border border-green-500/30">
+                <CheckCircle className="w-5 h-5" />
+                <span>Message sent successfully! We'll get back to you soon.</span>
+              </div>
+            )}
+
+            {status === 'error' && (
+              <div className="flex items-center gap-2 text-red-400 text-sm p-3 bg-red-500/10 rounded-lg border border-red-500/30">
+                <AlertCircle className="w-5 h-5" />
+                <span>Something went wrong. Please try again or email us directly at support@typingthrust.com</span>
+              </div>
+            )}
+          </form>
+
+          <div className="mt-6 pt-6 border-t border-border">
+            <p className="text-xs sm:text-sm text-muted-foreground text-center">
+              You can also reach us directly at{' '}
+              <a href="mailto:support@typingthrust.com" className="text-primary hover:underline font-medium">
+                support@typingthrust.com
+              </a>
+            </p>
           </div>
-        )}
-      </form>
-
-      <div className="mt-6 pt-6 border-t border-slate-700">
-        <p className="text-xs text-slate-400 text-center">
-          You can also reach us directly at{' '}
-          <a href="mailto:support@typingthrust.com" className="text-primary hover:underline font-medium">
-            support@typingthrust.com
-          </a>
-        </p>
-      </div>
         </div>
       </div>
       <Footer />
