@@ -15,6 +15,8 @@ import { ContentLibraryProvider } from './components/ContentLibraryProvider';
 import ContentLibraryOverlay from './components/overlays/ContentLibraryOverlay';
 import { ZenModeProvider } from './components/ZenModeProvider';
 import { AuthProvider } from './components/AuthProvider';
+import { ThemeProvider } from './components/ThemeProvider';
+import ThemeSelector from './components/ThemeSelector';
 import AuthOverlay from './components/overlays/AuthOverlay';
 import GrowthToolsOverlay from './components/overlays/GrowthToolsOverlay';
 import Widget from "./pages/Widget";
@@ -56,21 +58,24 @@ const App = () => {
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <OverlayProvider>
-          <AuthProvider>
-            <PersonalizationProvider>
-              <GamificationProvider>
-                <LeaderboardProvider>
-                  <ContentLibraryProvider>
-                    <ZenModeProvider>
-                      <AppContent />
-                    </ZenModeProvider>
-                  </ContentLibraryProvider>
-                </LeaderboardProvider>
-              </GamificationProvider>
-            </PersonalizationProvider>
-          </AuthProvider>
-        </OverlayProvider>
+        <ThemeProvider>
+          <OverlayProvider>
+            <AuthProvider>
+              <PersonalizationProvider>
+                <GamificationProvider>
+                  <LeaderboardProvider>
+                    <ContentLibraryProvider>
+                      <ZenModeProvider>
+                        <AppContent />
+                        <ThemeSelector />
+                      </ZenModeProvider>
+                    </ContentLibraryProvider>
+                  </LeaderboardProvider>
+                </GamificationProvider>
+              </PersonalizationProvider>
+            </AuthProvider>
+          </OverlayProvider>
+        </ThemeProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );

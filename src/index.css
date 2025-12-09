@@ -59,7 +59,7 @@ All colors MUST be HSL.
     --popover: 215 28% 16.9%; /* slate-800 */
     --popover-foreground: 210 40% 98%; /* slate-100 */
 
-    --primary: 180 80% 60%; /* cyan-400 */
+    --primary: var(--theme-primary, 217 91% 60%); /* Uses theme color, defaults to blue-500 */
     --primary-foreground: 222.2 47.4% 11.2%; /* slate-900 */
 
     --secondary: 215 25.9% 16.9%; /* slate-700 */
@@ -76,15 +76,64 @@ All colors MUST be HSL.
 
     --border: 215 25.9% 16.9%; /* slate-700 */
     --input: 215 25.9% 16.9%; /* slate-700 */
-    --ring: 180 80% 60%; /* cyan-400 */
+    --ring: var(--theme-primary, 217 91% 60%); /* Uses theme color */
     --sidebar-background: 222.2 47.4% 11.2%; /* slate-900 */
     --sidebar-foreground: 210 40% 98%; /* slate-100 */
-    --sidebar-primary: 180 80% 60%; /* cyan-400 */
+    --sidebar-primary: var(--theme-primary, 217 91% 60%); /* Uses theme color */
     --sidebar-primary-foreground: 222.2 47.4% 11.2%; /* slate-900 */
     --sidebar-accent: 215 28% 16.9%; /* slate-800 */
     --sidebar-accent-foreground: 210 40% 98%; /* slate-100 */
     --sidebar-border: 215 25.9% 16.9%; /* slate-700 */
-    --sidebar-ring: 180 80% 60%; /* cyan-400 */
+    --sidebar-ring: var(--theme-primary, 217 91% 60%); /* Uses theme color */
+  }
+
+  /* Theme color variations */
+  [data-theme="blue"] {
+    --theme-primary: 217 91% 60%; /* blue-500 - solid blue */
+    --theme-primary-hover: 217 91% 55%; /* blue-600 */
+    --theme-primary-light: 217 91% 70%; /* blue-400 */
+  }
+
+  [data-theme="green"] {
+    --theme-primary: 142 71% 45%; /* green-600 - solid green */
+    --theme-primary-hover: 142 71% 40%; /* green-700 */
+    --theme-primary-light: 142 71% 55%; /* green-500 */
+  }
+
+  [data-theme="purple"] {
+    --theme-primary: 262 83% 58%; /* purple-600 - solid purple */
+    --theme-primary-hover: 262 83% 53%; /* purple-700 */
+    --theme-primary-light: 262 83% 63%; /* purple-500 */
+  }
+
+  [data-theme="orange"] {
+    --theme-primary: 25 95% 53%; /* orange-500 - solid orange */
+    --theme-primary-hover: 25 95% 48%; /* orange-600 */
+    --theme-primary-light: 25 95% 58%; /* orange-400 */
+  }
+
+  [data-theme="red"] {
+    --theme-primary: 0 72% 51%; /* red-600 - solid red */
+    --theme-primary-hover: 0 72% 46%; /* red-700 */
+    --theme-primary-light: 0 72% 56%; /* red-500 */
+  }
+
+  [data-theme="teal"] {
+    --theme-primary: 173 80% 40%; /* teal-700 - solid teal */
+    --theme-primary-hover: 173 80% 35%; /* teal-800 */
+    --theme-primary-light: 173 80% 45%; /* teal-600 */
+  }
+
+  [data-theme="indigo"] {
+    --theme-primary: 239 84% 67%; /* indigo-500 - solid indigo */
+    --theme-primary-hover: 239 84% 62%; /* indigo-600 */
+    --theme-primary-light: 239 84% 72%; /* indigo-400 */
+  }
+
+  [data-theme="pink"] {
+    --theme-primary: 330 81% 60%; /* pink-500 - solid pink */
+    --theme-primary-hover: 330 81% 55%; /* pink-600 */
+    --theme-primary-light: 330 81% 65%; /* pink-400 */
   }
 }
 
@@ -190,7 +239,8 @@ All colors MUST be HSL.
 
 /* Focus styles for accessibility */
 .focus-visible {
-  @apply outline-none ring-2 ring-cyan-500 ring-offset-2;
+  @apply outline-none ring-2 ring-offset-2;
+  --tw-ring-color: hsl(var(--theme-primary));
 }
 
 /* Remove focus rings from logo links */
