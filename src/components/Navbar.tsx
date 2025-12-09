@@ -54,7 +54,7 @@ const Navbar: React.FC = () => {
           <div className="hidden lg:flex items-center gap-2">
             {/* Gamification Toggle */}
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700">
-              <Award className="w-4 h-4 text-cyan-400" />
+              <Award className="w-4 h-4 text-primary" />
               <span className="text-sm font-medium text-slate-200">Gamification</span>
               <Switch 
                 checked={state.gamificationEnabled} 
@@ -103,7 +103,7 @@ const Navbar: React.FC = () => {
           <div className="flex lg:hidden items-center gap-2">
             {/* Mobile Gamification Toggle - Always visible */}
             <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-slate-800 border border-slate-700 mr-2">
-              <Award className="w-4 h-4 text-cyan-400" />
+              <Award className="w-4 h-4 text-primary" />
               <Switch 
                 checked={state.gamificationEnabled} 
                 onCheckedChange={setGamificationEnabled}
@@ -113,7 +113,7 @@ const Navbar: React.FC = () => {
             
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 rounded-lg hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition-colors"
+              className="p-2 rounded-lg hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
               aria-label="Toggle menu"
               aria-expanded={mobileMenuOpen}
             >
@@ -147,7 +147,7 @@ const Navbar: React.FC = () => {
               }}
               className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-slate-200 hover:bg-slate-800 rounded-lg transition-colors"
             >
-              <Users className="w-5 h-5 text-cyan-400" />
+              <Users className="w-5 h-5 text-primary" />
               <span className="font-medium">Leaderboard</span>
             </button>
 
@@ -157,7 +157,7 @@ const Navbar: React.FC = () => {
               onClick={handleProfileClick}
               className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-slate-200 hover:bg-slate-800 rounded-lg transition-colors"
             >
-              <UserIcon className="w-5 h-5 text-cyan-400" />
+              <UserIcon className="w-5 h-5 text-primary" />
               <span className="font-medium">
                 {user && user.id !== 'guest' ? 'Profile' : 'Sign In'}
               </span>

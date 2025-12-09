@@ -70,7 +70,7 @@ function ShareModal({ open, onClose, link }: { open: boolean; onClose: () => voi
         />
         <div className="flex gap-2 w-full mb-3">
           <button
-            className={`flex-1 px-3 py-2 rounded-lg font-semibold text-slate-900 ${copied ? 'bg-slate-600' : 'bg-cyan-500 hover:bg-cyan-400'}`}
+            className={`flex-1 px-3 py-2 rounded-lg font-semibold text-slate-900 ${copied ? 'bg-slate-600' : 'bg-primary hover:opacity-90'}`}
             onClick={() => {
               navigator.clipboard.writeText(link);
               setCopied(true);
@@ -126,20 +126,20 @@ export default function LeaderboardOverlay() {
       <section className="w-full flex flex-col gap-6 items-center">
         <header className="w-full flex flex-row items-center justify-between mb-2 pr-14">
           <h1 className="text-2xl font-bold text-slate-100">Leaderboard</h1>
-          <button
-            className="flex items-center gap-1 px-4 py-2 rounded-lg bg-cyan-500 text-slate-900 font-semibold hover:bg-cyan-400 transition"
-            onClick={() => setShareOpen(true)}
-            aria-label="Share leaderboard"
-          >
-            <Share2 className="w-5 h-5" /> Share
-          </button>
+            <button
+              className="flex items-center gap-1 px-4 py-2 rounded-lg bg-primary text-slate-900 font-semibold hover:opacity-90 transition"
+              onClick={() => setShareOpen(true)}
+              aria-label="Share leaderboard"
+            >
+              <Share2 className="w-5 h-5" /> Share
+            </button>
         </header>
         {/* Timeframe Filters */}
         <div className="flex gap-2 mb-4">
           {TIMEFRAMES.map(tf => (
             <button
               key={tf.value}
-              className={`px-3 py-1 rounded-full text-xs font-semibold ${state.timeframe === tf.value ? 'bg-cyan-500 text-slate-900' : 'bg-slate-700 text-slate-300'}`}
+              className={`px-3 py-1 rounded-full text-xs font-semibold ${state.timeframe === tf.value ? 'bg-primary text-slate-900' : 'bg-slate-700 text-slate-300'}`}
               onClick={() => setTimeframe(tf.value as any)}
             >
               {tf.label}
@@ -163,7 +163,7 @@ export default function LeaderboardOverlay() {
                     <UserIcon className="w-6 h-6" />
                   </span>
                   <span className="flex-1 truncate text-slate-100 text-base font-medium">{getDisplayName(entry)}</span>
-                  <span className="w-16 text-center text-cyan-400 font-mono text-base">{entry.wpm} WPM</span>
+                  <span className="w-16 text-center text-primary font-mono text-base">{entry.wpm} WPM</span>
                   <span className="w-14 text-center text-slate-400 font-mono text-sm">{entry.xp ?? 0} XP</span>
                 </li>
               ))}
@@ -173,14 +173,14 @@ export default function LeaderboardOverlay() {
         {/* Current User Row (if not in top 5) */}
         {userIdx > 4 && userEntry && (
           <div className="w-full flex flex-col items-center mt-2">
-            <div className="flex items-center gap-2 px-3 py-3 rounded-2xl shadow-sm border border-cyan-500 bg-slate-700 ring-2 ring-cyan-500/50 font-bold scale-[1.03]" style={{ minHeight: 56 }}>
-              <span className="w-8 text-center text-lg font-bold text-cyan-400 select-none">{userIdx + 1}</span>
-              <span className="w-10 h-10 rounded-full bg-cyan-500 flex items-center justify-center overflow-hidden text-slate-900 font-bold text-base">
+            <div className="flex items-center gap-2 px-3 py-3 rounded-2xl shadow-sm border border-primary bg-slate-700 ring-2 ring-primary/50 font-bold scale-[1.03]" style={{ minHeight: 56 }}>
+              <span className="w-8 text-center text-lg font-bold text-primary select-none">{userIdx + 1}</span>
+              <span className="w-10 h-10 rounded-full bg-primary flex items-center justify-center overflow-hidden text-slate-900 font-bold text-base">
                 <UserIcon className="w-6 h-6" />
               </span>
-              <span className="flex-1 truncate text-cyan-400 text-base font-medium">{getDisplayName(userEntry)}</span>
-              <span className="w-16 text-center text-cyan-400 font-mono text-base">{userEntry.wpm} WPM</span>
-              <span className="w-14 text-center text-cyan-400 font-mono text-sm">{userEntry.xp ?? 0} XP</span>
+              <span className="flex-1 truncate text-primary text-base font-medium">{getDisplayName(userEntry)}</span>
+              <span className="w-16 text-center text-primary font-mono text-base">{userEntry.wpm} WPM</span>
+              <span className="w-14 text-center text-primary font-mono text-sm">{userEntry.xp ?? 0} XP</span>
             </div>
             <span className="text-xs text-slate-400 mt-1">Your rank</span>
           </div>
