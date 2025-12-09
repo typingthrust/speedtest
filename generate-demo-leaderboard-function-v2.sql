@@ -1,22 +1,34 @@
--- Database function to generate demo leaderboard data
+-- Database function to generate demo leaderboard data (WORKING VERSION)
 -- Run this in Supabase SQL Editor to enable demo data generation
--- 
--- IMPORTANT: This function requires temporarily modifying the table constraint.
--- Run these commands FIRST before creating the function:
---
--- 1. Temporarily drop the foreign key constraint:
---    ALTER TABLE leaderboard DROP CONSTRAINT IF EXISTS leaderboard_user_id_fkey;
---
--- 2. Make user_id nullable temporarily:
---    ALTER TABLE leaderboard ALTER COLUMN user_id DROP NOT NULL;
---
--- 3. Then run this function creation script
---
--- 4. After testing, you can optionally restore the constraint:
---    ALTER TABLE leaderboard ALTER COLUMN user_id SET NOT NULL;
---    ALTER TABLE leaderboard ADD CONSTRAINT leaderboard_user_id_fkey 
---      FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+-- This version works around foreign key constraints
 
+-- STEP 1: First, temporarily modify the leaderboard table to allow demo entries
+-- Run this FIRST before creating the function:
+
+-- Option A: Temporarily make user_id nullable (run this first)
+-- ALTER TABLE leaderboard ALTER COLUMN user_id DROP NOT NULL;
+-- ALTER TABLE leaderboard DROP CONSTRAINT IF EXISTS leaderboard_user_id_fkey;
+
+-- Option B: Or create a separate demo_leaderboard table (recommended)
+CREATE TABLE IF NOT EXISTS demo_leaderboard (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  user_id UUID,
+  email TEXT,
+  wpm INTEGER NOT NULL,
+  xp INTEGER NOT NULL DEFAULT 0,
+  timeframe TEXT NOT NULL CHECK (timeframe IN ('weekly', 'monthly', 'yearly', 'all')),
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(user_id, timeframe)
+);
+
+-- Create a view that combines both tables
+CREATE OR REPLACE VIEW leaderboard_view AS
+SELECT * FROM leaderboard
+UNION ALL
+SELECT * FROM demo_leaderboard;
+
+-- STEP 2: Create the function to insert into demo_leaderboard
 CREATE OR REPLACE FUNCTION generate_demo_leaderboard_data()
 RETURNS void
 LANGUAGE plpgsql
@@ -43,8 +55,8 @@ DECLARE
   fake_user_id UUID;
   i INTEGER;
 BEGIN
-  -- First, delete any existing demo entries (identified by email pattern)
-  DELETE FROM leaderboard WHERE email LIKE '%@example.com';
+  -- First, delete any existing demo entries
+  DELETE FROM demo_leaderboard WHERE email LIKE '%@example.com';
   
   -- Loop through each timeframe
   FOR timeframe_val IN SELECT unnest(ARRAY['weekly', 'monthly', 'yearly', 'all']) LOOP
@@ -57,13 +69,13 @@ BEGIN
       
       -- Add some variation for different timeframes
       wpm_val := (demo_user->>'wpm')::INTEGER + (random() * 10 - 5)::INTEGER;
-      wpm_val := GREATEST(50, wpm_val); -- Ensure minimum WPM
+      wpm_val := GREATEST(50, wpm_val);
       
       xp_val := (demo_user->>'xp')::INTEGER + (random() * 500 - 250)::INTEGER;
-      xp_val := GREATEST(0, xp_val); -- Ensure non-negative XP
+      xp_val := GREATEST(0, xp_val);
       
-      -- Insert or update leaderboard entry
-      INSERT INTO leaderboard (user_id, email, wpm, xp, timeframe)
+      -- Insert into demo_leaderboard table (no foreign key constraint)
+      INSERT INTO demo_leaderboard (user_id, email, wpm, xp, timeframe)
       VALUES (
         fake_user_id,
         demo_user->>'email',
@@ -82,6 +94,9 @@ BEGIN
 END;
 $$;
 
--- Grant execute permission to authenticated users
+-- Grant execute permission
 GRANT EXECUTE ON FUNCTION generate_demo_leaderboard_data() TO authenticated;
+
+-- Grant select on demo_leaderboard
+GRANT SELECT ON demo_leaderboard TO authenticated;
 
