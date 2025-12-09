@@ -711,20 +711,20 @@ export default function Profile() {
         {/* Profile Header Section */}
         <div className="mb-8">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-            <div>
+            <div className="flex-1">
               <h1 className="text-3xl sm:text-4xl font-bold text-slate-100 mb-2">Profile</h1>
               <p className="text-slate-400 text-sm">Track your typing progress and achievements</p>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 flex-shrink-0">
               {user.avatar_url ? (
-                <img src={user.avatar_url} alt="avatar" className="w-12 h-12 rounded-full border-2 border-slate-600" />
+                <img src={user.avatar_url} alt="avatar" className="w-12 h-12 rounded-full border-2 border-slate-600 flex-shrink-0" />
               ) : (
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-cyan-500 to-cyan-600 flex items-center justify-center text-xl font-bold text-slate-900">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-cyan-500 to-cyan-600 flex items-center justify-center text-xl font-bold text-slate-900 flex-shrink-0">
                   {user.username ? user.username[0].toUpperCase() : (user.email ? user.email[0].toUpperCase() : '?')}
                 </div>
               )}
-              <div className="text-left">
-                <div className="text-sm font-semibold text-slate-100">{user.username || user.email || 'User'}</div>
+              <div className="text-left min-w-0">
+                <div className="text-sm font-semibold text-slate-100 truncate">{user.username || user.email || 'User'}</div>
                 <div className="text-xs text-slate-400">Level {level}</div>
               </div>
             </div>
@@ -760,20 +760,20 @@ export default function Profile() {
 
           {/* Level Progress Card */}
           <div className="bg-gradient-to-r from-slate-800 to-slate-800/50 rounded-xl border border-slate-700 p-6 mb-6">
-            <div className="flex items-center justify-between mb-4">
-              <div>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
+              <div className="flex-1">
                 <h3 className="text-lg font-semibold text-slate-100 mb-1">Level {level}</h3>
                 <p className="text-sm text-slate-400">{xp} XP • {progress}% to Level {level + 1}</p>
               </div>
               {badges && badges.length > 0 && (
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   {badges.slice(0, 3).map(badge => (
-                    <div key={badge} className="px-3 py-1 bg-cyan-500/20 text-cyan-400 rounded-lg text-xs font-semibold border border-cyan-500/30">
+                    <div key={badge} className="px-3 py-1 bg-cyan-500/20 text-cyan-400 rounded-lg text-xs font-semibold border border-cyan-500/30 whitespace-nowrap">
                       {badge}
                     </div>
                   ))}
                   {badges.length > 3 && (
-                    <div className="px-3 py-1 bg-slate-700 text-slate-400 rounded-lg text-xs font-semibold border border-slate-600">
+                    <div className="px-3 py-1 bg-slate-700 text-slate-400 rounded-lg text-xs font-semibold border border-slate-600 whitespace-nowrap">
                       +{badges.length - 3}
                     </div>
                   )}
@@ -792,11 +792,11 @@ export default function Profile() {
         {/* Filters */}
         <div className="mb-6">
           <div className="flex flex-wrap items-center gap-3 mb-4">
-            <span className="text-sm font-medium text-slate-400">Duration:</span>
+            <span className="text-sm font-medium text-slate-400 whitespace-nowrap">Duration:</span>
             {durations.map(d => (
               <button
                 key={d.value}
-                className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
                   selectedDuration === d.value
                     ? 'bg-cyan-500 text-slate-900 shadow-lg shadow-cyan-500/20'
                     : 'bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700'
@@ -808,11 +808,11 @@ export default function Profile() {
             ))}
           </div>
           <div className="flex flex-wrap items-center gap-3">
-            <span className="text-sm font-medium text-slate-400">Time Range:</span>
+            <span className="text-sm font-medium text-slate-400 whitespace-nowrap">Time Range:</span>
             {ranges.map(r => (
               <button
                 key={r.value}
-                className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
                   selectedRange === r.value
                     ? 'bg-cyan-500 text-slate-900 shadow-lg shadow-cyan-500/20'
                     : 'bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700'
@@ -1092,11 +1092,11 @@ function ModernStatCard({ icon: Icon, label, value, color = 'cyan' }: { icon: an
   
   return (
     <div className={`bg-slate-800/50 rounded-xl border ${colorClasses[color]} p-4 transition-all hover:scale-105`}>
-      <div className="flex items-center gap-3 mb-2">
-        <Icon className="w-5 h-5" />
-        <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">{label}</span>
+      <div className="flex items-center gap-2 mb-2">
+        <Icon className="w-5 h-5 flex-shrink-0" />
+        <span className="text-xs font-medium text-slate-400 uppercase tracking-wide leading-tight">{label}</span>
       </div>
-      <div className={`text-2xl font-bold ${colorClasses[color].split(' ')[0]}`}>{value}</div>
+      <div className={`text-2xl font-bold ${colorClasses[color].split(' ')[0]} leading-tight`}>{value}</div>
     </div>
   );
 }
@@ -1105,8 +1105,8 @@ function ModernStatCard({ icon: Icon, label, value, color = 'cyan' }: { icon: an
 function StatCard({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="bg-slate-800/50 rounded-xl border border-slate-700 p-4 hover:border-slate-600 transition-all">
-      <div className="text-xs font-medium text-slate-400 mb-1 uppercase tracking-wide">{label}</div>
-      <div className="text-xl font-bold text-cyan-400">{value}</div>
+      <div className="text-xs font-medium text-slate-400 mb-2 uppercase tracking-wide leading-tight">{label}</div>
+      <div className="text-xl font-bold text-cyan-400 leading-tight">{value}</div>
     </div>
   );
 }
