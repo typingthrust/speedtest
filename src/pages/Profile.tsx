@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../components/AuthProvider';
 import { usePersonalization } from '../components/PersonalizationProvider';
 import { useNavigate, Link } from 'react-router-dom';
-import { Keyboard, Bell, User as UserIcon, Award, Users, BookOpen, Rocket } from 'lucide-react';
+import { Keyboard, Bell, User as UserIcon, Award, Users, BookOpen, Rocket, TrendingUp, Target, Clock, Zap, BarChart3, Activity } from 'lucide-react';
 import { ExpandableTabs } from '../components/ui/expandable-tabs';
 import type { OverlayType } from '../components/OverlayProvider';
 import { Line, Bar } from 'react-chartjs-2';
@@ -114,7 +114,6 @@ function getTotalWords(history: any[]) {
 function getTopCategory(history: any[]) {
   const cat: Record<string, number> = {};
   history.forEach((h: any) => {
-    // Check both direct property and keystroke_stats for testType
     const type = h.testType || (h.keystroke_stats?.testType) || 'General';
     cat[type] = (cat[type] || 0) + 1;
   });
@@ -132,7 +131,6 @@ function filterHistory(history: any[], duration: string, range: string) {
   
   let filtered = [...history];
   
-  // Filter by duration (test length)
   if (duration !== 'all') {
     filtered = filtered.filter(h => {
       const hDuration = h.duration || h.time || 0;
@@ -140,7 +138,6 @@ function filterHistory(history: any[], duration: string, range: string) {
     });
   }
   
-  // Filter by range (date)
   if (range !== 'all') {
     const now = new Date();
     let cutoff = null;
@@ -151,7 +148,6 @@ function filterHistory(history: any[], duration: string, range: string) {
     
     if (cutoff) {
       filtered = filtered.filter(h => {
-        // Use timestamp or created_at as fallback
         const dateStr = h.timestamp || h.created_at;
         if (!dateStr) return false;
         try {
@@ -174,22 +170,16 @@ export default function Profile() {
   const { refreshLeaderboard } = useLeaderboard();
   const { openOverlay } = useOverlay();
   const navigate = useNavigate();
-  // Filter state
   const [selectedDuration, setSelectedDuration] = useState('all');
   const [selectedRange, setSelectedRange] = useState('all');
-  // Tab state for analytics
   const [selectedTab, setSelectedTab] = useState<'overview' | 'advanced'>('overview');
-  // Dialog state
   const [showDeleteProgress, setShowDeleteProgress] = useState(false);
   const [showDeleteAccount, setShowDeleteAccount] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  // Add state for advanced analytics tab
   const [activeAnalyticsTab, setActiveAnalyticsTab] = useState('Speed Trends');
-  // --- New: State for real per-test results ---
   const [testResults, setTestResults] = useState<any[]>([]);
   const [resultsLoading, setResultsLoading] = useState(true);
 
-  // Fetch all per-test results from Supabase on mount/user change
   const fetchResults = async () => {
     if (!user || !user.id) {
       setTestResults([]);
@@ -198,7 +188,6 @@ export default function Profile() {
     }
     setResultsLoading(true);
     try {
-      // Fetch with both created_at and timestamp fields
       const { data, error } = await supabase
         .from('test_results')
         .select('*')
@@ -210,27 +199,21 @@ export default function Profile() {
         console.error('Error fetching test results:', error);
         setTestResults([]);
       } else if (data && data.length > 0) {
-        // Normalize snake_case to camelCase for consistency
         const normalizedData = data.map((result: any) => ({
           ...result,
           keystrokeStats: result.keystroke_stats || result.keystrokeStats || {},
           errorTypes: result.error_types || result.errorTypes || {},
           wordCount: result.word_count || result.wordCount || 0,
           testType: result.test_type || result.testType || (result.keystroke_stats?.testType) || (result.keystrokeStats?.testType) || 'General',
-          // Ensure timestamp exists (use created_at as fallback)
           timestamp: result.timestamp || result.created_at || new Date().toISOString(),
-          // Ensure duration exists
           duration: result.duration || (result.time || 0),
-          // Ensure all required fields exist
           wpm: result.wpm || 0,
           accuracy: result.accuracy || 0,
           errors: result.errors || 0,
           time: result.time || 0,
         }));
-        console.log('Fetched test results:', normalizedData.length, normalizedData);
         setTestResults(normalizedData);
       } else {
-        console.log('No test results found');
         setTestResults([]);
       }
     } catch (err) {
@@ -245,7 +228,6 @@ export default function Profile() {
     fetchResults();
   }, [user?.id]);
 
-  // Refresh data when page becomes visible (user returns from typing test)
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (!document.hidden && user?.id) {
@@ -256,14 +238,12 @@ export default function Profile() {
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, [user?.id]);
 
-  // Redirect to home if not authenticated, but only after loading is complete
   useEffect(() => {
     if (!loading && !user) {
       navigate('/', { replace: true });
     }
   }, [user, loading, navigate]);
 
-  // Prevent profile data flash for non-logged-in users
   if (loading || resultsLoading) {
     return (
       <div className="min-h-screen bg-slate-900 flex flex-col">
@@ -277,14 +257,12 @@ export default function Profile() {
   if (!user) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-slate-900">
-        <div className="bg-slate-800 p-8 rounded shadow-md text-center border border-slate-700">
+        <div className="bg-slate-800 p-8 rounded-xl shadow-md text-center border border-slate-700">
           <h2 className="text-2xl font-bold mb-4 text-slate-100">No Account Found</h2>
           <p className="mb-6 text-slate-400">Please log in to access your profile and analytics.</p>
           <button
-            className="bg-cyan-500 text-slate-900 px-6 py-2 rounded font-semibold hover:bg-cyan-400 transition"
-            onClick={() => {
-              openOverlay('auth');
-            }}
+            className="bg-cyan-500 text-slate-900 px-6 py-2 rounded-lg font-semibold hover:bg-cyan-400 transition"
+            onClick={() => openOverlay('auth')}
           >
             Log In
           </button>
@@ -293,17 +271,13 @@ export default function Profile() {
     );
   }
 
-  // Use testResults as the only source for analytics
   const history = testResults;
-  // --- Use gamification state for level, XP, progress, streak, badges ---
   const level = gamificationState.level;
   const xp = gamificationState.xp;
   const progress = Math.min(100, Math.round((xp % 100)));
   const streak = gamificationState.streak;
   const badges = gamificationState.badges;
-  // Restore filteredHistory for analytics and charts
   const filteredHistory = filterHistory(history, selectedDuration, selectedRange);
-  // --- Use gamification state for level, XP, progress, streak, badges ---
   const bestWpm = getBestWpm(filteredHistory);
   const bestAccuracy = getBestAccuracy(filteredHistory);
   const avgWpm = getAvgWpm(filteredHistory);
@@ -316,14 +290,11 @@ export default function Profile() {
   const mostActiveDay = filteredHistory.length > 0 ? getMostActiveDay(filteredHistory) : 'N/A';
   const topCategory = getTopCategory(filteredHistory);
   const typingRank = getTypingRank(avgWpm);
-  // Robust stats for overview
   const testsStarted = history.length;
   const testsCompleted = filteredHistory.length;
   const totalWordsTyped = totalWords;
   const totalTimeTyping = totalTime;
 
-  // Chart data for WPM/accuracy over time (filtered)
-  // Use filteredHistory if available, otherwise use all history
   const dataForCharts = filteredHistory.length > 0 ? filteredHistory : history;
   const chartLabels = dataForCharts.map((h, i) => i + 1);
   const wpmData = dataForCharts.map(h => Math.max(0, h.wpm || 0));
@@ -334,28 +305,27 @@ export default function Profile() {
       {
         label: 'WPM',
         data: wpmData,
-        borderColor: '#22d3ee', // cyan-400
-        backgroundColor: 'rgba(34, 211, 238, 0.1)', // cyan-400 with opacity
+        borderColor: '#22d3ee',
+        backgroundColor: 'rgba(34, 211, 238, 0.1)',
         fill: true,
         tension: 0.4,
         pointRadius: 2,
-        pointBackgroundColor: '#22d3ee', // cyan-400
+        pointBackgroundColor: '#22d3ee',
         borderWidth: 2,
       },
       {
         label: 'Accuracy',
         data: accData,
-        borderColor: '#94a3b8', // slate-400
-        backgroundColor: 'rgba(148, 163, 184, 0.1)', // slate-400 with opacity
+        borderColor: '#94a3b8',
+        backgroundColor: 'rgba(148, 163, 184, 0.1)',
         fill: true,
         tension: 0.4,
         pointRadius: 2,
-        pointBackgroundColor: '#94a3b8', // slate-400
+        pointBackgroundColor: '#94a3b8',
         borderWidth: 2,
       },
     ],
   };
-  // Calculate max for Y axis with 10% headroom
   const maxY = wpmData.length > 0 && accData.length > 0 
     ? Math.max(100, Math.ceil(Math.max(...wpmData, ...accData) * 1.1))
     : 100;
@@ -379,11 +349,8 @@ export default function Profile() {
     elements: { line: { borderWidth: 2 }, point: { backgroundColor: '#22d3ee' } },
   };
 
-  // --- Error Heatmap Aggregation ---
-  // Aggregate key error counts from all filtered history
   const errorKeyStats: Record<string, number> = {};
   for (const session of filteredHistory) {
-    // Handle both camelCase (from frontend) and snake_case (from Supabase)
     const keystrokeStats = session.keystrokeStats || session.keystroke_stats;
     if (keystrokeStats && keystrokeStats.keyCounts) {
       let keyCounts = keystrokeStats.keyCounts;
@@ -402,7 +369,6 @@ export default function Profile() {
     }
   }
 
-  // QWERTY finger mapping (copy from Index.tsx)
   const keyToFinger: Record<string, string> = {
     Q: 'Left Pinky', W: 'Left Ring', E: 'Left Middle', R: 'Left Index', T: 'Left Index',
     A: 'Left Pinky', S: 'Left Ring', D: 'Left Middle', F: 'Left Index', G: 'Left Index',
@@ -421,17 +387,14 @@ export default function Profile() {
   const fingerOrder = [
     'Left Pinky', 'Left Ring', 'Left Middle', 'Left Index', 'Thumb', 'Right Index', 'Right Middle', 'Right Ring', 'Right Pinky'
   ];
-  // Aggregate per-finger error data
   const fingerErrorStats: Record<string, number> = {};
   for (const [key, count] of Object.entries(errorKeyStats)) {
     const finger = keyToFinger[key] || 'Other';
     fingerErrorStats[finger] = (fingerErrorStats[finger] || 0) + count;
   }
-  // Find most/least error finger
   const sortedFingers = Object.entries(fingerErrorStats).sort((a, b) => b[1] - a[1]);
   const mostErrorFinger = sortedFingers[0]?.[0] || '';
   const leastErrorFinger = sortedFingers[sortedFingers.length - 1]?.[0] || '';
-  // Actionable insights
   const insights: string[] = [];
   if (mostErrorFinger && fingerErrorStats[mostErrorFinger] > 0) {
     insights.push(`You make the most errors with your ${mostErrorFinger}. Try targeted practice for this finger.`);
@@ -444,42 +407,35 @@ export default function Profile() {
     insights.push('Punctuation keys are a common source of errors. Consider practicing punctuation-heavy texts.');
   }
 
-  // Filter button configs
   const durations = [
     { label: '15s', value: '15' },
     { label: '30s', value: '30' },
     { label: '60s', value: '60' },
     { label: '120s', value: '120' },
-    { label: 'all', value: 'all' },
+    { label: 'All', value: 'all' },
   ];
   const ranges = [
-    { label: 'Last Day', value: 'day' },
+    { label: 'Today', value: 'day' },
     { label: 'Week', value: 'week' },
     { label: 'Month', value: 'month' },
     { label: '3 Months', value: '3months' },
     { label: 'All Time', value: 'all' },
   ];
 
-  // Download certificate handler
   const handleDownloadCertificate = async () => {
-    // Check if user has test data
     if (!testResults || testResults.length === 0) {
       alert('You need to complete at least one typing test to download a certificate.');
       return;
     }
-    
-    // Check if we have valid WPM and accuracy data
     if (!bestWpm || bestWpm === 0) {
       alert('You need to complete at least one typing test with valid results to download a certificate.');
       return;
     }
-    
     const certArea = document.getElementById('certificate-download-area');
     if (!certArea) {
       alert('Certificate could not be generated. Please try again.');
       return;
     }
-    
     try {
       const canvas = await html2canvas(certArea, { 
         scale: 2,
@@ -497,23 +453,19 @@ export default function Profile() {
     }
   };
 
-  // Delete Progress handler
   async function handleDeleteProgress() {
     if (!user) return;
     setDeleting(true);
-    // --- Immediately reset all frontend state ---
     await resetStats();
     if (window.localStorage) {
       window.localStorage.setItem('tt_gamification', JSON.stringify({ xp: 0, level: 1, badges: [], streak: 0 }));
     }
     if (setLeaderboard) setLeaderboard([]);
     if (setGamificationEnabled) setGamificationEnabled(false);
-    // Show a blank state/loading spinner while backend deletes
     setTimeout(async () => {
       await supabase.from('user_stats').delete().eq('user_id', user.id);
       await supabase.from('test_results').delete().eq('user_id', user.id);
       await supabase.from('user_gamification').delete().eq('user_id', user.id);
-      // Delete ALL leaderboard rows for this user (all timeframes)
       await supabase.from('leaderboard').delete().eq('user_id', user.id);
       if (refreshLeaderboard) await refreshLeaderboard();
       setDeleting(false);
@@ -521,11 +473,9 @@ export default function Profile() {
     }, 0);
   }
 
-  // Delete Account handler
   async function handleDeleteAccount() {
     if (!user) return;
     setDeleting(true);
-    // TODO: Call backend to delete Supabase account if needed
     try {
       const res = await fetch('/api/delete-account', {
         method: 'POST',
@@ -533,12 +483,10 @@ export default function Profile() {
         body: JSON.stringify({ userId: user.id }),
       });
       if (!res.ok) throw new Error('Failed to delete account');
-      // Delete analytics after account deletion
       await supabase.from('user_stats').delete().eq('user_id', user.id);
       await supabase.from('test_results').delete().eq('user_id', user.id);
       await supabase.from('user_gamification').delete().eq('user_id', user.id);
       setDeleting(false);
-      // Log out and redirect
       await logout();
       navigate('/', { replace: true });
     } catch (err) {
@@ -547,7 +495,6 @@ export default function Profile() {
     }
   }
 
-  // Consistency Score: 100 - (stddev of WPM / mean WPM) * 100, clamped 0-100
   let consistency = '-';
   if (filteredHistory.length > 1) {
     const wpmValues = filteredHistory.map(h => h.wpm || 0);
@@ -559,13 +506,8 @@ export default function Profile() {
     }
   }
 
-  // --- Advanced Analytics Tab Content ---
-  // Helper: Error distribution by character
-  // Note: keyCounts in keystrokeStats represents error counts per key (for demo data)
-  // For real test data, we use keyCounts as a proxy for error-prone keys
   const errorCharCounts: Record<string, number> = {};
   for (const session of filteredHistory) {
-    // Handle both camelCase (from frontend) and snake_case (from Supabase)
     const keystrokeStats = session.keystrokeStats || session.keystroke_stats;
     if (keystrokeStats && keystrokeStats.keyCounts) {
       let keyCounts = keystrokeStats.keyCounts;
@@ -584,7 +526,6 @@ export default function Profile() {
     }
   }
   
-  // Sort keys by error count (descending) and take top 30 for better visualization
   const sortedErrorEntries = Object.entries(errorCharCounts)
     .sort(([, a], [, b]) => b - a)
     .slice(0, 30);
@@ -598,8 +539,8 @@ export default function Profile() {
       {
         label: 'Errors',
         data: errorCharData,
-        backgroundColor: '#22d3ee', // cyan-400
-        borderColor: '#06b6d4', // cyan-500
+        backgroundColor: '#22d3ee',
+        borderColor: '#06b6d4',
         borderWidth: 1,
       },
     ],
@@ -654,7 +595,6 @@ export default function Profile() {
       } 
     },
   };
-  // Helper: Time per session
   const sessionTimes = filteredHistory.map(h => h.time || 0);
   const sessionTimeLabels = filteredHistory.map((h, i) => `Test ${i + 1}`);
   const sessionTimeChartData = {
@@ -664,9 +604,9 @@ export default function Profile() {
         label: 'Time (s)',
         data: sessionTimes,
         fill: true,
-        backgroundColor: 'rgba(34, 211, 238, 0.1)', // cyan-400 with opacity
-        borderColor: '#22d3ee', // cyan-400
-        pointBackgroundColor: '#22d3ee', // cyan-400
+        backgroundColor: 'rgba(34, 211, 238, 0.1)',
+        borderColor: '#22d3ee',
+        pointBackgroundColor: '#22d3ee',
         tension: 0.4,
       },
     ],
@@ -676,7 +616,6 @@ export default function Profile() {
     plugins: { legend: { display: false }, tooltip: { enabled: true, backgroundColor: '#1e293b', titleColor: '#f1f5f9', bodyColor: '#f1f5f9', borderColor: '#475569', borderWidth: 1 } },
     scales: { x: { grid: { color: '#475569' }, ticks: { color: '#94a3b8' } }, y: { grid: { color: '#475569' }, ticks: { color: '#94a3b8' }, beginAtZero: true } },
   };
-  // Helper: Consistency chart (WPM variance)
   const wpmVarianceLabels = filteredHistory.map((h, i) => i + 1);
   const wpmVarianceData = filteredHistory.map(h => h.wpm || 0);
   const wpmVarianceChartData = {
@@ -685,12 +624,12 @@ export default function Profile() {
       {
         label: 'WPM',
         data: wpmVarianceData,
-        borderColor: '#22d3ee', // cyan-400
-        backgroundColor: 'rgba(34, 211, 238, 0.1)', // cyan-400 with opacity
+        borderColor: '#22d3ee',
+        backgroundColor: 'rgba(34, 211, 238, 0.1)',
         fill: true,
         tension: 0.4,
         pointRadius: 2,
-        pointBackgroundColor: '#22d3ee', // cyan-400
+        pointBackgroundColor: '#22d3ee',
         borderWidth: 2,
       },
     ],
@@ -700,10 +639,8 @@ export default function Profile() {
     plugins: { legend: { display: false }, tooltip: { enabled: true, backgroundColor: '#1e293b', titleColor: '#f1f5f9', bodyColor: '#f1f5f9', borderColor: '#475569', borderWidth: 1 } },
     scales: { x: { grid: { color: '#475569' }, ticks: { color: '#94a3b8' } }, y: { grid: { color: '#475569' }, ticks: { color: '#94a3b8' }, beginAtZero: true } },
   };
-  // Helper: Category breakdown
   const categoryStats: Record<string, { wpm: number[] }> = {};
   for (const h of filteredHistory) {
-    // Check both direct property and keystroke_stats for testType
     const cat = h.testType || (h.keystroke_stats?.testType) || 'General';
     if (!categoryStats[cat]) categoryStats[cat] = { wpm: [] };
     if (h.wpm) categoryStats[cat].wpm.push(h.wpm);
@@ -719,8 +656,8 @@ export default function Profile() {
       {
         label: 'Avg WPM',
         data: categoryWpmData,
-        backgroundColor: '#22d3ee', // cyan-400
-        borderColor: '#06b6d4', // cyan-500
+        backgroundColor: '#22d3ee',
+        borderColor: '#06b6d4',
         borderWidth: 1,
       },
     ],
@@ -731,11 +668,9 @@ export default function Profile() {
     scales: { x: { grid: { color: '#475569' }, ticks: { color: '#94a3b8' } }, y: { grid: { color: '#475569' }, ticks: { color: '#94a3b8' }, beginAtZero: true } },
   };
 
-  // Robust aggregation of key counts for production
   const keyCharCounts: Record<string, number> = {};
   if (filteredHistory.length > 0) {
     for (const session of filteredHistory) {
-      // Handle both camelCase (from frontend) and snake_case (from Supabase)
       const keystrokeStats = session.keystrokeStats || session.keystroke_stats;
       if (keystrokeStats && keystrokeStats.keyCounts) {
         let keyCounts = keystrokeStats.keyCounts;
@@ -762,8 +697,8 @@ export default function Profile() {
       {
         label: 'Key Presses',
         data: keyCharData,
-        backgroundColor: '#22d3ee', // cyan-400
-        borderColor: '#06b6d4', // cyan-500
+        backgroundColor: '#22d3ee',
+        borderColor: '#06b6d4',
         borderWidth: 1,
       },
     ],
@@ -771,337 +706,407 @@ export default function Profile() {
 
   return (
     <div className="min-h-screen bg-slate-900 flex flex-col">
-      {/* Main Dynamic Navbar */}
       <Navbar />
-      <div className="w-full flex flex-col gap-10 px-2 md:px-8 py-12">
-        {/* Profile Header */}
-        <section className="flex flex-col md:flex-row items-center md:items-start gap-10 md:gap-16 w-full">
-          {/* Redesigned Avatar & Info Card */}
-          <div className="w-full md:w-1/4 flex flex-col items-center md:items-start">
-            <div className="w-full bg-slate-800 rounded-2xl shadow-md border border-slate-700 p-6 flex flex-col items-center md:items-start gap-4">
-              <div className="flex flex-col items-center md:items-start w-full">
-                {user.avatar_url ? (
-                  <img src={user.avatar_url} alt="avatar" className="w-24 h-24 rounded-full border border-slate-600 shadow-sm mb-2" />
-                ) : (
-                  <div className="w-24 h-24 rounded-full bg-slate-700 flex items-center justify-center text-4xl font-bold text-slate-400 mb-2">
-                    {user.username ? user.username[0].toUpperCase() : (user.email ? user.email[0].toUpperCase() : '?')}
-                  </div>
-                )}
-                <div className="text-xl font-extrabold text-slate-100 mb-1 text-center md:text-left break-all leading-tight">
-                  {user.username || user.email || 'User'}
-                </div>
-                <div className="text-sm text-slate-400 mb-1 text-center md:text-left break-all">{user.email}</div>
-                <div className="text-xs text-slate-500 mb-2 text-center md:text-left break-all">Joined {user.created_at ? new Date(user.created_at).toLocaleDateString() : 'Not set'}</div>
-              </div>
-              {/* Level Progress Bar */}
-              <div className="w-full flex flex-col items-center md:items-start my-2">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-xs text-slate-400">Level {level}</span>
-                  <span className="text-xs text-slate-500">{progress}% to next</span>
-                </div>
-                <div className="w-full h-2 bg-slate-700 rounded-full overflow-hidden">
-                  <div className="h-2 bg-cyan-400 rounded-full transition-all duration-500" style={{ width: `${progress}%` }} />
-                </div>
-                <div className="flex items-center gap-2 mt-1">
-                  <span className="text-xs text-slate-400">XP: <span className='text-cyan-400'>{xp}</span></span>
-                  <span className="text-xs text-slate-400">Streak: {streak}</span>
-                </div>
-              </div>
-              {/* Badges Row (optional, if you want to show) */}
-              {badges && badges.length > 0 && (
-                <div className="flex flex-row gap-2 mt-2">
-                  {badges.map(badge => (
-                    <span key={badge} className="px-2 py-1 bg-slate-700 rounded-full text-xs font-semibold text-slate-200">{badge}</span>
-                  ))}
+      <div className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Profile Header Section */}
+        <div className="mb-8">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+            <div>
+              <h1 className="text-3xl sm:text-4xl font-bold text-slate-100 mb-2">Profile</h1>
+              <p className="text-slate-400 text-sm">Track your typing progress and achievements</p>
+            </div>
+            <div className="flex items-center gap-3">
+              {user.avatar_url ? (
+                <img src={user.avatar_url} alt="avatar" className="w-12 h-12 rounded-full border-2 border-slate-600" />
+              ) : (
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-cyan-500 to-cyan-600 flex items-center justify-center text-xl font-bold text-slate-900">
+                  {user.username ? user.username[0].toUpperCase() : (user.email ? user.email[0].toUpperCase() : '?')}
                 </div>
               )}
-              <button
-                onClick={logout}
-                className="mt-4 px-6 py-2 rounded-full bg-cyan-500 text-slate-900 font-semibold hover:bg-cyan-400 transition text-base shadow-sm w-full"
-              >
-                Sign Out
-              </button>
-              <button
-                onClick={handleDownloadCertificate}
-                disabled={!testResults || testResults.length === 0 || !bestWpm || bestWpm === 0}
-                className={`mt-2 px-6 py-2 rounded-full font-semibold transition text-base shadow-sm w-full ${
-                  (!testResults || testResults.length === 0 || !bestWpm || bestWpm === 0)
-                    ? 'bg-slate-700 text-slate-500 cursor-not-allowed'
-                    : 'bg-cyan-500 text-slate-900 hover:bg-cyan-400'
-                }`}
-              >
-                Download Certificate
-              </button>
-              <div className="mt-2 flex flex-row gap-2 w-full">
-                <button
-                  onClick={() => setShowDeleteProgress(true)}
-                  className="px-4 py-2 rounded-full bg-red-600 text-white font-semibold hover:bg-red-700 transition text-sm flex-1"
-                >
-                  Delete Progress
-                </button>
-                <button
-                  onClick={() => setShowDeleteAccount(true)}
-                  className="px-4 py-2 rounded-full bg-red-900 text-white font-semibold hover:bg-red-800 transition text-sm flex-1"
-                >
-                  Delete Account
-                </button>
+              <div className="text-left">
+                <div className="text-sm font-semibold text-slate-100">{user.username || user.email || 'User'}</div>
+                <div className="text-xs text-slate-400">Level {level}</div>
               </div>
-              {/* Delete Progress Dialog */}
-              <AlertDialog open={showDeleteProgress} onOpenChange={setShowDeleteProgress}>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Delete All Progress?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      This will permanently delete all your analytics, stats, and test history. This cannot be undone.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
-                    <AlertDialogAction disabled={deleting} onClick={handleDeleteProgress} className="bg-red-600 hover:bg-red-700">Delete Progress</AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-              {/* Delete Account Dialog */}
-              <AlertDialog open={showDeleteAccount} onOpenChange={setShowDeleteAccount}>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Delete Account?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      This will permanently delete your account and all analytics. This cannot be undone. Are you sure?
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
-                    <AlertDialogAction disabled={deleting} onClick={handleDeleteAccount} className="bg-red-900 hover:bg-red-800">Delete Account</AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </div>
-            {/* Hidden Certificate for download rendering */}
-            <div style={{ position: 'absolute', left: '-9999px', top: 0, pointerEvents: 'none' }} aria-hidden="true">
-              <Certificate name={user.username || user.email || 'User'} wpm={bestWpm} accuracy={bestAccuracy} date={new Date().toLocaleDateString()} email={user.email || ''} />
             </div>
           </div>
-          {/* Analytics Section with Tabs */}
-          <div className="flex-1 flex flex-col gap-8 w-full">
-            {/* Analytics Tabs */}
-            <div className="flex gap-2 mb-4">
-              <button
-                className={`px-5 py-2 rounded-full font-semibold text-sm border transition-all duration-150 ${selectedTab === 'overview' ? 'bg-cyan-500 text-slate-900 border-cyan-500' : 'bg-slate-700 text-slate-300 border-slate-600 hover:bg-slate-600'}`}
-                onClick={() => setSelectedTab('overview')}
-              >
-                Overview
-              </button>
-              <button
-                className={`px-5 py-2 rounded-full font-semibold text-sm border transition-all duration-150 ${selectedTab === 'advanced' ? 'bg-cyan-500 text-slate-900 border-cyan-500' : 'bg-slate-700 text-slate-300 border-slate-600 hover:bg-slate-600'}`}
-                onClick={() => setSelectedTab('advanced')}
-              >
-                Advanced Analytics
-              </button>
+
+          {/* Quick Stats Row */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+            <ModernStatCard 
+              icon={Zap} 
+              label="Best WPM" 
+              value={bestWpm || 0} 
+              color="cyan" 
+            />
+            <ModernStatCard 
+              icon={Target} 
+              label="Best Accuracy" 
+              value={`${bestAccuracy || 0}%`} 
+              color="emerald" 
+            />
+            <ModernStatCard 
+              icon={TrendingUp} 
+              label="Average WPM" 
+              value={avgWpm || 0} 
+              color="cyan" 
+            />
+            <ModernStatCard 
+              icon={Activity} 
+              label="Streak" 
+              value={`${streak} day${streak !== 1 ? 's' : ''}`} 
+              color="amber" 
+            />
+          </div>
+
+          {/* Level Progress Card */}
+          <div className="bg-gradient-to-r from-slate-800 to-slate-800/50 rounded-xl border border-slate-700 p-6 mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="text-lg font-semibold text-slate-100 mb-1">Level {level}</h3>
+                <p className="text-sm text-slate-400">{xp} XP • {progress}% to Level {level + 1}</p>
+              </div>
+              {badges && badges.length > 0 && (
+                <div className="flex gap-2">
+                  {badges.slice(0, 3).map(badge => (
+                    <div key={badge} className="px-3 py-1 bg-cyan-500/20 text-cyan-400 rounded-lg text-xs font-semibold border border-cyan-500/30">
+                      {badge}
+                    </div>
+                  ))}
+                  {badges.length > 3 && (
+                    <div className="px-3 py-1 bg-slate-700 text-slate-400 rounded-lg text-xs font-semibold border border-slate-600">
+                      +{badges.length - 3}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
-            {/* Tab Content */}
-            {selectedTab === 'overview' && (
-              <>
-                {/* Filters */}
-                <div className="flex flex-wrap gap-2 items-center mb-2">
-                  {durations.map(d => (
-                    <button
-                      key={d.value}
-                      className={`px-4 py-2 rounded-lg text-sm font-semibold border border-slate-600 bg-slate-700 text-slate-300 hover:bg-slate-600 transition-all duration-150 ${selectedDuration === d.value ? 'bg-cyan-500/20 text-cyan-400 border-cyan-500' : ''}`}
-                      onClick={() => setSelectedDuration(d.value)}
-                    >
-                      {d.label}
-                    </button>
-                  ))}
-                  <span className="mx-2 text-slate-600">|</span>
-                  {ranges.map(r => (
-                    <button
-                      key={r.value}
-                      className={`px-4 py-2 rounded-lg text-sm font-semibold border border-slate-600 bg-slate-700 text-slate-300 hover:bg-slate-600 transition-all duration-150 ${selectedRange === r.value ? 'bg-cyan-500/20 text-cyan-400 border-cyan-500' : ''}`}
-                      onClick={() => setSelectedRange(r.value)}
-                    >
-                      {r.label}
-                    </button>
-                  ))}
-                </div>
-                {/* Key Stats Summary Row */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 w-full">
-                  <StatCard label="Best WPM" value={bestWpm} />
-                  <StatCard label="Best Accuracy" value={bestAccuracy + '%'} />
-                  <StatCard label="Average WPM" value={avgWpm} />
-                  <StatCard label="Typing Streak" value={streak + ' day' + (streak !== 1 ? 's' : '')} />
-                </div>
-                {/* Progress Chart */}
-                <div className="w-full bg-slate-800 rounded-2xl shadow p-6 border border-slate-700 flex flex-col items-center">
-                  <div className="w-full flex flex-row items-center justify-between mb-2">
-                    <span className="text-lg font-bold text-slate-100">Progress Over Time</span>
-                    <span className="text-xs text-slate-400">(WPM & Accuracy)</span>
+            <div className="w-full h-3 bg-slate-700 rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-gradient-to-r from-cyan-500 to-cyan-400 rounded-full transition-all duration-500" 
+                style={{ width: `${progress}%` }} 
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Filters */}
+        <div className="mb-6">
+          <div className="flex flex-wrap items-center gap-3 mb-4">
+            <span className="text-sm font-medium text-slate-400">Duration:</span>
+            {durations.map(d => (
+              <button
+                key={d.value}
+                className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                  selectedDuration === d.value
+                    ? 'bg-cyan-500 text-slate-900 shadow-lg shadow-cyan-500/20'
+                    : 'bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700'
+                }`}
+                onClick={() => setSelectedDuration(d.value)}
+              >
+                {d.label}
+              </button>
+            ))}
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="text-sm font-medium text-slate-400">Time Range:</span>
+            {ranges.map(r => (
+              <button
+                key={r.value}
+                className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                  selectedRange === r.value
+                    ? 'bg-cyan-500 text-slate-900 shadow-lg shadow-cyan-500/20'
+                    : 'bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700'
+                }`}
+                onClick={() => setSelectedRange(r.value)}
+              >
+                {r.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Main Tabs */}
+        <div className="mb-6">
+          <div className="flex gap-2 border-b border-slate-700">
+            <button
+              className={`px-6 py-3 text-sm font-semibold border-b-2 transition-colors ${
+                selectedTab === 'overview'
+                  ? 'border-cyan-500 text-cyan-400'
+                  : 'border-transparent text-slate-400 hover:text-slate-200'
+              }`}
+              onClick={() => setSelectedTab('overview')}
+            >
+              Overview
+            </button>
+            <button
+              className={`px-6 py-3 text-sm font-semibold border-b-2 transition-colors ${
+                selectedTab === 'advanced'
+                  ? 'border-cyan-500 text-cyan-400'
+                  : 'border-transparent text-slate-400 hover:text-slate-200'
+              }`}
+              onClick={() => setSelectedTab('advanced')}
+            >
+              Advanced Analytics
+            </button>
+          </div>
+        </div>
+
+        {/* Tab Content */}
+        {selectedTab === 'overview' && (
+          <div className="space-y-6">
+            {/* Progress Chart */}
+            <div className="bg-slate-800/50 rounded-xl border border-slate-700 p-6">
+              <h2 className="text-xl font-semibold text-slate-100 mb-4">Progress Over Time</h2>
+              <div className="h-64">
+                {filteredHistory.length > 1 ? (
+                  <Line data={chartData} options={chartOptions} />
+                ) : (
+                  <div className="flex items-center justify-center h-full text-slate-400">
+                    Complete more tests to see your progress
                   </div>
-                  <div className="w-full h-48">
-                    {filteredHistory.length > 1 ? (
-                      <Line data={chartData} options={chartOptions} style={{width:'100%',height:180}} />
+                )}
+              </div>
+            </div>
+
+            {/* Additional Stats Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+              <StatCard label="Tests Completed" value={testsCompleted} />
+              <StatCard label="Total Time" value={formatTime(totalTimeTyping)} />
+              <StatCard label="Words Typed" value={totalWordsTyped.toLocaleString()} />
+              <StatCard label="Rank" value={typingRank} />
+              <StatCard label="Most Active Day" value={mostActiveDay} />
+              <StatCard label="Top Category" value={topCategory} />
+            </div>
+          </div>
+        )}
+
+        {selectedTab === 'advanced' && (
+          <div className="space-y-6">
+            {/* Advanced Analytics Sub-tabs */}
+            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+              {['Speed Trends', 'Accuracy', 'Time Insights', 'Consistency', 'Category Breakdown'].map(tab => (
+                <button
+                  key={tab}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
+                    activeAnalyticsTab === tab
+                      ? 'bg-cyan-500 text-slate-900'
+                      : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                  }`}
+                  onClick={() => setActiveAnalyticsTab(tab)}
+                >
+                  {tab}
+                </button>
+              ))}
+            </div>
+
+            {/* Advanced Analytics Content */}
+            <div className="bg-slate-800/50 rounded-xl border border-slate-700 p-6">
+              {activeAnalyticsTab === 'Speed Trends' && (
+                <div>
+                  <h2 className="text-xl font-semibold text-slate-100 mb-4">Speed Trends</h2>
+                  <div className="h-72">
+                    {history.length === 0 ? (
+                      <div className="flex items-center justify-center h-full text-slate-400">
+                        No tests completed yet
+                      </div>
+                    ) : dataForCharts.length > 1 ? (
+                      <Line data={chartData} options={chartOptions} />
                     ) : (
-                      <span className="text-slate-400 text-sm flex items-center justify-center h-full">Not enough data to show progress chart</span>
+                      <div className="flex items-center justify-center h-full text-slate-400">
+                        Complete more tests to see trends
+                      </div>
                     )}
                   </div>
                 </div>
-                {/* Milestones & Achievements */}
-                <div className="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mt-2">
-                  <StatCard label="Tests Started" value={testsStarted} />
-                  <StatCard label="Tests Completed" value={testsCompleted} />
-                  <StatCard label="Total Typing Time" value={formatTime(totalTimeTyping)} />
-                  <StatCard label="Total Words Typed" value={totalWordsTyped} />
-                  <StatCard label="Most Active Day" value={mostActiveDay} />
-                  <StatCard label="Top Typing Category" value={topCategory} />
-                  <StatCard label="Typing Rank" value={typingRank} />
-                </div>
-              </>
-            )}
-            {selectedTab === 'advanced' && (
-              <div className="w-full bg-slate-800 rounded-2xl shadow p-6 md:p-10 border border-slate-700 flex flex-col gap-10 min-h-[300px]">
-                {/* Top Title and Sub-navigation */}
-                <div className="w-full flex flex-col gap-4">
-                  <h1 className="text-3xl font-extrabold text-slate-100 mb-2 text-left" style={{fontFamily:'Inter, SF Pro, system-ui, sans-serif'}}>Advanced Analytics</h1>
-                  {/* Sub-navigation Tabs */}
-                  <div
-                    className="flex flex-row gap-4 border-b border-slate-700 mb-6 overflow-x-auto flex-nowrap -mx-4 px-4 scrollbar-hide"
-                    style={{ WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-                  >
-                    {['Speed Trends', 'Accuracy', 'Time Insights', 'Consistency', 'Category Breakdown'].map(tab => (
-                      <button
-                        key={tab}
-                        className={`px-4 py-2 text-base font-medium rounded-t-lg focus:outline-none transition-colors duration-150 whitespace-nowrap ${activeAnalyticsTab === tab ? 'bg-cyan-500 text-slate-900' : 'bg-slate-700 text-slate-300'}`}
-                        onClick={() => setActiveAnalyticsTab(tab)}
-                        style={{fontFamily:'Inter, SF Pro, system-ui, sans-serif'}}
-                      >
-                        {tab}
-                          </button>
-                        ))}
+              )}
+
+              {activeAnalyticsTab === 'Accuracy' && (
+                <div>
+                  <h2 className="text-xl font-semibold text-slate-100 mb-4">Error Distribution by Key</h2>
+                  <div className="h-72">
+                    {history.length === 0 ? (
+                      <div className="flex items-center justify-center h-full text-slate-400">
+                        No tests completed yet
                       </div>
-                </div>
-                {/* Key Metrics Grid */}
-                <div className="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 mt-2">
-                  <div className="bg-slate-700 rounded-xl border border-slate-600 shadow-sm p-6 flex flex-col items-start">
-                    <span className="text-xs text-slate-400 mb-1">Best WPM</span>
-                    <span className="text-2xl font-bold text-cyan-400">{bestWpm}</span>
-                  </div>
-                  <div className="bg-slate-700 rounded-xl border border-slate-600 shadow-sm p-6 flex flex-col items-start">
-                    <span className="text-xs text-slate-400 mb-1">Lowest Accuracy</span>
-                    <span className="text-2xl font-bold text-red-400">{Math.min(...filteredHistory.map(h => h.accuracy || 100))}%</span>
-                  </div>
-                  <div className="bg-slate-700 rounded-xl border border-slate-600 shadow-sm p-6 flex flex-col items-start">
-                    <span className="text-xs text-slate-400 mb-1">Total Tests</span>
-                    <span className="text-2xl font-bold text-slate-100">{filteredHistory.length}</span>
-                  </div>
-                  <div className="bg-slate-700 rounded-xl border border-slate-600 shadow-sm p-6 flex flex-col items-start">
-                    <span className="text-xs text-slate-400 mb-1">Total Errors</span>
-                    <span className="text-2xl font-bold text-red-400">{filteredHistory.reduce((sum, h) => sum + (h.errors || 0), 0)}</span>
-                  </div>
-                  <div className="bg-slate-700 rounded-xl border border-slate-600 shadow-sm p-6 flex flex-col items-start">
-                    <span className="text-xs text-slate-400 mb-1">Consistency Score</span>
-                    <span className="text-2xl font-bold text-slate-100">{consistency === '-' ? '-' : `${consistency}%`}</span>
-                  </div>
-                  <div className="bg-slate-700 rounded-xl border border-slate-600 shadow-sm p-6 flex flex-col items-start">
-                    <span className="text-xs text-slate-400 mb-1">Time Spent Typing</span>
-                    <span className="text-2xl font-bold text-slate-100">{formatTime(totalTimeTyping)}</span>
+                    ) : filteredHistory.length === 0 ? (
+                      <div className="flex items-center justify-center h-full text-slate-400">
+                        No tests in selected range
+                      </div>
+                    ) : errorCharLabels.length > 0 && errorCharData.length > 0 ? (
+                      <Bar data={errorCharChartData} options={errorCharChartOptions} />
+                    ) : (
+                      <div className="flex items-center justify-center h-full text-slate-400">
+                        No error data available
+                      </div>
+                    )}
                   </div>
                 </div>
-                {/* Tab Content */}
-                <div className="w-full mt-8">
-                  {activeAnalyticsTab === 'Speed Trends' && (
-                    <section className="w-full flex flex-col gap-6">
-                      <h2 className="text-xl font-bold text-slate-100 mb-2">Speed Trends</h2>
-                      <div className="w-full h-72 bg-slate-700 rounded-xl border border-slate-600 flex items-center justify-center">
-                        {/* Line chart: WPM & Accuracy over time (black/gray lines) */}
-                        {history.length === 0 ? (
-                          <span className="text-slate-400 text-sm">No tests completed yet. Complete some typing tests to see trends.</span>
-                        ) : dataForCharts.length > 1 ? (
-                          <Line data={chartData} options={{...chartOptions, elements: { line: { borderColor: '#22d3ee' }, point: { backgroundColor: '#06b6d4' } }, plugins: { legend: { labels: { color: '#f1f5f9' } } }}} style={{ width: '100%', height: 260 }} />
-                        ) : (
-                          <span className="text-slate-400 text-sm">Not enough data to show trends. Complete more tests.</span>
-                        )}
+              )}
+
+              {activeAnalyticsTab === 'Time Insights' && (
+                <div>
+                  <h2 className="text-xl font-semibold text-slate-100 mb-4">Time Insights</h2>
+                  <div className="h-72">
+                    {sessionTimes.length > 0 ? (
+                      <Line data={sessionTimeChartData} options={sessionTimeChartOptions} />
+                    ) : (
+                      <div className="flex items-center justify-center h-full text-slate-400">
+                        No session time data
                       </div>
-                    </section>
-                  )}
-                  {activeAnalyticsTab === 'Accuracy' && (
-                    <section className="w-full flex flex-col gap-6">
-                      <h2 className="text-xl font-bold text-slate-100 mb-2">Accuracy - Error Distribution by Key</h2>
-                      <div className="w-full h-72 bg-slate-700 rounded-xl border border-slate-600 p-4 flex items-center justify-center">
-                        {history.length === 0 ? (
-                          <span className="text-slate-400 text-sm">No tests completed yet. Complete some typing tests to see analytics.</span>
-                        ) : filteredHistory.length === 0 ? (
-                          <span className="text-slate-400 text-sm">No tests in selected range. Try changing the filter above.</span>
-                        ) : errorCharLabels.length > 0 && errorCharData.length > 0 ? (
-                          <div className="w-full h-full">
-                            <Bar data={errorCharChartData} options={errorCharChartOptions} />
-                          </div>
-                        ) : (
-                          <span className="text-slate-400 text-sm">No error data to show for these tests. Complete some typing tests to see error distribution.</span>
-                        )}
-                      </div>
-                    </section>
-                  )}
-                  {activeAnalyticsTab === 'Time Insights' && (
-                    <section className="w-full flex flex-col gap-6">
-                      <h2 className="text-xl font-bold text-slate-100 mb-2">Time Insights</h2>
-                      <div className="w-full h-72 bg-slate-700 rounded-xl border border-slate-600 flex items-center justify-center relative overflow-hidden">
-                        {sessionTimes.length > 0 ? (
-                          <Line data={sessionTimeChartData} options={sessionTimeChartOptions} style={{ width: '100%', height: '100%' }} />
-                        ) : (
-                          <span className="text-slate-400 text-sm">No session time data to show</span>
-                        )}
-                            </div>
-                    </section>
-                  )}
-                  {activeAnalyticsTab === 'Consistency' && (
-                    <section className="w-full flex flex-col gap-6">
-                      <h2 className="text-xl font-bold text-slate-100 mb-2">Consistency</h2>
-                      <div className="w-full h-72 bg-slate-700 rounded-xl border border-slate-600 flex items-center justify-center">
-                        {wpmVarianceData.length > 1 ? (
-                          <Line data={wpmVarianceChartData} options={wpmVarianceChartOptions} style={{ width: '100%', height: 260 }} />
-                        ) : (
-                          <span className="text-slate-400 text-sm">Not enough data to show consistency</span>
-                        )}
-                      </div>
-                      <div className="mt-4 text-lg font-semibold text-slate-100">Consistency Score: {consistency === '-' ? '-' : `${consistency}%`}</div>
-                    </section>
-                  )}
-                  {activeAnalyticsTab === 'Category Breakdown' && (
-                    <section className="w-full flex flex-col gap-6">
-                      <h2 className="text-xl font-bold text-slate-100 mb-2">Category Breakdown</h2>
-                      <div className="w-full h-72 bg-slate-700 rounded-xl border border-slate-600 flex items-center justify-center">
-                        {categoryLabels.length > 0 ? (
-                          <Bar data={categoryChartData} options={categoryChartOptions} style={{ width: '100%', height: 260 }} />
-                        ) : (
-                          <span className="text-slate-400 text-sm">No category data to show</span>
-                        )}
-                      </div>
-                      <div className="w-full mt-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                        {categoryLabels.map((cat, i) => (
-                          <div key={cat} className="bg-slate-700 border border-slate-600 rounded-xl p-4 flex flex-col">
-                            <span className="text-xs text-slate-400 mb-1">{cat}</span>
-                            <span className="text-lg font-bold text-cyan-400">{categoryWpmData[i]} WPM</span>
+                    )}
+                  </div>
                 </div>
-                        ))}
+              )}
+
+              {activeAnalyticsTab === 'Consistency' && (
+                <div>
+                  <h2 className="text-xl font-semibold text-slate-100 mb-4">Consistency</h2>
+                  <div className="h-72 mb-4">
+                    {wpmVarianceData.length > 1 ? (
+                      <Line data={wpmVarianceChartData} options={wpmVarianceChartOptions} />
+                    ) : (
+                      <div className="flex items-center justify-center h-full text-slate-400">
+                        Not enough data
                       </div>
-                    </section>
-                  )}
+                    )}
+                  </div>
+                  <div className="text-lg font-semibold text-slate-100">
+                    Consistency Score: {consistency === '-' ? '-' : `${consistency}%`}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
+
+              {activeAnalyticsTab === 'Category Breakdown' && (
+                <div>
+                  <h2 className="text-xl font-semibold text-slate-100 mb-4">Category Breakdown</h2>
+                  <div className="h-72 mb-6">
+                    {categoryLabels.length > 0 ? (
+                      <Bar data={categoryChartData} options={categoryChartOptions} />
+                    ) : (
+                      <div className="flex items-center justify-center h-full text-slate-400">
+                        No category data
+                      </div>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {categoryLabels.map((cat, i) => (
+                      <div key={cat} className="bg-slate-700/50 rounded-lg p-4 border border-slate-600">
+                        <div className="text-sm text-slate-400 mb-1">{cat}</div>
+                        <div className="text-2xl font-bold text-cyan-400">{categoryWpmData[i]} WPM</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
-        </section>
+        )}
+
+        {/* Action Buttons */}
+        <div className="mt-8 flex flex-col sm:flex-row gap-4">
+          <button
+            onClick={handleDownloadCertificate}
+            disabled={!testResults || testResults.length === 0 || !bestWpm || bestWpm === 0}
+            className={`px-6 py-3 rounded-lg font-semibold transition-all ${
+              (!testResults || testResults.length === 0 || !bestWpm || bestWpm === 0)
+                ? 'bg-slate-700 text-slate-500 cursor-not-allowed'
+                : 'bg-cyan-500 text-slate-900 hover:bg-cyan-400'
+            }`}
+          >
+            Download Certificate
+          </button>
+          <button
+            onClick={logout}
+            className="px-6 py-3 rounded-lg bg-slate-800 text-slate-200 font-semibold hover:bg-slate-700 transition-all border border-slate-700"
+          >
+            Sign Out
+          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setShowDeleteProgress(true)}
+              className="px-4 py-3 rounded-lg bg-red-600/20 text-red-400 font-semibold hover:bg-red-600/30 transition-all border border-red-600/30 text-sm"
+            >
+              Delete Progress
+            </button>
+            <button
+              onClick={() => setShowDeleteAccount(true)}
+              className="px-4 py-3 rounded-lg bg-red-900/20 text-red-400 font-semibold hover:bg-red-900/30 transition-all border border-red-900/30 text-sm"
+            >
+              Delete Account
+            </button>
+          </div>
+        </div>
+
+        {/* Dialogs */}
+        <AlertDialog open={showDeleteProgress} onOpenChange={setShowDeleteProgress}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete All Progress?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This will permanently delete all your analytics, stats, and test history. This cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+              <AlertDialogAction disabled={deleting} onClick={handleDeleteProgress} className="bg-red-600 hover:bg-red-700">
+                Delete Progress
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        <AlertDialog open={showDeleteAccount} onOpenChange={setShowDeleteAccount}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete Account?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This will permanently delete your account and all analytics. This cannot be undone. Are you sure?
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+              <AlertDialogAction disabled={deleting} onClick={handleDeleteAccount} className="bg-red-900 hover:bg-red-800">
+                Delete Account
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        {/* Hidden Certificate */}
+        <div style={{ position: 'absolute', left: '-9999px', top: 0, pointerEvents: 'none' }} aria-hidden="true">
+          <Certificate name={user.username || user.email || 'User'} wpm={bestWpm} accuracy={bestAccuracy} date={new Date().toLocaleDateString()} email={user.email || ''} />
+        </div>
       </div>
+      <Footer />
     </div>
   );
 }
 
-// Card component for stats
-function StatCard({ label, value }: { label: string; value: React.ReactNode }) {
+// Modern Stat Card Component
+function ModernStatCard({ icon: Icon, label, value, color = 'cyan' }: { icon: any; label: string; value: React.ReactNode; color?: 'cyan' | 'emerald' | 'amber' }) {
+  const colorClasses = {
+    cyan: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/20',
+    emerald: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
+    amber: 'text-amber-400 bg-amber-500/10 border-amber-500/20',
+  };
+  
   return (
-    <div className="bg-slate-800 rounded-2xl shadow-md p-6 flex flex-col items-center justify-center transition-all duration-200 hover:shadow-lg hover:-translate-y-1 border border-slate-700">
-      <div className="text-xs font-semibold text-slate-400 mb-1 uppercase tracking-wide">{label}</div>
-      <div className="text-2xl font-bold text-cyan-400">{value}</div>
+    <div className={`bg-slate-800/50 rounded-xl border ${colorClasses[color]} p-4 transition-all hover:scale-105`}>
+      <div className="flex items-center gap-3 mb-2">
+        <Icon className="w-5 h-5" />
+        <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">{label}</span>
+      </div>
+      <div className={`text-2xl font-bold ${colorClasses[color].split(' ')[0]}`}>{value}</div>
     </div>
   );
-} 
+}
+
+// Simple Stat Card Component
+function StatCard({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <div className="bg-slate-800/50 rounded-xl border border-slate-700 p-4 hover:border-slate-600 transition-all">
+      <div className="text-xs font-medium text-slate-400 mb-1 uppercase tracking-wide">{label}</div>
+      <div className="text-xl font-bold text-cyan-400">{value}</div>
+    </div>
+  );
+}
