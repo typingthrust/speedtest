@@ -2036,9 +2036,27 @@ const Index = () => {
 
   // Add state for open category
   const [openCategory, setOpenCategory] = useState<string | null>(null);
+  const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left: number } | null>(null);
+  const categoryBarRef = useRef<HTMLDivElement>(null);
   // Mobile drawer state
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [mobileExpandedCategory, setMobileExpandedCategory] = useState<string | null>(null);
+
+  // Calculate dropdown position based on button click
+  const handleCategoryClick = (categoryName: string, event: React.MouseEvent<HTMLButtonElement>) => {
+    if (openCategory === categoryName) {
+      setOpenCategory(null);
+      setDropdownPosition(null);
+    } else {
+      const button = event.currentTarget;
+      const rect = button.getBoundingClientRect();
+      setDropdownPosition({
+        top: rect.bottom + 8,
+        left: rect.left + rect.width / 2, // Center of button
+      });
+      setOpenCategory(categoryName);
+    }
+  };
 
   const [godModeIndex, setGodModeIndex] = useState(0);
 
@@ -2258,158 +2276,57 @@ const Index = () => {
         {/* Category Bar - Desktop Only - Hides when typing */}
         <AnimatePresence>
           {!isTyping && (
-          <motion.div
+            <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.3 }}
               className="hidden sm:flex w-full justify-center px-4 sm:px-6 mb-6"
               style={{ position: 'relative', zIndex: 10 }}
+              ref={categoryBarRef}
             >
               <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-card/50 backdrop-blur-sm border border-border/50 shadow-sm overflow-x-auto scrollbar-hide">
                 {mainCategories.map((cat) => {
                   const isActive = openCategory === cat.heading;
                   const hasActiveSub = cat.subcategories.some(sub => currentMode === sub.value);
                   return (
-                    <div key={cat.heading} className="relative">
-                      <button
-                        onClick={() => setOpenCategory(isActive ? null : cat.heading)}
-                        className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 whitespace-nowrap ${
-                          isActive || hasActiveSub
-                            ? 'bg-primary text-primary-foreground'
-                            : 'text-foreground/70 hover:text-foreground hover:bg-muted/50'
-                        }`}
-                      >
-                        {cat.heading}
-                      </button>
-                      {/* Dropdown for this category */}
-                      <AnimatePresence>
-                        {openCategory === cat.heading && (
-                          <motion.div
-                            initial={{ opacity: 0, y: -8 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -8 }}
-                            className="absolute top-full left-0 mt-2 z-50 bg-card/90 backdrop-blur-md border border-border rounded-xl shadow-xl p-4 min-w-[200px]"
-                          >
-                            <div className="flex flex-col gap-2">
-                              {cat.subcategories.map((sub) => (
-                                <button
-                                  key={sub.value}
-                                  onClick={() => {
-                                    handleModeChange(sub.value);
-                                    setOpenCategory(null);
-                                  }}
-                                  className={`px-4 py-2 rounded-lg text-sm transition-colors text-left ${
-                                    currentMode === sub.value
-                                      ? 'bg-primary text-primary-foreground'
-                                      : 'text-foreground/70 hover:text-foreground hover:bg-muted/50'
-                                  }`}
-                                >
-                                  {sub.label}
-                                </button>
-                              ))}
-                            </div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
-                  );
-                })}
-                {/* Duration Category */}
-                {currentMode === 'time' && (
-                  <div className="relative">
                     <button
-                      onClick={() => setOpenCategory(openCategory === 'Duration' ? null : 'Duration')}
+                      key={cat.heading}
+                      onClick={(e) => handleCategoryClick(cat.heading, e)}
                       className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 whitespace-nowrap ${
-                        openCategory === 'Duration'
+                        isActive || hasActiveSub
                           ? 'bg-primary text-primary-foreground'
                           : 'text-foreground/70 hover:text-foreground hover:bg-muted/50'
                       }`}
                     >
-                      Duration
+                      {cat.heading}
                     </button>
-                    {/* Dropdown for Duration */}
-                    <AnimatePresence>
-                      {openCategory === 'Duration' && (
-                        <motion.div
-                          initial={{ opacity: 0, y: -8 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -8 }}
-                          className="absolute top-full left-0 mt-2 z-50 bg-card/90 backdrop-blur-md border border-border rounded-xl shadow-xl p-4 min-w-[200px]"
-                        >
-                          <div className="flex flex-col gap-2">
-                            {[15, 30, 60, 120].map((sec) => (
-                              <button
-                                key={sec}
-                                onClick={() => {
-                                  setTimeLimit(sec);
-                                  resetTest(sec);
-                                  setOpenCategory(null);
-                                }}
-                                className={`px-4 py-2 rounded-lg text-sm transition-colors text-left ${
-                                  timeLimit === sec
-                                    ? 'bg-primary text-primary-foreground'
-                                    : 'text-foreground/70 hover:text-foreground hover:bg-muted/50'
-                                }`}
-                              >
-                                {sec}s
-                              </button>
-                            ))}
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                )}
-                {/* Difficulty Category */}
-                <div className="relative">
+                  );
+                })}
+                {/* Duration Category */}
+                {currentMode === 'time' && (
                   <button
-                    onClick={() => setOpenCategory(openCategory === 'Difficulty' ? null : 'Difficulty')}
+                    onClick={(e) => handleCategoryClick('Duration', e)}
                     className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 whitespace-nowrap ${
-                      openCategory === 'Difficulty'
+                      openCategory === 'Duration'
                         ? 'bg-primary text-primary-foreground'
                         : 'text-foreground/70 hover:text-foreground hover:bg-muted/50'
                     }`}
                   >
-                    Difficulty
+                    Duration
                   </button>
-                  {/* Dropdown for Difficulty */}
-                  <AnimatePresence>
-                    {openCategory === 'Difficulty' && (
-                      <motion.div
-                        initial={{ opacity: 0, y: -8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -8 }}
-                        className="absolute top-full left-0 mt-2 z-50 bg-card/90 backdrop-blur-md border border-border rounded-xl shadow-xl p-4 min-w-[200px]"
-                      >
-                        <div className="flex flex-col gap-2">
-                          {[
-                            { label: 'Easy', value: 'short' },
-                            { label: 'Classic', value: 'medium' },
-                            { label: 'Epic', value: 'long' },
-                            { label: 'Ultra', value: 'thicc' },
-                          ].map((item) => (
-                            <button
-                              key={item.value}
-                              onClick={() => {
-                                setDifficulty(item.value);
-                                resetTest();
-                                setOpenCategory(null);
-                              }}
-                              className={`px-4 py-2 rounded-lg text-sm transition-colors text-left ${
-                                difficulty === item.value
-                                  ? 'bg-primary text-primary-foreground'
-                                  : 'text-foreground/70 hover:text-foreground hover:bg-muted/50'
-                              }`}
-                            >
-                              {item.label}
-                            </button>
-                          ))}
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
+                )}
+                {/* Difficulty Category */}
+                <button
+                  onClick={(e) => handleCategoryClick('Difficulty', e)}
+                  className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 whitespace-nowrap ${
+                    openCategory === 'Difficulty'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-foreground/70 hover:text-foreground hover:bg-muted/50'
+                  }`}
+                >
+                  Difficulty
+                </button>
                 {/* Punctuation Toggle - Disabled for coding/syntax mode */}
                 <button
                   onClick={() => {
@@ -2455,13 +2372,114 @@ const Index = () => {
                   # numbers
                 </button>
               </div>
-              {/* Backdrop for closing dropdowns */}
-              {openCategory && (
-                <div 
-                  className="fixed inset-0 z-40" 
-                  onClick={() => setOpenCategory(null)}
-                />
-              )}
+              {/* Category Dropdown - Using portal-like fixed positioning */}
+              <AnimatePresence>
+                {openCategory && (
+                  <>
+                    <div 
+                      className="fixed inset-0 z-40" 
+                      onClick={() => {
+                        setOpenCategory(null);
+                        setDropdownPosition(null);
+                      }}
+                    />
+                    <motion.div
+                      initial={{ opacity: 0, y: -8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -8 }}
+                      className="fixed z-50 bg-card/90 backdrop-blur-md border border-border rounded-xl shadow-xl p-4 min-w-[200px]"
+                      style={
+                        dropdownPosition
+                          ? {
+                              top: `${dropdownPosition.top}px`,
+                              left: `${dropdownPosition.left}px`,
+                              transform: 'translateX(-50%)',
+                            }
+                          : { display: 'none' }
+                      }
+                    >
+                      {(() => {
+                        const selectedCat = mainCategories.find(c => c.heading === openCategory);
+                        if (selectedCat) {
+                          return (
+                            <div className="flex flex-col gap-2">
+                              {selectedCat.subcategories.map((sub) => (
+                                <button
+                                  key={sub.value}
+                                  onClick={() => {
+                                    handleModeChange(sub.value);
+                                    setOpenCategory(null);
+                                    setDropdownPosition(null);
+                                  }}
+                                  className={`px-4 py-2 rounded-lg text-sm transition-colors text-left ${
+                                    currentMode === sub.value
+                                      ? 'bg-primary text-primary-foreground'
+                                      : 'text-foreground/70 hover:text-foreground hover:bg-muted/50'
+                                  }`}
+                                >
+                                  {sub.label}
+                                </button>
+                              ))}
+                            </div>
+                          );
+                        } else if (openCategory === 'Duration') {
+                          return (
+                            <div className="flex flex-col gap-2">
+                              {[15, 30, 60, 120].map((sec) => (
+                                <button
+                                  key={sec}
+                                  onClick={() => {
+                                    setTimeLimit(sec);
+                                    resetTest(sec);
+                                    setOpenCategory(null);
+                                    setDropdownPosition(null);
+                                  }}
+                                  className={`px-4 py-2 rounded-lg text-sm transition-colors text-left ${
+                                    timeLimit === sec
+                                      ? 'bg-primary text-primary-foreground'
+                                      : 'text-foreground/70 hover:text-foreground hover:bg-muted/50'
+                                  }`}
+                                >
+                                  {sec}s
+                                </button>
+                              ))}
+                            </div>
+                          );
+                        } else if (openCategory === 'Difficulty') {
+                          return (
+                            <div className="flex flex-col gap-2">
+                              {[
+                                { label: 'Easy', value: 'short' },
+                                { label: 'Classic', value: 'medium' },
+                                { label: 'Epic', value: 'long' },
+                                { label: 'Ultra', value: 'thicc' },
+                              ].map((item) => (
+                                <button
+                                  key={item.value}
+                                  onClick={() => {
+                                    setDifficulty(item.value);
+                                    resetTest();
+                                    setOpenCategory(null);
+                                    setDropdownPosition(null);
+                                  }}
+                                  className={`px-4 py-2 rounded-lg text-sm transition-colors text-left ${
+                                    difficulty === item.value
+                                      ? 'bg-primary text-primary-foreground'
+                                      : 'text-foreground/70 hover:text-foreground hover:bg-muted/50'
+                                  }`}
+                                >
+                                  {item.label}
+                                </button>
+                              ))}
+                            </div>
+                          );
+                        }
+                        return null;
+                      })()}
+                    </motion.div>
+                  </>
+                )}
+              </AnimatePresence>
             </motion.div>
           )}
         </AnimatePresence>
