@@ -1005,7 +1005,7 @@ const Index = () => {
   // Add per-language, per-difficulty sample texts
   const sampleTextsByLanguageAndDifficulty = {
     english: {
-      short: "The quick brown fox jumps over the lazy dog. Typing is a skill that improves with practice.",
+      short: "Master the keyboard and unlock your potential. Every keystroke brings you closer to perfection. Speed and accuracy go hand in hand.",
       medium: "In the midst of winter I found there was within me an invincible summer. And that makes me happy. For it says that no matter how hard the world pushes against me there is something stronger within me.",
       long: "Technology has fundamentally transformed the way we live work and communicate. From smartphones to satellites our world is connected like never before. Digital platforms empower individuals and businesses to innovate faster. Understanding technology is now essential in every field and industry.",
       thicc: "Photosynthesis is the biological process by which plants algae and certain bacteria convert light energy into chemical energy stored in glucose molecules. This process occurs in the chloroplasts using chlorophyll. Carbon dioxide and water are converted into sugars and oxygen. Light-dependent reactions take place in the thylakoid membranes. The light-independent reactions also known as the Calvin Cycle occur in the stroma. Photosynthesis is vital for life on Earth producing both oxygen and organic compounds used in food chains."
@@ -2237,7 +2237,7 @@ const Index = () => {
         {/* Category Bar - Desktop Only - Hides when typing */}
         <AnimatePresence>
           {!isTyping && (
-            <motion.div
+          <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
@@ -2529,47 +2529,47 @@ const Index = () => {
 
                 {/* Content - Clean Scrollable */}
                 <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
-                  {[
-                    {
-                      heading: 'Developers',
-                      sub: [
-                        { label: 'Coding', value: 'coding', type: 'mode' },
-                        { label: 'Custom', value: 'custom', type: 'mode' },
-                        { label: 'Syntax Challenges', value: 'syntax', type: 'mode' },
-                      ],
-                    },
-                    {
-                      heading: 'Students',
-                      sub: [
-                        { label: 'Words', value: 'words', type: 'mode' },
-                        { label: 'Timed', value: 'time', type: 'mode' },
-                        { label: 'Essay Builder', value: 'essay', type: 'mode' },
-                      ],
-                    },
-                    {
-                      heading: 'Writers',
-                      sub: [
-                        { label: 'Quotes', value: 'quote', type: 'mode' },
-                        { label: 'Custom', value: 'custom', type: 'mode' },
-                        { label: 'Zen Writing', value: 'zen', type: 'mode' },
-                      ],
-                    },
-                    {
-                      heading: 'Mindfulness',
-                      sub: [
-                        { label: 'Zen', value: 'zen', type: 'mode' },
-                        { label: 'No Timer', value: 'notimer', type: 'mode' },
-                        { label: 'Soft Theme Mode', value: 'softtheme', type: 'mode' },
-                      ],
-                    },
-                    {
-                      heading: 'Challenge Seekers',
-                      sub: [
-                        { label: 'Timed', value: 'time', type: 'mode' },
-                        { label: 'Hard Words', value: 'hardwords', type: 'mode' },
-                        { label: 'Foreign Language Practice', value: 'foreign', type: 'mode' },
-                      ],
-                    },
+            {[
+              {
+                heading: 'Developers',
+                sub: [
+                  { label: 'Coding', value: 'coding', type: 'mode' },
+                  { label: 'Custom', value: 'custom', type: 'mode' },
+                  { label: 'Syntax Challenges', value: 'syntax', type: 'mode' },
+                ],
+              },
+              {
+                heading: 'Students',
+                sub: [
+                  { label: 'Words', value: 'words', type: 'mode' },
+                  { label: 'Timed', value: 'time', type: 'mode' },
+                  { label: 'Essay Builder', value: 'essay', type: 'mode' },
+                ],
+              },
+              {
+                heading: 'Writers',
+                sub: [
+                  { label: 'Quotes', value: 'quote', type: 'mode' },
+                  { label: 'Custom', value: 'custom', type: 'mode' },
+                  { label: 'Zen Writing', value: 'zen', type: 'mode' },
+                ],
+              },
+              {
+                heading: 'Mindfulness',
+                sub: [
+                  { label: 'Zen', value: 'zen', type: 'mode' },
+                  { label: 'No Timer', value: 'notimer', type: 'mode' },
+                  { label: 'Soft Theme Mode', value: 'softtheme', type: 'mode' },
+                ],
+              },
+              {
+                heading: 'Challenge Seekers',
+                sub: [
+                  { label: 'Timed', value: 'time', type: 'mode' },
+                  { label: 'Hard Words', value: 'hardwords', type: 'mode' },
+                  { label: 'Foreign Language Practice', value: 'foreign', type: 'mode' },
+                ],
+              },
                   ].map((cat) => {
                     const isExpanded = mobileExpandedCategory === cat.heading;
                     const hasActive = cat.sub.some(item => {
@@ -2578,16 +2578,16 @@ const Index = () => {
                       if (item.type === 'difficulty') return difficulty === String(item.value);
                       return false;
                     });
-                    return (
+              return (
                       <div key={cat.heading} className="rounded-lg overflow-hidden bg-card/50 border border-border/50">
-                        <button
+                  <button
                           onClick={() => setMobileExpandedCategory(isExpanded ? null : cat.heading)}
                           className={`w-full flex items-center justify-between px-4 py-3 text-left transition-colors ${
                             hasActive ? 'bg-card' : 'hover:bg-card/70'
                           }`}
                         >
                           <span className={`text-sm font-medium ${hasActive ? 'text-primary' : 'text-foreground'}`}>
-                            {cat.heading}
+                    {cat.heading}
                           </span>
                           <svg
                             className={`w-4 h-4 text-muted-foreground transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
@@ -2598,10 +2598,10 @@ const Index = () => {
                           >
                             <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                           </svg>
-                        </button>
+                  </button>
                         {isExpanded && (
                           <div className="px-2 py-2 space-y-1 bg-card/30">
-                            {cat.sub.map((item) => {
+                      {cat.sub.map((item) => {
                               let isActive = false;
                               if (item.type === 'mode') {
                                 isActive = currentMode === item.value;
@@ -2610,9 +2610,9 @@ const Index = () => {
                               } else if (item.type === 'difficulty') {
                                 isActive = difficulty === String(item.value);
                               }
-                              return (
-                                <button
-                                  key={item.value}
+                        return (
+                          <button
+                            key={item.value}
                                   onClick={() => {
                                     if (item.type === 'mode') {
                                       handleModeChange(String(item.value));
@@ -2636,16 +2636,16 @@ const Index = () => {
                                       ? 'bg-primary text-primary-foreground font-medium'
                                       : 'text-foreground/70 hover:text-foreground hover:bg-card/50'
                                   }`}
-                                >
-                                  {item.label}
-                                </button>
-                              );
-                            })}
-                          </div>
-                        )}
+                          >
+                            {item.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
                       </div>
-                    );
-                  })}
+              );
+            })}
 
                   {/* Duration - Only for time mode */}
                   {currentMode === 'time' && (
@@ -2654,7 +2654,7 @@ const Index = () => {
                         <h3 className="text-sm font-medium text-foreground mb-3">Duration</h3>
                         <div className="grid grid-cols-4 gap-2">
                           {[15, 30, 60, 120].map((sec) => (
-                            <button
+              <button
                               key={sec}
                               onClick={() => {
                                 setTimeLimit(Number(sec));
@@ -2667,7 +2667,7 @@ const Index = () => {
                               }`}
                             >
                               {sec}s
-                            </button>
+              </button>
                           ))}
                         </div>
                       </div>
@@ -2680,7 +2680,7 @@ const Index = () => {
                       <div className="p-4">
                         <h3 className="text-sm font-medium text-foreground mb-3">Options</h3>
                         <div className="flex flex-col gap-2">
-                          <button
+                <button
                             onClick={() => {
                               setIncludePunctuation(!includePunctuation);
                               resetTest();
@@ -2693,8 +2693,8 @@ const Index = () => {
                           >
                             <span>@</span>
                             <span>punctuation</span>
-                          </button>
-                          <button
+                </button>
+              <button
                             onClick={() => {
                               setIncludeNumbers(!includeNumbers);
                               resetTest();
@@ -2707,7 +2707,7 @@ const Index = () => {
                           >
                             <span>#</span>
                             <span>numbers</span>
-                          </button>
+              </button>
                         </div>
                       </div>
                     </div>
@@ -2719,13 +2719,13 @@ const Index = () => {
                       <h3 className="text-sm font-medium text-foreground mb-3">Difficulty</h3>
                       <div className="grid grid-cols-2 gap-2">
                         {[
-                          { label: 'Easy', value: 'short' },
-                          { label: 'Classic', value: 'medium' },
-                          { label: 'Epic', value: 'long' },
-                          { label: 'Ultra', value: 'thicc' },
+                { label: 'Easy', value: 'short' },
+                { label: 'Classic', value: 'medium' },
+                { label: 'Epic', value: 'long' },
+                { label: 'Ultra', value: 'thicc' },
                         ].map((item) => (
-                          <button
-                            key={item.value}
+                <button
+                  key={item.value}
                             onClick={() => {
                               setDifficulty(String(item.value));
                               resetTest();
@@ -2736,12 +2736,12 @@ const Index = () => {
                                 ? 'bg-primary text-primary-foreground'
                                 : 'bg-muted/50 text-foreground/70 hover:text-foreground hover:bg-muted'
                             }`}
-                          >
-                            {item.label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+        </div>
                   </div>
                 </div>
               </motion.div>
@@ -2759,12 +2759,12 @@ const Index = () => {
                 transition={{ duration: 0.2 }}
                 className="flex justify-center mb-4"
               >
-                <span
+            <span
                   className="text-5xl font-bold text-primary transition-all duration-300"
                   style={{ letterSpacing: '0.02em', fontVariantNumeric: 'tabular-nums' }}
-                >
-                  {timeLeft}
-                </span>
+            >
+            {timeLeft}
+            </span>
               </motion.div>
             )}
           </AnimatePresence>
@@ -2902,7 +2902,7 @@ const Index = () => {
             <div className="text-center min-w-[70px] px-2 py-1.5">
               <div className="text-xl sm:text-2xl font-mono font-bold text-primary leading-tight">
                 {typeof accuracy === 'number' && !isNaN(accuracy) ? Math.max(0, Math.min(100, accuracy)) : 100}%
-              </div>
+            </div>
               <div className="text-xs text-muted-foreground mt-1 uppercase tracking-wide">Accuracy</div>
             </div>
             <div className="text-center min-w-[70px] px-2 py-1.5">
@@ -2926,14 +2926,14 @@ const Index = () => {
                 </div>
                 <div className="text-xs text-muted-foreground mt-1 mb-1.5 uppercase tracking-wide">XP</div>
                 <div className="w-14 h-1 bg-muted/50 rounded-full overflow-hidden mx-auto">
-                  <motion.div
+                    <motion.div
                     className="h-full bg-primary rounded-full"
-                    initial={false}
+                      initial={false}
                     animate={{ 
                       width: `${Math.min(100, Math.max(0, gamification.xp && typeof gamification.xp === 'number' ? (gamification.xp % 100) : 0))}%` 
                     }}
-                    transition={{ type: 'spring', stiffness: 200, damping: 24 }}
-                  />
+                      transition={{ type: 'spring', stiffness: 200, damping: 24 }}
+                    />
                 </div>
               </div>
             )}
