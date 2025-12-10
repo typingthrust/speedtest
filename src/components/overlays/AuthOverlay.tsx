@@ -274,11 +274,11 @@ export default function AuthOverlay() {
                     </div>
 
                     {resetSent && (
-                      <div className="bg-green-500/10 border border-green-500/50 text-green-400 rounded-lg p-4 flex items-start gap-3">
-                        <CheckCircle2 className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                      <div className="bg-muted/50 border border-border rounded-lg p-4 flex items-start gap-3">
+                        <CheckCircle2 className="w-5 h-5 mt-0.5 flex-shrink-0 text-primary" />
                         <div className="flex-1">
-                          <p className="font-medium mb-1">Email sent!</p>
-                          <p className="text-sm text-green-300/80">
+                          <p className="font-medium text-foreground mb-1">Email sent!</p>
+                          <p className="text-sm text-muted-foreground">
                             Check your inbox for the reset link.
                           </p>
                         </div>
@@ -288,7 +288,7 @@ export default function AuthOverlay() {
                     {resetError && (
                       <div className="bg-red-500/10 border border-red-500/50 text-red-400 rounded-lg p-3 text-sm flex items-start gap-2">
                         <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
-                        <span>{resetError}</span>
+                        <span className="text-red-400">{resetError}</span>
                       </div>
                     )}
 
@@ -358,16 +358,16 @@ export default function AuthOverlay() {
                     {error && (
                       <div className="bg-red-500/10 border border-red-500/50 text-red-400 rounded-lg p-3 text-sm flex items-start gap-2">
                         <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
-                        <span>{error}</span>
+                        <span className="text-red-400">{error}</span>
                       </div>
                     )}
                     
                     {signup && signupSuccess && emailConfirmationRequired && (
-                      <div className="bg-blue-500/10 border border-blue-500/50 text-blue-400 rounded-lg p-4 flex items-start gap-3">
-                        <CheckCircle2 className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                      <div className="bg-muted/50 border border-border rounded-lg p-4 flex items-start gap-3">
+                        <CheckCircle2 className="w-5 h-5 mt-0.5 flex-shrink-0 text-primary" />
                         <div className="flex-1">
-                          <p className="font-medium mb-1">Account created!</p>
-                          <p className="text-sm text-blue-300/80">
+                          <p className="font-medium text-foreground mb-1">Account created!</p>
+                          <p className="text-sm text-muted-foreground">
                             Please check your email to confirm your account.
                           </p>
                         </div>
