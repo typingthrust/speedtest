@@ -2271,12 +2271,9 @@ const Index = () => {
                   const isActive = openCategory === cat.heading;
                   const hasActiveSub = cat.subcategories.some(sub => currentMode === sub.value);
                   return (
-                    <div key={cat.heading} className="relative" style={{ zIndex: openCategory === cat.heading ? 30 : 'auto' }}>
+                    <div key={cat.heading} className="relative">
                       <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setOpenCategory(isActive ? null : cat.heading);
-                        }}
+                        onClick={() => setOpenCategory(isActive ? null : cat.heading)}
                         className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 whitespace-nowrap ${
                           isActive || hasActiveSub
                             ? 'bg-primary text-primary-foreground'
@@ -2289,33 +2286,30 @@ const Index = () => {
                       <AnimatePresence>
                         {openCategory === cat.heading && (
                           <motion.div
-                            key={`dropdown-${cat.heading}`}
                             initial={{ opacity: 0, y: -8 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -8 }}
-                            onClick={(e) => e.stopPropagation()}
-                            className="absolute top-full left-0 mt-2 z-[50] bg-card/90 backdrop-blur-md border border-border rounded-xl shadow-xl p-4 min-w-[200px]"
-                            style={{ position: 'absolute' }}
+                            className="absolute top-full left-0 mt-2 z-50 bg-card/90 backdrop-blur-md border border-border rounded-xl shadow-xl p-4 min-w-[200px]"
                           >
-                              <div className="flex flex-col gap-2">
-                                {cat.subcategories.map((sub) => (
-                                  <button
-                                    key={sub.value}
-                                    onClick={() => {
-                                      handleModeChange(sub.value);
-                                      setOpenCategory(null);
-                                    }}
-                                    className={`px-4 py-2 rounded-lg text-sm transition-colors text-left ${
-                                      currentMode === sub.value
-                                        ? 'bg-primary text-primary-foreground'
-                                        : 'text-foreground/70 hover:text-foreground hover:bg-muted/50'
-                                    }`}
-                                  >
-                                    {sub.label}
-                                  </button>
-                                ))}
-                              </div>
-                            </motion.div>
+                            <div className="flex flex-col gap-2">
+                              {cat.subcategories.map((sub) => (
+                                <button
+                                  key={sub.value}
+                                  onClick={() => {
+                                    handleModeChange(sub.value);
+                                    setOpenCategory(null);
+                                  }}
+                                  className={`px-4 py-2 rounded-lg text-sm transition-colors text-left ${
+                                    currentMode === sub.value
+                                      ? 'bg-primary text-primary-foreground'
+                                      : 'text-foreground/70 hover:text-foreground hover:bg-muted/50'
+                                  }`}
+                                >
+                                  {sub.label}
+                                </button>
+                              ))}
+                            </div>
+                          </motion.div>
                         )}
                       </AnimatePresence>
                     </div>
@@ -2323,12 +2317,9 @@ const Index = () => {
                 })}
                 {/* Duration Category */}
                 {currentMode === 'time' && (
-                  <div className="relative" style={{ zIndex: openCategory === 'Duration' ? 30 : 'auto' }}>
+                  <div className="relative">
                     <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setOpenCategory(openCategory === 'Duration' ? null : 'Duration');
-                      }}
+                      onClick={() => setOpenCategory(openCategory === 'Duration' ? null : 'Duration')}
                       className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 whitespace-nowrap ${
                         openCategory === 'Duration'
                           ? 'bg-primary text-primary-foreground'
@@ -2341,45 +2332,39 @@ const Index = () => {
                     <AnimatePresence>
                       {openCategory === 'Duration' && (
                         <motion.div
-                          key="dropdown-duration"
                           initial={{ opacity: 0, y: -8 }}
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: -8 }}
-                          onClick={(e) => e.stopPropagation()}
-                          className="absolute top-full left-0 mt-2 z-[50] bg-card/90 backdrop-blur-md border border-border rounded-xl shadow-xl p-4 min-w-[200px]"
-                          style={{ position: 'absolute' }}
+                          className="absolute top-full left-0 mt-2 z-50 bg-card/90 backdrop-blur-md border border-border rounded-xl shadow-xl p-4 min-w-[200px]"
                         >
-                            <div className="flex flex-col gap-2">
-                              {[15, 30, 60, 120].map((sec) => (
-                                <button
-                                  key={sec}
-                                  onClick={() => {
-                                    setTimeLimit(sec);
-                                    resetTest(sec);
-                                    setOpenCategory(null);
-                                  }}
-                                  className={`px-4 py-2 rounded-lg text-sm transition-colors text-left ${
-                                    timeLimit === sec
-                                      ? 'bg-primary text-primary-foreground'
-                                      : 'text-foreground/70 hover:text-foreground hover:bg-muted/50'
-                                  }`}
-                                >
-                                  {sec}s
-                                </button>
-                              ))}
-                            </div>
-                          </motion.div>
+                          <div className="flex flex-col gap-2">
+                            {[15, 30, 60, 120].map((sec) => (
+                              <button
+                                key={sec}
+                                onClick={() => {
+                                  setTimeLimit(sec);
+                                  resetTest(sec);
+                                  setOpenCategory(null);
+                                }}
+                                className={`px-4 py-2 rounded-lg text-sm transition-colors text-left ${
+                                  timeLimit === sec
+                                    ? 'bg-primary text-primary-foreground'
+                                    : 'text-foreground/70 hover:text-foreground hover:bg-muted/50'
+                                }`}
+                              >
+                                {sec}s
+                              </button>
+                            ))}
+                          </div>
+                        </motion.div>
                       )}
                     </AnimatePresence>
                   </div>
                 )}
                 {/* Difficulty Category */}
-                <div className="relative" style={{ zIndex: openCategory === 'Difficulty' ? 30 : 'auto' }}>
+                <div className="relative">
                   <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setOpenCategory(openCategory === 'Difficulty' ? null : 'Difficulty');
-                    }}
+                    onClick={() => setOpenCategory(openCategory === 'Difficulty' ? null : 'Difficulty')}
                     className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 whitespace-nowrap ${
                       openCategory === 'Difficulty'
                         ? 'bg-primary text-primary-foreground'
@@ -2392,41 +2377,38 @@ const Index = () => {
                   <AnimatePresence>
                     {openCategory === 'Difficulty' && (
                       <motion.div
-                        key="dropdown-difficulty"
                         initial={{ opacity: 0, y: -8 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -8 }}
-                        onClick={(e) => e.stopPropagation()}
-                        className="absolute top-full left-0 mt-2 z-[50] bg-card/90 backdrop-blur-md border border-border rounded-xl shadow-xl p-4 min-w-[200px]"
-                        style={{ position: 'absolute' }}
+                        className="absolute top-full left-0 mt-2 z-50 bg-card/90 backdrop-blur-md border border-border rounded-xl shadow-xl p-4 min-w-[200px]"
                       >
-                          <div className="flex flex-col gap-2">
-                            {[
-                              { label: 'Easy', value: 'short' },
-                              { label: 'Classic', value: 'medium' },
-                              { label: 'Epic', value: 'long' },
-                              { label: 'Ultra', value: 'thicc' },
-                            ].map((item) => (
-                              <button
-                                key={item.value}
-                                onClick={() => {
-                                  setDifficulty(item.value);
-                                  resetTest();
-                                  setOpenCategory(null);
-                                }}
-                                className={`px-4 py-2 rounded-lg text-sm transition-colors text-left ${
-                                  difficulty === item.value
-                                    ? 'bg-primary text-primary-foreground'
-                                    : 'text-foreground/70 hover:text-foreground hover:bg-muted/50'
-                                }`}
-                              >
-                                {item.label}
-                              </button>
-                            ))}
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+                        <div className="flex flex-col gap-2">
+                          {[
+                            { label: 'Easy', value: 'short' },
+                            { label: 'Classic', value: 'medium' },
+                            { label: 'Epic', value: 'long' },
+                            { label: 'Ultra', value: 'thicc' },
+                          ].map((item) => (
+                            <button
+                              key={item.value}
+                              onClick={() => {
+                                setDifficulty(item.value);
+                                resetTest();
+                                setOpenCategory(null);
+                              }}
+                              className={`px-4 py-2 rounded-lg text-sm transition-colors text-left ${
+                                difficulty === item.value
+                                  ? 'bg-primary text-primary-foreground'
+                                  : 'text-foreground/70 hover:text-foreground hover:bg-muted/50'
+                              }`}
+                            >
+                              {item.label}
+                            </button>
+                          ))}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
                 {/* Punctuation Toggle - Disabled for coding/syntax mode */}
                 <button
@@ -2476,7 +2458,7 @@ const Index = () => {
               {/* Backdrop for closing dropdowns */}
               {openCategory && (
                 <div 
-                  className="fixed inset-0 z-[40]" 
+                  className="fixed inset-0 z-40" 
                   onClick={() => setOpenCategory(null)}
                 />
               )}
