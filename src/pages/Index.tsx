@@ -119,6 +119,7 @@ const TypingArea: React.FC<TypingAreaProps & { mode?: string; godModeIndex?: num
   const lineHeightRef = useRef<number>(0);
   
   // Monkeytype-style line snapping with smooth animation
+  // Improved to always keep caret visible, especially at the end
   useLayoutEffect(() => {
     if (!containerRef.current || !caretCharRef.current) return;
     
@@ -135,16 +136,36 @@ const TypingArea: React.FC<TypingAreaProps & { mode?: string; godModeIndex?: num
     // Get container's content area (excluding padding)
     const containerRect = container.getBoundingClientRect();
     const paddingTop = parseFloat(computedStyle.paddingTop);
+    const paddingBottom = parseFloat(computedStyle.paddingBottom);
+    const containerHeight = containerRect.height;
+    const visibleHeight = containerHeight - paddingTop - paddingBottom;
     
     // Calculate caret's position relative to the scrollable content
     const caretTopInContent = caretRect.top - containerRect.top + container.scrollTop - paddingTop;
     const currentLine = Math.floor(caretTopInContent / lineHeight);
+    
+    // Check if caret is visible in viewport
+    const caretTopRelative = caretRect.top - containerRect.top;
+    const caretBottomRelative = caretRect.bottom - containerRect.top;
+    const isCaretVisible = caretTopRelative >= paddingTop && caretBottomRelative <= (containerHeight - paddingBottom);
     
     // When cursor moves to line 2 (0-indexed), scroll so line 1 becomes line 0
     // This keeps the cursor always on line 0 or 1 visually
     if (currentLine >= 2 && currentLine > scrolledLines) {
       const newScrolledLines = currentLine - 1;
       setScrolledLines(newScrolledLines);
+    } 
+    // If caret is not visible (especially at the end), scroll to make it visible
+    else if (!isCaretVisible) {
+      if (caretBottomRelative > containerHeight - paddingBottom) {
+        // Caret is below visible area - scroll down
+        const scrollNeeded = caretBottomRelative - (containerHeight - paddingBottom) + 8;
+        container.scrollTop += scrollNeeded;
+      } else if (caretTopRelative < paddingTop) {
+        // Caret is above visible area - scroll up
+        const scrollNeeded = paddingTop - caretTopRelative + 8;
+        container.scrollTop = Math.max(0, container.scrollTop - scrollNeeded);
+      }
     }
   }, [userInput, currentText, scrolledLines]);
   
