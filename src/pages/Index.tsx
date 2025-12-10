@@ -1005,7 +1005,7 @@ const Index = () => {
   // Add per-language, per-difficulty sample texts
   const sampleTextsByLanguageAndDifficulty = {
     english: {
-      short: "Master the keyboard and unlock your potential. Every keystroke brings you closer to perfection. Speed and accuracy go hand in hand.",
+      short: "Master the keyboard and unlock your potential. Every keystroke brings you closer to perfection.",
       medium: "In the midst of winter I found there was within me an invincible summer. And that makes me happy. For it says that no matter how hard the world pushes against me there is something stronger within me.",
       long: "Technology has fundamentally transformed the way we live work and communicate. From smartphones to satellites our world is connected like never before. Digital platforms empower individuals and businesses to innovate faster. Understanding technology is now essential in every field and industry.",
       thicc: "Photosynthesis is the biological process by which plants algae and certain bacteria convert light energy into chemical energy stored in glucose molecules. This process occurs in the chloroplasts using chlorophyll. Carbon dioxide and water are converted into sugars and oxygen. Light-dependent reactions take place in the thylakoid membranes. The light-independent reactions also known as the Calvin Cycle occur in the stroma. Photosynthesis is vital for life on Earth producing both oxygen and organic compounds used in food chains."
