@@ -19,7 +19,6 @@ export default function AuthOverlay() {
   const [resetError, setResetError] = useState('');
   const [signupSuccess, setSignupSuccess] = useState(false);
   const [emailConfirmationRequired, setEmailConfirmationRequired] = useState(false);
-  const [resendingEmail, setResendingEmail] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
@@ -131,25 +130,6 @@ export default function AuthOverlay() {
     }
   };
 
-  const handleResendConfirmationEmail = async () => {
-    setResendingEmail(true);
-    setError('');
-    try {
-      const { error } = await supabase.auth.resend({
-        type: 'signup',
-        email: email,
-        options: {
-          emailRedirectTo: `${window.location.origin}`
-        }
-      });
-      if (error) throw error;
-      toastSuccess('Confirmation email resent');
-    } catch (err: any) {
-      setError(err.message || 'Failed to resend email');
-    } finally {
-      setResendingEmail(false);
-    }
-  };
 
   const wpm = state?.stats?.wpm ?? 0;
   const accuracy = state?.stats?.accuracy ?? 100;
@@ -294,30 +274,14 @@ export default function AuthOverlay() {
                     </div>
 
                     {resetSent && (
-                      <div className="bg-green-500/10 border border-green-500/50 text-green-400 rounded-lg p-4 space-y-3">
-                        <div className="flex items-start gap-2">
-                          <CheckCircle2 className="w-5 h-5 mt-0.5 flex-shrink-0" />
-                          <div className="flex-1">
-                            <p className="font-medium mb-1">Email sent!</p>
-                            <p className="text-sm text-green-300/80">
-                              Check your inbox at <span className="font-medium">{email}</span>
-                            </p>
-                            <p className="text-xs text-green-300/70 mt-2">
-                              Don't see it? Check your spam folder.
-                            </p>
-                          </div>
+                      <div className="bg-green-500/10 border border-green-500/50 text-green-400 rounded-lg p-4 flex items-start gap-3">
+                        <CheckCircle2 className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                        <div className="flex-1">
+                          <p className="font-medium mb-1">Email sent!</p>
+                          <p className="text-sm text-green-300/80">
+                            Check your inbox for the reset link.
+                          </p>
                         </div>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setShowForgotPassword(false);
-                            setResetSent(false);
-                            setResetError('');
-                          }}
-                          className="w-full bg-background hover:bg-muted text-foreground rounded-lg px-4 py-2 font-medium text-sm transition-colors"
-                        >
-                          Back to Sign In
-                        </button>
                       </div>
                     )}
 
@@ -399,57 +363,13 @@ export default function AuthOverlay() {
                     )}
                     
                     {signup && signupSuccess && emailConfirmationRequired && (
-                      <div className="bg-blue-500/10 border border-blue-500/50 text-blue-400 rounded-lg p-4 space-y-3">
-                        <div className="flex items-start gap-2">
-                          <CheckCircle2 className="w-5 h-5 mt-0.5 flex-shrink-0" />
-                          <div className="flex-1">
-                            <p className="font-medium mb-1">Account created!</p>
-                            <p className="text-sm text-blue-300/80 mb-3">
-                              Please check your email at <span className="font-medium">{email}</span> to confirm your account.
-                            </p>
-                            <div className="bg-yellow-500/10 border border-yellow-500/50 rounded-lg p-3 mb-3">
-                              <p className="text-xs text-yellow-300/90 mb-2 font-medium">Check your spam folder if you don't see it</p>
-                              <button
-                                type="button"
-                                onClick={handleResendConfirmationEmail}
-                                disabled={resendingEmail}
-                                className="text-xs bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-300 px-3 py-1.5 rounded font-medium transition-colors disabled:opacity-50"
-                              >
-                                {resendingEmail ? 'Sending...' : 'Resend email'}
-                              </button>
-                            </div>
-                            <div className="flex gap-2">
-                              <button
-                                type="button"
-                                onClick={async () => {
-                                  try {
-                                    await loginWithPassword(email, password);
-                                    closeOverlay();
-                                  } catch (err: any) {
-                                    setSignup(false);
-                                    setSignupSuccess(false);
-                                    setEmailConfirmationRequired(false);
-                                    setError('Please confirm your email first');
-                                  }
-                                }}
-                                className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg font-medium text-sm transition-colors"
-                              >
-                                Try Signing In
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setSignup(false);
-                                  setSignupSuccess(false);
-                                  setEmailConfirmationRequired(false);
-                                  setError('');
-                                }}
-                                className="flex-1 bg-background hover:bg-muted text-foreground px-4 py-2 rounded-lg font-medium text-sm transition-colors"
-                              >
-                                Sign In
-                              </button>
-                            </div>
-                          </div>
+                      <div className="bg-blue-500/10 border border-blue-500/50 text-blue-400 rounded-lg p-4 flex items-start gap-3">
+                        <CheckCircle2 className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                        <div className="flex-1">
+                          <p className="font-medium mb-1">Account created!</p>
+                          <p className="text-sm text-blue-300/80">
+                            Please check your email to confirm your account.
+                          </p>
                         </div>
                       </div>
                     )}
