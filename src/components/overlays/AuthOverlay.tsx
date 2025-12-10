@@ -20,6 +20,7 @@ export default function AuthOverlay() {
   const [signupSuccess, setSignupSuccess] = useState(false);
   const [emailConfirmationRequired, setEmailConfirmationRequired] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [accountExists, setAccountExists] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
 
@@ -49,6 +50,7 @@ export default function AuthOverlay() {
     setError('');
     setSignupSuccess(false);
     setEmailConfirmationRequired(false);
+    setAccountExists(false);
     setIsSubmitting(true);
     
     try {
@@ -61,8 +63,10 @@ export default function AuthOverlay() {
       });
       
       if (error) {
-        if (error.message.toLowerCase().includes('already registered') || error.message.toLowerCase().includes('user already')) {
-          setError('Email already registered. Please sign in instead.');
+        const errorMsg = error.message.toLowerCase();
+        if (errorMsg.includes('already registered') || errorMsg.includes('user already') || errorMsg.includes('already exists')) {
+          setAccountExists(true);
+          setError('');
         } else {
           setError(error.message);
         }
@@ -71,6 +75,7 @@ export default function AuthOverlay() {
       
       if (data.user) {
         if (data.session) {
+          // Email confirmation disabled - user is signed in
           setSignupSuccess(true);
           toastSuccess('Account created successfully');
           setTimeout(() => {
@@ -78,6 +83,7 @@ export default function AuthOverlay() {
             navigate('/profile');
           }, 1000);
         } else {
+          // Email confirmation required
           setEmailConfirmationRequired(true);
           setSignupSuccess(true);
           toastInfo('Please check your email to confirm your account');
@@ -362,6 +368,29 @@ export default function AuthOverlay() {
                       </div>
                     )}
                     
+                    {signup && accountExists && (
+                      <div className="bg-muted/50 border border-border rounded-lg p-4 flex items-start gap-3">
+                        <AlertCircle className="w-5 h-5 mt-0.5 flex-shrink-0 text-primary" />
+                        <div className="flex-1">
+                          <p className="font-medium text-foreground mb-1">Account already exists</p>
+                          <p className="text-sm text-muted-foreground mb-3">
+                            This email is already registered. Please sign in instead.
+                          </p>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSignup(false);
+                              setAccountExists(false);
+                              setError('');
+                            }}
+                            className="text-sm text-primary hover:text-primary/80 font-medium transition-colors"
+                          >
+                            Switch to Sign In →
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                    
                     {signup && signupSuccess && emailConfirmationRequired && (
                       <div className="bg-muted/50 border border-border rounded-lg p-4 flex items-start gap-3">
                         <CheckCircle2 className="w-5 h-5 mt-0.5 flex-shrink-0 text-primary" />
@@ -373,11 +402,23 @@ export default function AuthOverlay() {
                         </div>
                       </div>
                     )}
+                    
+                    {signup && signupSuccess && !emailConfirmationRequired && (
+                      <div className="bg-muted/50 border border-border rounded-lg p-4 flex items-start gap-3">
+                        <CheckCircle2 className="w-5 h-5 mt-0.5 flex-shrink-0 text-primary" />
+                        <div className="flex-1">
+                          <p className="font-medium text-foreground mb-1">Account created!</p>
+                          <p className="text-sm text-muted-foreground">
+                            Redirecting to your profile...
+                          </p>
+                        </div>
+                      </div>
+                    )}
 
                     <button
                       type="submit"
                       className="w-full bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg px-4 py-3 font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                      disabled={isSubmitting || (signup && signupSuccess)}
+                      disabled={isSubmitting || (signup && signupSuccess && !emailConfirmationRequired) || accountExists}
                     >
                       {isSubmitting ? (
                         <>
@@ -417,6 +458,8 @@ export default function AuthOverlay() {
                     setSignup(!signup);
                     setError('');
                     setSignupSuccess(false);
+                    setAccountExists(false);
+                    setEmailConfirmationRequired(false);
                     setResetSent(false);
                     setResetError('');
                     setShowForgotPassword(false);
