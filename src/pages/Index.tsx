@@ -1171,37 +1171,43 @@ const Index = () => {
     
     // Remove punctuation if disabled
     if (!includePunctuation) {
-      // Remove common punctuation marks but keep spaces
+      // Remove common punctuation marks but keep spaces and word boundaries
       modifiedText = modifiedText.replace(/[.,!?;:'"()\[\]{}\-_=+<>\/\\|`~@#$%^&*]/g, '');
-      // Clean up multiple spaces that might result (but preserve newlines)
+      // Clean up multiple spaces that might result (but preserve newlines and single spaces)
       modifiedText = modifiedText.replace(/[ \t]+/g, ' ').replace(/ +$/gm, '');
     }
     // If includePunctuation is true, keep text as-is (don't modify)
     
     // Handle numbers
     if (!includeNumbers) {
-      // Remove all digits (0-9)
+      // Remove all digits (0-9) but preserve word boundaries
       modifiedText = modifiedText.replace(/[0-9]/g, '');
-      // Clean up multiple spaces that might result (but preserve newlines)
+      // Clean up multiple spaces that might result (but preserve newlines and single spaces)
       modifiedText = modifiedText.replace(/[ \t]+/g, ' ').replace(/ +$/gm, '');
     } else {
       // If numbers are enabled, ensure some numbers exist in the text
       const hasNumbers = /[0-9]/.test(modifiedText);
       if (!hasNumbers && modifiedText.length > 10) {
         // Add numbers to the text by inserting them between words
-        const words = modifiedText.split(' ');
+        // Split by whitespace to get words, but preserve the structure
+        // Filter out empty strings from multiple spaces
+        const words = modifiedText.split(/\s+/).filter(word => word.trim().length > 0);
         const numbers = ['1', '2', '3', '4', '5', '10', '20', '50', '100', '2024'];
         let numberIndex = 0;
         const wordsWithNumbers: string[] = [];
         
         for (let i = 0; i < words.length; i++) {
           wordsWithNumbers.push(words[i]);
-          // Add a number after every 4-6 words
+          
+          // Add a number after every 5 words, but not at the very end
+          // Insert with proper spacing to maintain word boundaries
           if (i > 0 && (i + 1) % 5 === 0 && i < words.length - 1) {
             wordsWithNumbers.push(numbers[numberIndex % numbers.length]);
             numberIndex++;
           }
         }
+        
+        // Join with single spaces to preserve word boundaries
         modifiedText = wordsWithNumbers.join(' ');
       }
     }
