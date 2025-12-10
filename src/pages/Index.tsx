@@ -2473,6 +2473,13 @@ const Index = () => {
                   # numbers
                 </button>
               </div>
+              {/* Backdrop for closing dropdowns */}
+              {openCategory && (
+                <div 
+                  className="fixed inset-0 z-[40]" 
+                  onClick={() => setOpenCategory(null)}
+                />
+              )}
             </motion.div>
           )}
         </AnimatePresence>
