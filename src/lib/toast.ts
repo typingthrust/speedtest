@@ -22,11 +22,12 @@ export const showToast = (variant: ToastVariant, options: ToastOptions = {}) => 
   const Icon = toastIcons[variant];
 
   // Use theme-aware classes that adapt to the current theme
+  // Using HSL color values that work with CSS variables for better theme compatibility
   const variantClasses = {
-    success: "border-green-500/50 bg-green-500/10 text-green-600 dark:text-green-400",
+    success: "border-green-500/50 bg-green-500/10 text-green-600 dark:text-green-400 backdrop-blur-sm",
     error: "", // Will use destructive variant
-    info: "border-blue-500/50 bg-blue-500/10 text-blue-600 dark:text-blue-400",
-    warning: "border-amber-500/50 bg-amber-500/10 text-amber-600 dark:text-amber-400",
+    info: "border-blue-500/50 bg-blue-500/10 text-blue-600 dark:text-blue-400 backdrop-blur-sm",
+    warning: "border-amber-500/50 bg-amber-500/10 text-amber-600 dark:text-amber-400 backdrop-blur-sm",
   };
 
   const toastConfig: any = {
