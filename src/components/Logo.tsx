@@ -11,28 +11,32 @@ const Logo: React.FC<{ className?: string }> = ({ className = '' }) => {
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
         >
-          {/* Background circle/badge */}
-          <circle cx="24" cy="24" r="22" fill="hsl(var(--primary))" opacity="0.15" />
-          <circle cx="24" cy="24" r="22" stroke="hsl(var(--primary))" strokeWidth="2" />
-          
-          {/* Keyboard icon */}
-          <rect x="12" y="18" width="24" height="14" rx="2" fill="hsl(var(--primary))" opacity="0.25" />
-          <rect x="12" y="18" width="24" height="14" rx="2" stroke="hsl(var(--primary))" strokeWidth="1.5" />
-          
-          {/* Keys */}
-          <rect x="15" y="21" width="5" height="5" rx="1" fill="hsl(var(--primary))" />
-          <rect x="22" y="21" width="5" height="5" rx="1" fill="hsl(var(--primary))" opacity="0.7" />
-          <rect x="29" y="21" width="5" height="5" rx="1" fill="hsl(var(--primary))" opacity="0.5" />
-          
-          {/* Speed lines */}
-          <path
-            d="M 36 25 L 40 25 M 38 23 L 40 25 L 38 27"
-            stroke="hsl(var(--primary))"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            fill="none"
-          />
+          {/* Clean keyboard icon with speed indicator */}
+          <g>
+            {/* Keyboard outline */}
+            <rect x="8" y="15" width="32" height="20" rx="4" fill="hsl(var(--primary))" opacity="0.08" />
+            <rect x="8" y="15" width="32" height="20" rx="4" stroke="hsl(var(--primary))" strokeWidth="2.5" />
+            
+            {/* Top row of keys - 3 keys */}
+            <rect x="12" y="19" width="8" height="6" rx="1.5" fill="hsl(var(--primary))" />
+            <rect x="22" y="19" width="8" height="6" rx="1.5" fill="hsl(var(--primary))" opacity="0.7" />
+            <rect x="32" y="19" width="4" height="6" rx="1.5" fill="hsl(var(--primary))" opacity="0.5" />
+            
+            {/* Bottom row of keys - 3 keys */}
+            <rect x="12" y="27" width="8" height="6" rx="1.5" fill="hsl(var(--primary))" opacity="0.6" />
+            <rect x="22" y="27" width="8" height="6" rx="1.5" fill="hsl(var(--primary))" opacity="0.4" />
+            <rect x="32" y="27" width="4" height="6" rx="1.5" fill="hsl(var(--primary))" opacity="0.3" />
+            
+            {/* Speed arrow pointing right */}
+            <path
+              d="M 38 25 L 44 25 M 41 22 L 44 25 L 41 28"
+              stroke="hsl(var(--primary))"
+              strokeWidth="3"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              fill="none"
+            />
+          </g>
         </svg>
       </div>
       
