@@ -547,7 +547,7 @@ function AnimatedUnderlineTabs({ tabs, activeIndex, onChange }: { tabs: string[]
           <AnimatePresence>
             {activeIndex === idx && (
               <motion.div
-                layoutId="underline"
+                layoutId={`underline-${idx}`}
                 className="absolute left-0 right-0 -bottom-1 h-[2.5px] rounded-full bg-primary"
                 initial={{ opacity: 0, y: 4 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -563,7 +563,7 @@ function AnimatedUnderlineTabs({ tabs, activeIndex, onChange }: { tabs: string[]
 }
 
 // Animated Chip component for settings
-const AnimatedChip = ({ selected, onClick, children }: { selected: boolean; onClick: () => void; children: React.ReactNode }) => (
+const AnimatedChip = ({ selected, onClick, children, id }: { selected: boolean; onClick: () => void; children: React.ReactNode; id?: string }) => (
   <motion.button
     type="button"
     onClick={onClick}
@@ -580,7 +580,7 @@ const AnimatedChip = ({ selected, onClick, children }: { selected: boolean; onCl
     {children}
     {selected && (
       <motion.div
-        layoutId="chip-underline"
+        layoutId={`chip-underline-${id || 'default'}`}
         className="absolute left-3 right-3 bottom-1 h-1 rounded-b-xl bg-primary"
         style={{ marginTop: 2 }}
       />
@@ -1769,7 +1769,9 @@ const Index = () => {
     }
   }, [currentIndex]);
 
-  // Render character with styling and smooth animations
+  // Render character with styling and smooth animations (unused - kept for reference)
+  // Note: This function is not currently used, but kept for potential future use
+  // If used, ensure layoutIds are unique per instance
   const renderCharacter = (char: string, index: number) => {
     let className = 'transition-all duration-150 ease-out inline-block ';
     
@@ -1794,7 +1796,7 @@ const Index = () => {
         >
           <motion.span
             className="bg-primary text-primary-foreground transform scale-110"
-            layoutId="caret-char"
+            layoutId={`caret-char-render-${currentMode}`}
             transition={{ duration: 0.06, ease: 'easeOut' }}
           >
             {char}
@@ -1811,7 +1813,7 @@ const Index = () => {
               display: 'inline-block',
               verticalAlign: 'middle',
             }}
-            layoutId="caret-bar"
+            layoutId={`caret-bar-render-${currentMode}`}
             initial={{ opacity: 0, y: 4 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
