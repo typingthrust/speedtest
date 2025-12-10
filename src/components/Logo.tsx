@@ -2,57 +2,45 @@ import React from 'react';
 
 const Logo: React.FC<{ className?: string }> = ({ className = '' }) => {
   return (
-    <svg
-      viewBox="0 0 200 50"
-      className={className}
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      {/* Modern Typing Icon - Keyboard keys with motion effect */}
-      <g>
-        {/* Background glow effect */}
-        <ellipse cx="28" cy="22" rx="30" ry="8" fill="hsl(var(--primary))" opacity="0.1" />
-        
-        {/* Keyboard keys - modern design with depth */}
-        <rect x="4" y="14" width="16" height="16" rx="3" fill="hsl(var(--primary))" opacity="1" />
-        <rect x="4" y="14" width="16" height="8" rx="3" fill="hsl(var(--primary))" opacity="0.6" />
-        
-        <rect x="24" y="14" width="16" height="16" rx="3" fill="hsl(var(--primary))" opacity="0.9" />
-        <rect x="24" y="14" width="16" height="8" rx="3" fill="hsl(var(--primary))" opacity="0.5" />
-        
-        <rect x="44" y="14" width="16" height="16" rx="3" fill="hsl(var(--primary))" opacity="0.8" />
-        <rect x="44" y="14" width="16" height="8" rx="3" fill="hsl(var(--primary))" opacity="0.4" />
-        
-        {/* Motion trail lines */}
-        <line x1="0" y1="22" x2="4" y2="22" stroke="hsl(var(--primary))" strokeWidth="2.5" opacity="0.6" strokeLinecap="round" />
-        <line x1="20" y1="22" x2="24" y2="22" stroke="hsl(var(--primary))" strokeWidth="2.5" opacity="0.6" strokeLinecap="round" />
-        <line x1="40" y1="22" x2="44" y2="22" stroke="hsl(var(--primary))" strokeWidth="2.5" opacity="0.6" strokeLinecap="round" />
-        <line x1="60" y1="22" x2="72" y2="22" stroke="hsl(var(--primary))" strokeWidth="2.5" opacity="0.5" strokeLinecap="round" />
-        
-        {/* Speed arrow - modern and bold */}
-        <path
-          d="M 70 22 L 80 22 M 77 19 L 80 22 L 77 25"
-          stroke="hsl(var(--primary))"
-          strokeWidth="3"
-          strokeLinecap="round"
-          strokeLinejoin="round"
+    <div className={`flex items-center gap-3 ${className}`}>
+      {/* Icon Mark */}
+      <div className="relative flex-shrink-0">
+        <svg
+          viewBox="0 0 48 48"
+          className="w-10 h-10 sm:w-11 sm:h-11 md:w-12 md:h-12"
           fill="none"
-        />
-      </g>
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          {/* Background circle/badge */}
+          <circle cx="24" cy="24" r="22" fill="hsl(var(--primary))" opacity="0.15" />
+          <circle cx="24" cy="24" r="22" stroke="hsl(var(--primary))" strokeWidth="2" />
+          
+          {/* Keyboard icon */}
+          <rect x="12" y="18" width="24" height="14" rx="2" fill="hsl(var(--primary))" opacity="0.25" />
+          <rect x="12" y="18" width="24" height="14" rx="2" stroke="hsl(var(--primary))" strokeWidth="1.5" />
+          
+          {/* Keys */}
+          <rect x="15" y="21" width="5" height="5" rx="1" fill="hsl(var(--primary))" />
+          <rect x="22" y="21" width="5" height="5" rx="1" fill="hsl(var(--primary))" opacity="0.7" />
+          <rect x="29" y="21" width="5" height="5" rx="1" fill="hsl(var(--primary))" opacity="0.5" />
+          
+          {/* Speed lines */}
+          <path
+            d="M 36 25 L 40 25 M 38 23 L 40 25 L 38 27"
+            stroke="hsl(var(--primary))"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            fill="none"
+          />
+        </svg>
+      </div>
       
-      {/* TypingThrust Text - Clean and modern */}
-      <text
-        x="88"
-        y="32"
-        fontSize="23"
-        fontWeight="700"
-        fill="hsl(var(--foreground))"
-        fontFamily="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
-        letterSpacing="-0.4"
-      >
-        TypingThrust
-      </text>
-    </svg>
+      {/* Wordmark */}
+      <span className="text-xl sm:text-2xl md:text-2xl font-bold text-foreground tracking-tight select-none">
+        Typing<span className="text-primary">Thrust</span>
+      </span>
+    </div>
   );
 };
 
