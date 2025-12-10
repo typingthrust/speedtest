@@ -1242,9 +1242,9 @@ export default function Profile() {
               )}
               <div className="flex-1 min-w-0">
                 <h1 className="text-xl sm:text-2xl font-bold text-foreground truncate mb-0.5">
-                  {(user?.username || user?.user_metadata?.username) || user?.email || 'User'}
+                  {(user?.username || user?.user_metadata?.username) || (user?.email ? user.email.split('@')[0] : 'User')}
                 </h1>
-                {user?.email && (user?.username || user?.user_metadata?.username) && (
+                {user?.email && (
                   <p className="text-xs sm:text-sm text-muted-foreground truncate">
                     {user.email}
                   </p>

@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { supabase } from '../lib/supabaseClient';
+import { toastSuccess, toastError, toastInfo } from '../lib/toast';
 
 export interface UserProfile {
   id: string;
@@ -26,6 +27,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [session, setSession] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   useEffect(() => {
     const getSession = async () => {
@@ -44,9 +46,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(null);
       }
       setLoading(false);
+      setIsInitialLoad(false);
     };
     getSession();
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
       if (session?.user) {
         setUser({
@@ -55,6 +58,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           username: session.user.user_metadata?.username || undefined,
           avatar_url: session.user.user_metadata?.avatar_url || undefined,
         });
+        // Show success toast on sign in (but not on initial session load)
+        if (event === 'SIGNED_IN' && !isInitialLoad) {
+          toastSuccess("Signed in successfully");
+        }
       } else {
         setUser(null);
       }
@@ -66,20 +73,35 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const loginWithGoogle = async () => {
     setLoading(true);
-    await supabase.auth.signInWithOAuth({ provider: 'google' });
-    setLoading(false);
+    const { error } = await supabase.auth.signInWithOAuth({ provider: 'google' });
+    if (error) {
+      toastError("Google sign in failed", error.message);
+      setLoading(false);
+    } else {
+      // OAuth redirects, so we don't set loading to false here
+      toastInfo("Redirecting to Google...");
+    }
   };
   const loginWithPassword = async (email: string, password: string) => {
     setLoading(true);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
-    if (error) throw error;
+    if (error) {
+      toastError("Sign in failed", error.message);
+      throw error;
+    }
+    // Success toast is handled by onAuthStateChange
   };
   const signUpWithPassword = async (email: string, password: string) => {
     setLoading(true);
     const { error } = await supabase.auth.signUp({ email, password });
     setLoading(false);
-    if (error) throw error;
+    if (error) {
+      toastError("Sign up failed", error.message);
+      throw error;
+    } else {
+      toastSuccess("Account created successfully");
+    }
   };
   const loginAsGuest = () => {
     setUser({ id: 'guest', email: null });
@@ -87,10 +109,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
   const logout = async () => {
     setLoading(true);
-    await supabase.auth.signOut();
+    const { error } = await supabase.auth.signOut();
     setUser(null);
     setSession(null);
     setLoading(false);
+    if (error) {
+      toastError("Sign out failed", error.message);
+    } else {
+      toastSuccess("Signed out successfully");
+    }
   };
   return (
     <AuthContext.Provider value={{ user, loading, loginWithGoogle, loginWithPassword, signUpWithPassword, loginAsGuest, logout, session }}>
