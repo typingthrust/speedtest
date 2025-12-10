@@ -6,8 +6,7 @@ import { useGamification } from './GamificationProvider';
 import { useOverlay } from './OverlayProvider';
 import { useAuth } from './AuthProvider';
 import { Button } from './ui/button';
-
-const logo = '/logonew.png';
+import Logo from './Logo';
 
 const Navbar: React.FC = () => {
   const navigate = useNavigate();
@@ -34,7 +33,7 @@ const Navbar: React.FC = () => {
     <nav className="w-full bg-background/80 backdrop-blur-sm sticky top-0 z-50">
       <div className="w-full px-4 md:px-6">
         <div className="flex items-center justify-between h-14">
-          {/* Logo - Smaller & Cleaner */}
+          {/* Logo - Modern SVG Logo */}
           <Link 
             to="/" 
             onClick={() => navigate('/')}
@@ -42,12 +41,7 @@ const Navbar: React.FC = () => {
             aria-label="Go to home page"
             style={{ outline: 'none', boxShadow: 'none', WebkitTapHighlightColor: 'transparent' }}
           >
-            <img
-              src={logo}
-              alt="TypingThrust Logo"
-              className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 object-contain flex-shrink-0 select-none"
-              draggable="false"
-            />
+            <Logo className="h-8 sm:h-9 md:h-10 w-auto flex-shrink-0 select-none" />
           </Link>
 
           {/* Desktop Navigation - Minimal & Clean */}
