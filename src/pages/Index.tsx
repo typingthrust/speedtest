@@ -1247,6 +1247,9 @@ const Index = () => {
     // Trim leading and trailing spaces to prevent extra spaces at sentence beginning/end
     modifiedText = modifiedText.trim();
     
+    // Final safety check: remove any leading space that might have been introduced
+    modifiedText = modifiedText.replace(/^\s+/, '');
+    
     return modifiedText;
   };
 
@@ -1887,7 +1890,9 @@ const Index = () => {
   // Helper: get a random sample from an object of arrays
   function getRandom(arr) {
     if (!arr || arr.length === 0) return '';
-    return arr[Math.floor(Math.random() * arr.length)];
+    const result = arr[Math.floor(Math.random() * arr.length)];
+    // Trim the result to remove any leading/trailing spaces
+    return typeof result === 'string' ? result.trim() : result;
   }
 
   // Update generateNewText to handle ALL modes
