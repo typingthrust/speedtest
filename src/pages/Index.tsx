@@ -1192,48 +1192,32 @@ const Index = () => {
     
     // Remove punctuation if disabled
     if (!includePunctuation) {
-      // First, normalize spaces to ensure consistent word boundaries
-      modifiedText = modifiedText.replace(/[ \t]+/g, ' ').trim();
-      // Remove punctuation marks that are attached to words (preserve word boundaries)
-      modifiedText = modifiedText.replace(/(\w)[.,!?;:'"()\[\]{}\-_=+<>\/\\|`~@#$%^&*]+/g, '$1');
-      // Remove standalone punctuation (punctuation with spaces around it)
-      modifiedText = modifiedText.replace(/\s*[.,!?;:'"()\[\]{}\-_=+<>\/\\|`~@#$%^&*]+\s*/g, ' ');
-      // Final cleanup of multiple spaces
-      modifiedText = modifiedText.replace(/[ \t]+/g, ' ').trim();
+      // Remove common punctuation marks but keep spaces and word boundaries
+      modifiedText = modifiedText.replace(/[.,!?;:'"()\[\]{}\-_=+<>\/\\|`~@#$%^&*]/g, '');
+      // Clean up multiple spaces that might result (but preserve newlines and single spaces)
+      modifiedText = modifiedText.replace(/[ \t]+/g, ' ').replace(/ +$/gm, '');
     }
     // If includePunctuation is true, keep text as-is (don't modify)
     
     // Handle numbers
     if (!includeNumbers) {
-      // First, normalize spaces
-      modifiedText = modifiedText.replace(/[ \t]+/g, ' ').trim();
-      // Remove numbers that are attached to words
-      modifiedText = modifiedText.replace(/(\w)[0-9]+/g, '$1');
-      // Remove standalone numbers
-      modifiedText = modifiedText.replace(/\s*[0-9]+\s*/g, ' ');
-      // Remove any remaining digits
+      // Remove all digits (0-9) but preserve word boundaries
       modifiedText = modifiedText.replace(/[0-9]/g, '');
-      // Final cleanup
-      modifiedText = modifiedText.replace(/[ \t]+/g, ' ').trim();
+      // Clean up multiple spaces that might result (but preserve newlines and single spaces)
+      modifiedText = modifiedText.replace(/[ \t]+/g, ' ').replace(/ +$/gm, '');
     } else {
       // If numbers are enabled, ensure some numbers exist in the text
       const hasNumbers = /[0-9]/.test(modifiedText);
       if (!hasNumbers && modifiedText.length > 10) {
-        // Normalize text first to ensure proper word boundaries
-        modifiedText = modifiedText.replace(/[ \t]+/g, ' ').trim();
-        // Split by whitespace to get words - this preserves word boundaries
-        const words = modifiedText.split(/\s+/).filter(word => {
-          // Only include words that have actual content (not just punctuation)
-          const cleaned = word.replace(/[.,!?;:'"()\[\]{}\-_=+<>\/\\|`~@#$%^&*]/g, '').trim();
-          return cleaned.length > 0;
-        });
-        
+        // Add numbers to the text by inserting them between words
+        // Split by whitespace to get words, but preserve the structure
+        // Filter out empty strings from multiple spaces
+        const words = modifiedText.split(/\s+/).filter(word => word.trim().length > 0);
         const numbers = ['1', '2', '3', '4', '5', '10', '20', '50', '100', '2024'];
         let numberIndex = 0;
         const wordsWithNumbers: string[] = [];
         
         for (let i = 0; i < words.length; i++) {
-          // Add the word as-is (punctuation already handled above if disabled)
           wordsWithNumbers.push(words[i]);
           
           // Add a number after every 5 words, but not at the very end
@@ -1248,9 +1232,6 @@ const Index = () => {
         modifiedText = wordsWithNumbers.join(' ');
       }
     }
-    
-    // Final normalization to ensure consistent spacing
-    modifiedText = modifiedText.replace(/[ \t]+/g, ' ').trim();
     
     return modifiedText;
   };
@@ -1270,19 +1251,12 @@ const Index = () => {
       setCurrentText(modifiedText);
     } else {
       // Trim and normalize spaces to prevent wrapping issues - remove trailing spaces from each line
-      // For softtheme/zen modes, be extra careful with word boundaries
-      let normalizedText = modifiedText
+      const normalizedText = modifiedText
         .split('\n')
         .map(line => line.trimEnd())
         .join('\n')
-        .trim();
-      
-      // Normalize spaces but preserve word boundaries - replace multiple spaces/tabs with single space
-      normalizedText = normalizedText.replace(/[ \t]+/g, ' ');
-      
-      // Ensure no leading/trailing spaces
-      normalizedText = normalizedText.trim();
-      
+        .trim()
+        .replace(/\s+/g, ' ');
       setCurrentText(normalizedText);
     }
     }
