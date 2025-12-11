@@ -1188,50 +1188,58 @@ const Index = () => {
       return text;
     }
     
-    let modifiedText = text;
+    // Split text into words while preserving word boundaries
+    // Split by whitespace to get individual words
+    const words = text.split(/\s+/).filter(word => word.trim().length > 0);
+    const processedWords: string[] = [];
     
-    // Remove punctuation if disabled
-    if (!includePunctuation) {
-      // Remove common punctuation marks but keep spaces and word boundaries
-      modifiedText = modifiedText.replace(/[.,!?;:'"()\[\]{}\-_=+<>\/\\|`~@#$%^&*]/g, '');
-      // Clean up multiple spaces that might result (but preserve newlines and single spaces)
-      modifiedText = modifiedText.replace(/[ \t]+/g, ' ').replace(/ +$/gm, '');
-    }
-    // If includePunctuation is true, keep text as-is (don't modify)
-    
-    // Handle numbers
-    if (!includeNumbers) {
-      // Remove all digits (0-9) but preserve word boundaries
-      modifiedText = modifiedText.replace(/[0-9]/g, '');
-      // Clean up multiple spaces that might result (but preserve newlines and single spaces)
-      modifiedText = modifiedText.replace(/[ \t]+/g, ' ').replace(/ +$/gm, '');
-    } else {
-      // If numbers are enabled, ensure some numbers exist in the text
-      const hasNumbers = /[0-9]/.test(modifiedText);
-      if (!hasNumbers && modifiedText.length > 10) {
-        // Add numbers to the text by inserting them between words
-        // Split by whitespace to get words, but preserve the structure
-        // Filter out empty strings from multiple spaces
-        const words = modifiedText.split(/\s+/).filter(word => word.trim().length > 0);
-        const numbers = ['1', '2', '3', '4', '5', '10', '20', '50', '100', '2024'];
-        let numberIndex = 0;
-        const wordsWithNumbers: string[] = [];
-        
-        for (let i = 0; i < words.length; i++) {
-          wordsWithNumbers.push(words[i]);
-          
-          // Add a number after every 5 words, but not at the very end
-          // Insert with proper spacing to maintain word boundaries
-          if (i > 0 && (i + 1) % 5 === 0 && i < words.length - 1) {
-            wordsWithNumbers.push(numbers[numberIndex % numbers.length]);
-            numberIndex++;
-          }
-        }
-        
-        // Join with single spaces to preserve word boundaries
-        modifiedText = wordsWithNumbers.join(' ');
+    // Process each word individually to preserve word boundaries
+    for (const word of words) {
+      let processedWord = word;
+      
+      // Remove punctuation if disabled (remove punctuation from the word, but keep the word)
+      if (!includePunctuation) {
+        processedWord = processedWord.replace(/[.,!?;:'"()\[\]{}\-_=+<>\/\\|`~@#$%^&*]/g, '');
+      }
+      
+      // Remove numbers if disabled (remove digits from the word, but keep the word)
+      if (!includeNumbers) {
+        processedWord = processedWord.replace(/[0-9]/g, '');
+      }
+      
+      // Only add the word if it's not empty after processing
+      if (processedWord.trim().length > 0) {
+        processedWords.push(processedWord);
       }
     }
+    
+    let modifiedText = processedWords.join(' ');
+    
+    // If numbers are enabled and text doesn't have numbers, add them between words (not within words)
+    if (includeNumbers && !/[0-9]/.test(modifiedText) && modifiedText.length > 10) {
+      // Split into words again (preserving word boundaries)
+      const wordsForNumbers = modifiedText.split(/\s+/).filter(word => word.trim().length > 0);
+      const numbers = ['1', '2', '3', '4', '5', '10', '20', '50', '100', '2024'];
+      let numberIndex = 0;
+      const wordsWithNumbers: string[] = [];
+      
+      for (let i = 0; i < wordsForNumbers.length; i++) {
+        wordsWithNumbers.push(wordsForNumbers[i]);
+        
+        // Add a number after every 5 words, but not at the very end
+        // Insert as separate token between words to maintain word boundaries
+        if (i > 0 && (i + 1) % 5 === 0 && i < wordsForNumbers.length - 1) {
+          wordsWithNumbers.push(numbers[numberIndex % numbers.length]);
+          numberIndex++;
+        }
+      }
+      
+      // Join with single spaces to preserve word boundaries
+      modifiedText = wordsWithNumbers.join(' ');
+    }
+    
+    // Final cleanup: normalize multiple spaces but preserve word boundaries
+    modifiedText = modifiedText.replace(/[ \t]+/g, ' ').replace(/ +$/gm, '');
     
     return modifiedText;
   };
