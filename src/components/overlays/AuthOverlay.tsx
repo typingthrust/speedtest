@@ -471,17 +471,6 @@ export default function AuthOverlay() {
                 </button>
               </div>
 
-              {/* Continue as Guest */}
-              <div className="pt-2">
-                <button
-                  onClick={handleGuestLogin}
-                  className="w-full text-sm text-muted-foreground hover:text-foreground font-medium transition-colors"
-                  type="button"
-                  disabled={loading || isSubmitting}
-                >
-                  Continue as Guest
-                </button>
-              </div>
             </div>
           )}
         </div>

@@ -2272,7 +2272,7 @@ const Index = () => {
         )}
       </AnimatePresence>
       {/* Main Content */}
-      <div className="flex-1 flex flex-col items-center justify-center space-y-4 w-full pt-4 sm:pt-20 pb-8" style={{ minHeight: 'calc(100vh - 200px)' }}>
+      <div className="flex-1 flex flex-col items-center justify-center space-y-4 w-full pt-4 sm:pt-20 pb-8 px-4" style={{ minHeight: 'calc(100vh - 200px)' }}>
         {/* Category Bar - Desktop Only - Hides when typing */}
         <AnimatePresence>
           {!isTyping && (
@@ -2670,7 +2670,9 @@ const Index = () => {
                         return (
                           <button
                             key={item.value}
-                                  onClick={() => {
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
                                     if (item.type === 'mode') {
                                       handleModeChange(String(item.value));
                                       setMobileExpandedCategory(null);
@@ -2687,6 +2689,14 @@ const Index = () => {
                                       setMobileExpandedCategory(null);
                                       setMobileDrawerOpen(false);
                                     }
+                                    // Blur to prevent keyboard from showing
+                                    if (document.activeElement instanceof HTMLElement) {
+                                      document.activeElement.blur();
+                                    }
+                                  }}
+                                  onTouchStart={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
                                   }}
                                   className={`w-full text-left px-4 py-2.5 rounded-lg text-sm transition-colors ${
                                     isActive
@@ -2955,7 +2965,7 @@ const Index = () => {
           </div>
           {/* Stats Display - Clean & Modern - Shows during typing */}
           {!showResults && (
-            <div className="flex justify-center gap-4 sm:gap-6 md:gap-8 w-full mx-auto flex-wrap px-4 mt-6">
+            <div className="flex justify-center gap-4 sm:gap-6 md:gap-8 w-full mx-auto flex-wrap px-4 mt-6 mb-4 sm:mb-6 pb-safe">
             <div className="text-center min-w-[70px] px-2 py-1.5">
               <div className="text-xl sm:text-2xl font-mono font-bold text-primary leading-tight">
                 {typeof accuracy === 'number' && !isNaN(accuracy) ? Math.max(0, Math.min(100, accuracy)) : 100}%
@@ -2977,21 +2987,11 @@ const Index = () => {
               </div>
             )}
             {gamificationEnabled && gamification && (
-              <div className="text-center min-w-[90px] px-2 py-1.5">
+              <div className="text-center min-w-[70px] px-2 py-1.5">
                 <div className="text-xl sm:text-2xl font-mono font-bold text-primary leading-tight">
-                  {gamification.xp && typeof gamification.xp === 'number' ? (gamification.xp % 100) : 0}
+                  {gamification.xp && typeof gamification.xp === 'number' ? gamification.xp : 0}
                 </div>
-                <div className="text-xs text-muted-foreground mt-1 mb-1.5 uppercase tracking-wide">XP</div>
-                <div className="w-14 h-1 bg-muted/50 rounded-full overflow-hidden mx-auto">
-                    <motion.div
-                    className="h-full bg-primary rounded-full"
-                      initial={false}
-                    animate={{ 
-                      width: `${Math.min(100, Math.max(0, gamification.xp && typeof gamification.xp === 'number' ? (gamification.xp % 100) : 0))}%` 
-                    }}
-                      transition={{ type: 'spring', stiffness: 200, damping: 24 }}
-                    />
-                </div>
+                <div className="text-xs text-muted-foreground mt-1 uppercase tracking-wide">XP</div>
               </div>
             )}
           </div>

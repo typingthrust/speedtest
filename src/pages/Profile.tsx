@@ -1232,20 +1232,20 @@ export default function Profile() {
         <div className="mb-6 sm:mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
             {/* Left: Avatar and User Info */}
-            <div className="flex items-center gap-3 sm:gap-4">
+            <div className="flex items-center gap-4">
               {user?.avatar_url || user?.user_metadata?.avatar_url ? (
-                <img src={user?.avatar_url || user?.user_metadata?.avatar_url} alt="avatar" className="w-14 h-14 sm:w-16 sm:h-16 rounded-full border border-border flex-shrink-0" />
+                <img src={user?.avatar_url || user?.user_metadata?.avatar_url} alt="avatar" className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border-2 border-border flex-shrink-0 object-cover" />
               ) : (
-                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-primary flex items-center justify-center text-lg sm:text-xl font-semibold text-primary-foreground flex-shrink-0">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-primary flex items-center justify-center text-2xl sm:text-3xl font-bold text-primary-foreground flex-shrink-0">
                   {(user?.username || user?.user_metadata?.username) ? (user?.username || user?.user_metadata?.username)?.[0]?.toUpperCase() : (user?.email ? user?.email[0]?.toUpperCase() : '?')}
                 </div>
               )}
               <div className="flex-1 min-w-0">
-                <h1 className="text-xl sm:text-2xl font-bold text-foreground truncate mb-0.5">
+                <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-1.5 leading-tight">
                   {(user?.username || user?.user_metadata?.username) || (user?.email ? user.email.split('@')[0] : 'User')}
                 </h1>
                 {user?.email && (
-                  <p className="text-xs sm:text-sm text-muted-foreground truncate">
+                  <p className="text-sm sm:text-base text-muted-foreground">
                     {user.email}
                   </p>
                 )}
