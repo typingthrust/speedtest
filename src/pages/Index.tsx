@@ -2276,7 +2276,7 @@ const Index = () => {
         {/* Category Bar - Desktop Only - Hides when typing */}
         <AnimatePresence>
           {!isTyping && (
-            <motion.div
+          <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
@@ -2680,19 +2680,10 @@ const Index = () => {
                                         setMobileDrawerOpen(false);
                                       }
                                     } else if (item.type === 'duration') {
-                                      // Blur first to prevent keyboard
-                                      if (document.activeElement instanceof HTMLElement) {
-                                        document.activeElement.blur();
-                                      }
-                                      // Close category and drawer first
+                                      setTimeLimit(Number(item.value));
+                                      resetTest(Number(item.value));
                                       setMobileExpandedCategory(null);
                                       setMobileDrawerOpen(false);
-                                      // Then update state
-                                      setTimeLimit(Number(item.value));
-                                      // Reset test after a brief delay to ensure drawer closes
-                                      setTimeout(() => {
-                                        resetTest(Number(item.value));
-                                      }, 150);
                                     } else if (item.type === 'difficulty') {
                                       setDifficulty(String(item.value));
                                       resetTest();
@@ -3019,7 +3010,7 @@ const Index = () => {
                 {typeof errors === 'number' && !isNaN(errors) ? errors : 0}
               </div>
               <div className="text-xs text-muted-foreground mt-1 uppercase tracking-wide">Errors</div>
-            </div>
+                  </div>
             {gamificationEnabled && gamification && (
               <div className="text-center min-w-[70px] px-2 py-1.5">
                 <div className="text-xl sm:text-2xl font-mono font-bold text-primary leading-tight">
@@ -3032,7 +3023,7 @@ const Index = () => {
               <div className="text-center min-w-[70px] px-2 py-1.5">
                 <div className="text-xl sm:text-2xl font-mono font-bold text-primary leading-tight">
                   {gamification.xp && typeof gamification.xp === 'number' ? gamification.xp : 0}
-                </div>
+          </div>
                 <div className="text-xs text-muted-foreground mt-1 uppercase tracking-wide">XP</div>
               </div>
             )}
