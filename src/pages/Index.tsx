@@ -2673,49 +2673,9 @@ const Index = () => {
                         return (
                           <button
                             key={item.value}
-                                  type="button"
-                                  tabIndex={item.type === 'duration' ? -1 : 0}
-                                  onMouseDown={(e) => {
-                                    if (item.type === 'duration') {
-                                      e.preventDefault();
-                                      e.stopPropagation();
-                                    }
-                                  }}
-                                  onTouchStart={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    // For duration, immediately blur to prevent keyboard
-                                    if (item.type === 'duration') {
-                                      e.currentTarget.blur();
-                                      if (document.activeElement instanceof HTMLElement) {
-                                        document.activeElement.blur();
-                                      }
-                                    }
-                                  }}
-                                  onFocus={(e) => {
-                                    // Prevent duration buttons from getting focus
-                                    if (item.type === 'duration') {
-                                      e.currentTarget.blur();
-                                    }
-                                  }}
                                   onClick={(e) => {
                                     e.preventDefault();
                                     e.stopPropagation();
-                                    // For duration, blur immediately and aggressively
-                                    if (item.type === 'duration') {
-                                      e.currentTarget.blur();
-                                    }
-                                    // Blur FIRST to prevent keyboard from showing
-                                    if (document.activeElement instanceof HTMLElement) {
-                                      document.activeElement.blur();
-                                    }
-                                    // Also blur any input elements
-                                    const inputs = document.querySelectorAll('input, textarea');
-                                    inputs.forEach(input => {
-                                      if (input instanceof HTMLElement) {
-                                        input.blur();
-                                      }
-                                    });
                                     if (item.type === 'mode') {
                                       handleModeChange(String(item.value));
                                       setMobileExpandedCategory(null);
@@ -2723,46 +2683,24 @@ const Index = () => {
                                         setMobileDrawerOpen(false);
                                       }
                                     } else if (item.type === 'duration') {
-                                      // Immediately blur everything to prevent keyboard
-                                      e.currentTarget.blur();
-                                      if (document.activeElement instanceof HTMLElement) {
-                                        document.activeElement.blur();
-                                      }
-                                      const inputs = document.querySelectorAll('input, textarea');
-                                      inputs.forEach(input => {
-                                        if (input instanceof HTMLElement) {
-                                          input.blur();
-                                        }
-                                      });
-                                      if (inputRef.current) {
-                                        inputRef.current.blur();
-                                      }
-                                      // Update state and close drawer
                                       setTimeLimit(Number(item.value));
+                                      resetTest(Number(item.value));
                                       setMobileExpandedCategory(null);
                                       setMobileDrawerOpen(false);
-                                      // Reset test but skip focus to prevent keyboard - use longer delay
-                                      setTimeout(() => {
-                                        resetTest(Number(item.value), true);
-                                        // Blur again after reset to be absolutely safe
-                                        setTimeout(() => {
-                                          if (inputRef.current) {
-                                            inputRef.current.blur();
-                                          }
-                                          const allInputs = document.querySelectorAll('input, textarea');
-                                          allInputs.forEach(input => {
-                                            if (input instanceof HTMLElement) {
-                                              input.blur();
-                                            }
-                                          });
-                                        }, 50);
-                                      }, 300);
                                     } else if (item.type === 'difficulty') {
                                       setDifficulty(String(item.value));
                                       resetTest();
                                       setMobileExpandedCategory(null);
                                       setMobileDrawerOpen(false);
                                     }
+                                    // Blur to prevent keyboard from showing
+                                    if (document.activeElement instanceof HTMLElement) {
+                                      document.activeElement.blur();
+                                    }
+                                  }}
+                                  onTouchStart={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
                                   }}
                                   className={`w-full text-left px-4 py-2.5 rounded-lg text-sm transition-colors ${
                                     isActive
