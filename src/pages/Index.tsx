@@ -100,7 +100,7 @@ if (typeof document !== 'undefined' && !document.getElementById('monkey-caret-st
 }
 
 // --- Simplified Typing Area Component ---
-// Supports all modes: time, words, quote, coding, custom, zen, god, syntax, essay, notimer, softtheme, hardwords, foreign
+// Supports all modes: time, words, quote, coding, custom, zen, god, syntax, essay, notimer, hardwords, foreign
 type TypingAreaProps = { currentText: string; userInput: string; currentIndex: number };
 const TypingArea: React.FC<TypingAreaProps & { mode?: string; godModeIndex?: number }> = React.memo(function TypingArea(_props) {
   const {
@@ -192,7 +192,7 @@ const TypingArea: React.FC<TypingAreaProps & { mode?: string; godModeIndex?: num
 
   // Determine which rendering mode to use based on the mode prop
   const isCodeMode = mode === 'coding' || mode === 'syntax';
-  const isZenMode = mode === 'zen' || mode === 'zenwriting' || mode === 'softtheme';
+  const isZenMode = mode === 'zen' || mode === 'zenwriting';
   const isGodMode = mode === 'god';
   
   // Handle empty text gracefully
@@ -833,12 +833,6 @@ const contentBySubcategory = {
     long: ["In this mode, there is no timer counting down. You can type at whatever pace feels comfortable. Focus on each keystroke, notice the rhythm of your fingers, and enjoy the journey of typing without pressure."],
     thicc: ["The art of typing is not just about speed. It is about precision, rhythm, and flow. Without the pressure of a timer, you can develop muscle memory, improve accuracy, and truly master the keyboard. Take a deep breath, relax your shoulders, and type each word with intention and care."],
   },
-  softtheme: {
-    short: ["Gentle keystrokes. Soft focus. Calm mind."],
-    medium: ["In the quiet rhythm of typing, find your peace. Each keystroke is a step towards mastery and mindfulness."],
-    long: ["The soft glow of the screen illuminates your journey. With each letter typed, you move closer to fluency. Let the gentle pace of this practice soothe your mind and sharpen your skills."],
-    thicc: ["Typing can be a form of meditation. As your fingers dance across the keys, let your thoughts flow like water. There is no destination, only the journey. Each word is a brushstroke on the canvas of digital expression. Embrace the tranquility of focused practice."],
-  },
   god: {
     short: ["Speed. Focus. Precision."],
     medium: ["In god mode, only the current words matter. Type fast, stay accurate, dominate the keyboard."],
@@ -917,6 +911,8 @@ const Index = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [errors, setErrors] = useState(0);
   const [startTime, setStartTime] = useState<number | null>(null);
+  const [pauseStartTime, setPauseStartTime] = useState<number | null>(null);
+  const [totalPauseTime, setTotalPauseTime] = useState(0); // Track total pause duration in ms
   const [showResults, setShowResults] = useState(false);
   const [wpm, setWpm] = useState(0);
   const [accuracy, setAccuracy] = useState(100);
@@ -1188,52 +1184,48 @@ const Index = () => {
       return text;
     }
     
-    let modifiedText = text;
+    // Standard processing for all modes - same logic that works for all modes
+    // Normalize input first
+    let modifiedText = String(text).trim();
+    // Replace all whitespace with single spaces
+    modifiedText = modifiedText.replace(/\s+/g, ' ').trim();
     
-    // Remove punctuation if disabled
-    if (!includePunctuation) {
-      // Remove common punctuation marks but keep spaces and word boundaries
-      modifiedText = modifiedText.replace(/[.,!?;:'"()\[\]{}\-_=+<>\/\\|`~@#$%^&*]/g, '');
-      // Clean up multiple spaces that might result (but preserve newlines and single spaces)
-      modifiedText = modifiedText.replace(/[ \t]+/g, ' ').replace(/ +$/gm, '');
-    }
-    // If includePunctuation is true, keep text as-is (don't modify)
+    // Split into words
+    const words = modifiedText.split(/\s+/).filter(w => w.trim().length > 0);
     
-    // Handle numbers
-    if (!includeNumbers) {
-      // Remove all digits (0-9) but preserve word boundaries
-      modifiedText = modifiedText.replace(/[0-9]/g, '');
-      // Clean up multiple spaces that might result (but preserve newlines and single spaces)
-      modifiedText = modifiedText.replace(/[ \t]+/g, ' ').replace(/ +$/gm, '');
-    } else {
-      // If numbers are enabled, ensure some numbers exist in the text
-      const hasNumbers = /[0-9]/.test(modifiedText);
-      if (!hasNumbers && modifiedText.length > 10) {
-        // Add numbers to the text by inserting them between words
-        // Split by whitespace to get words, but preserve the structure
-        // Filter out empty strings from multiple spaces
-        const words = modifiedText.split(/\s+/).filter(word => word.trim().length > 0);
+    // Process words
+    let cleanedWords = words.map(word => {
+      let cleaned = word.trim();
+      if (!includePunctuation) {
+        cleaned = cleaned.replace(/[.,!?;:'"()\[\]{}\-_=+<>\/\\|`~@#$%^&*]/g, '');
+      }
+      if (!includeNumbers) {
+        cleaned = cleaned.replace(/[0-9]/g, '');
+      }
+      return cleaned.trim();
+    }).filter(word => word.length > 0);
+    
+    // Add numbers if needed
+    if (includeNumbers) {
+      const hasNumbers = cleanedWords.some(word => /[0-9]/.test(word));
+      if (!hasNumbers && cleanedWords.length > 5) {
         const numbers = ['1', '2', '3', '4', '5', '10', '20', '50', '100', '2024'];
         let numberIndex = 0;
         const wordsWithNumbers: string[] = [];
         
-        for (let i = 0; i < words.length; i++) {
-          wordsWithNumbers.push(words[i]);
-          
-          // Add a number after every 5 words, but not at the very end
-          // Insert with proper spacing to maintain word boundaries
-          if (i > 0 && (i + 1) % 5 === 0 && i < words.length - 1) {
+        for (let i = 0; i < cleanedWords.length; i++) {
+          wordsWithNumbers.push(cleanedWords[i]);
+          if (i > 0 && (i + 1) % 5 === 0 && i < cleanedWords.length - 1) {
             wordsWithNumbers.push(numbers[numberIndex % numbers.length]);
             numberIndex++;
           }
         }
-        
-        // Join with single spaces to preserve word boundaries
-        modifiedText = wordsWithNumbers.join(' ');
+        cleanedWords = wordsWithNumbers;
       }
     }
     
-    return modifiedText;
+    // Join with single spaces - this is what works for other modes
+    return cleanedWords.join(' ');
   };
 
   // On language, difficulty, mode, or option changes, update currentText
@@ -1241,26 +1233,25 @@ const Index = () => {
     // Only update currentText if not in custom mode
     if (currentMode !== 'custom') {
     const newText = generateNewText(currentMode, difficulty, language);
-    // Apply punctuation and numbers modifications (skip for coding/syntax to preserve formatting)
-    const modifiedText = modifyTextForOptions(newText, currentMode);
-    // For coding/syntax mode, preserve original formatting and force punctuation/numbers
-    if (currentMode === 'coding' || currentMode === 'syntax') {
-      // Force include punctuation and numbers for coding mode
-      setIncludePunctuation(true);
-      setIncludeNumbers(true);
-      setCurrentText(modifiedText);
-    } else {
-      // Trim and normalize spaces to prevent wrapping issues - remove trailing spaces from each line
-      const normalizedText = modifiedText
-        .split('\n')
-        .map(line => line.trimEnd())
-        .join('\n')
-        .trim()
-        .replace(/\s+/g, ' ');
-      setCurrentText(normalizedText);
+      // Apply punctuation and numbers modifications (skip for coding/syntax to preserve formatting)
+      // Apply punctuation and numbers modifications
+      let modifiedText = modifyTextForOptions(newText, String(currentMode));
+      
+      // For coding/syntax mode, preserve original formatting and force punctuation/numbers
+      if (currentMode === 'coding' || currentMode === 'syntax') {
+        // Force include punctuation and numbers for coding mode
+        setIncludePunctuation(true);
+        setIncludeNumbers(true);
+        setCurrentText(modifiedText);
+      } else {
+        // Use the modified text directly - same for all modes
+        setCurrentText(modifiedText.trim());
+        // Reset user input when text changes to ensure clean state
+        setUserInput('');
+        setCurrentIndex(0);
+        setErrors(0);
+      }
     }
-    }
-    // Optionally reset userInput, errors, etc. here if desired
   }, [language, difficulty, currentMode, includePunctuation, includeNumbers]);
 
   // On initial load, set currentText to default
@@ -1295,27 +1286,43 @@ const Index = () => {
     };
   }, [isTyping, currentMode, timeLeft]);
 
-  // Calculate WPM and accuracy (correct logic)
+  // Calculate WPM and accuracy (robust logic - only counts active typing time)
   const calculateStats = useCallback(() => {
     if (!startTime) return;
-    const timeElapsed = (Date.now() - startTime) / 1000 / 60; // minutes
+    
+    // Calculate active typing time (exclude pauses)
+    const currentTime = Date.now();
+    const activeTimeMs = currentTime - startTime - totalPauseTime;
+    const timeElapsed = activeTimeMs / 1000 / 60; // minutes
+    
+    // Require minimum 0.5 seconds of active typing time for accurate WPM calculation
+    if (activeTimeMs < 500) {
+      setWpm(0);
+      return;
+    }
+    
     // Count correct characters only
     let correctChars = 0;
     for (let i = 0; i < userInput.length; i++) {
       if (userInput[i] === currentText[i]) correctChars++;
     }
     const totalTyped = userInput.length;
+    
     // WPM = (correct characters / 5) / time in minutes
-    // Cap WPM at 300 (world record is ~216 WPM, but allow some buffer for edge cases)
+    // Standard WPM formula: 5 characters = 1 word
     const calculatedWpm = timeElapsed > 0 ? (correctChars / 5) / timeElapsed : 0;
-    const currentWpm = Math.min(300, Math.max(0, Math.round(calculatedWpm)));
+    
+    // Cap WPM at realistic maximum (world record is ~216 WPM, cap at 250 for safety)
+    const currentWpm = Math.min(250, Math.max(0, Math.round(calculatedWpm)));
+    
     // Accuracy = (correct characters / total characters) * 100
     // Ensure accuracy is between 0 and 100
     const calculatedAccuracy = totalTyped > 0 ? (correctChars / totalTyped) * 100 : 100;
     const currentAccuracy = Math.min(100, Math.max(0, Math.round(calculatedAccuracy)));
+    
     setWpm(currentWpm);
     setAccuracy(currentAccuracy);
-  }, [userInput, currentText, startTime]);
+  }, [userInput, currentText, startTime, totalPauseTime]);
 
   // Enhanced handleInputChange to track keystrokes and error types
   // Track previous input to detect Grammarly/extension modifications
@@ -1396,20 +1403,33 @@ const Index = () => {
     // Start typing if not already started
     if (!isTyping && value.length > 0) {
       setIsTyping(true);
-      setStartTime(Date.now());
-      setChartData([{ x: 0, y: 0, acc: 100 }]);
+      const now = Date.now();
+      // If resuming after a pause, add the pause duration to totalPauseTime
+      if (pauseStartTime) {
+        setTotalPauseTime(prev => prev + (now - pauseStartTime));
+        setPauseStartTime(null);
       }
+      // Set start time only if not already set (first keystroke)
+      if (!startTime) {
+        setStartTime(now);
+        setChartData([{ x: 0, y: 0, acc: 100 }]);
+      }
+    }
       
-      // Reset typing pause timeout on each keystroke
-      if (typingPauseTimeoutRef.current) {
-        clearTimeout(typingPauseTimeoutRef.current);
-      }
-      // Set isTyping to false after 2 seconds of inactivity (user paused)
-      if (isTyping && value.length > 0) {
-        typingPauseTimeoutRef.current = setTimeout(() => {
-          setIsTyping(false);
-        }, 2000);
-      }
+    // Reset typing pause timeout on each keystroke
+    if (typingPauseTimeoutRef.current) {
+      clearTimeout(typingPauseTimeoutRef.current);
+    }
+    // Set isTyping to false after 2 seconds of inactivity (user paused)
+    if (isTyping && value.length > 0) {
+      typingPauseTimeoutRef.current = setTimeout(() => {
+        setIsTyping(false);
+        // Record pause start time
+        if (!pauseStartTime) {
+          setPauseStartTime(Date.now());
+        }
+      }, 2000);
+    }
     }
     
     // Update user input immediately for responsive typing
@@ -1434,12 +1454,14 @@ const Index = () => {
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => {
       // Calculate WPM and accuracy for this keystroke
-      // WPM = (correct characters / 5) / time in minutes
-      const timeElapsed = startTime ? (Date.now() - startTime) / 1000 / 60 : 0;
-      // Only count correct characters for WPM calculation
-      // Cap WPM at 300 (world record is ~216 WPM, but allow some buffer for edge cases)
-      const calculatedWpm = timeElapsed > 0 ? (correctChars / 5) / timeElapsed : 0;
-      const currentWpm = Math.min(300, Math.max(0, Math.round(calculatedWpm)));
+      // Use active typing time only (exclude pauses)
+      const currentTime = Date.now();
+      const activeTimeMs = startTime ? (currentTime - startTime - totalPauseTime) : 0;
+      const timeElapsed = activeTimeMs / 1000 / 60; // minutes
+      
+      // Require minimum 0.5 seconds for accurate WPM
+      const calculatedWpm = activeTimeMs >= 500 && timeElapsed > 0 ? (correctChars / 5) / timeElapsed : 0;
+      const currentWpm = Math.min(250, Math.max(0, Math.round(calculatedWpm)));
       // Update chart data only when necessary
       setChartData(prev => {
         const newChartData = [...prev, { x: value.length, y: currentWpm, acc: currentAcc }];
@@ -1509,17 +1531,21 @@ const Index = () => {
     if (typingPauseTimeoutRef.current) clearTimeout(typingPauseTimeoutRef.current);
     if (wpmIntervalRef.current) clearInterval(wpmIntervalRef.current);
     if (startTime) {
-      const timeElapsed = (Date.now() - startTime) / 1000 / 60;
+      // Calculate final active typing time (exclude pauses)
+      const finalActiveTimeMs = Date.now() - startTime - totalPauseTime;
+      const timeElapsed = finalActiveTimeMs / 1000 / 60; // minutes
+      
       // Count correct characters only
       let correctChars = 0;
       for (let i = 0; i < userInput.length; i++) {
         if (userInput[i] === currentText[i]) correctChars++;
       }
       const totalTyped = userInput.length;
+      
       // WPM = (correct characters / 5) / time in minutes
-      // Cap WPM at 300 (world record is ~216 WPM, but allow some buffer for edge cases)
-      const calculatedFinalWpm = timeElapsed > 0 ? (correctChars / 5) / timeElapsed : 0;
-      const finalWpm = Math.min(300, Math.max(0, Math.round(calculatedFinalWpm)));
+      // Require minimum 0.5 seconds for accurate WPM
+      const calculatedFinalWpm = finalActiveTimeMs >= 500 && timeElapsed > 0 ? (correctChars / 5) / timeElapsed : 0;
+      const finalWpm = Math.min(250, Math.max(0, Math.round(calculatedFinalWpm)));
       // Accuracy = (correct characters / total characters) * 100
       // Ensure accuracy is between 0 and 100
       const calculatedFinalAcc = totalTyped > 0 ? (correctChars / totalTyped) * 100 : 100;
@@ -1616,6 +1642,9 @@ const Index = () => {
 
   // Enhanced resetTest to always reset WPM history and stats
   const resetTest = useCallback((newTimeLimit = undefined) => {
+    // Reset pause tracking
+    setPauseStartTime(null);
+    setTotalPauseTime(0);
     setIsTyping(false);
     setTimeLeft(currentMode === 'time' ? (newTimeLimit ?? timeLimit) : 0);
     setUserInput('');
@@ -1719,16 +1748,21 @@ const Index = () => {
     const interval = setInterval(() => {
       if (!isTyping) return;
       if (!startTime) return;
-      const elapsed = Math.floor((Date.now() - startTime) / 1000);
-      const elapsedMinutes = elapsed / 60;
+      // Calculate active typing time (exclude pauses)
+      const currentTime = Date.now();
+      const activeTimeMs = currentTime - startTime - totalPauseTime;
+      const elapsedSeconds = Math.floor(activeTimeMs / 1000);
+      const elapsedMinutes = elapsedSeconds / 60;
+      
       // Count only correct characters for WPM
       let correctChars = 0;
       for (let i = 0; i < userInput.length; i++) {
         if (userInput[i] === currentText[i]) correctChars++;
       }
-      // Cap WPM at 300 (world record is ~216 WPM, but allow some buffer for edge cases)
-      const calculatedWpm = elapsedMinutes > 0 ? (correctChars / 5) / elapsedMinutes : 0;
-      const wpm = Math.min(300, Math.max(0, Math.round(calculatedWpm)));
+      
+      // Require minimum 0.5 seconds for accurate WPM
+      const calculatedWpm = elapsedSeconds >= 0.5 && elapsedMinutes > 0 ? (correctChars / 5) / elapsedMinutes : 0;
+      const wpm = Math.min(250, Math.max(0, Math.round(calculatedWpm)));
       setChartData(prev => {
         // Only add new point if it's different from the last one
         if (prev.length === 0 || prev[prev.length - 1].y !== wpm) {
@@ -1751,6 +1785,8 @@ const Index = () => {
     setCurrentIndex(0);
     setErrors(0);
     setStartTime(null);
+    setPauseStartTime(null);
+    setTotalPauseTime(0);
     setWpm(0);
     setAccuracy(100);
     setWpmHistory([{ t: 0, wpm: 0 }]);
@@ -1911,9 +1947,6 @@ const Index = () => {
         return getRandom(contentBySubcategory.notimer[difficulty]) || 
                sampleTextsByLanguageAndDifficulty[language]?.[difficulty] || '';
       
-      case 'softtheme':
-        return getRandom(contentBySubcategory.softtheme[difficulty]) || 
-               getRandom(contentBySubcategory.zen[difficulty]) || '';
       
       case 'hardwords':
         return getRandom(contentBySubcategory.hardwords[difficulty]) || '';
@@ -1956,6 +1989,8 @@ const Index = () => {
     setCurrentIndex(0);
     setErrors(0);
     setStartTime(null);
+    setPauseStartTime(null);
+    setTotalPauseTime(0);
     setWpm(0);
     setAccuracy(100);
     setWpmHistory([{ t: 0, wpm: 0 }]);
@@ -2021,7 +2056,6 @@ const Index = () => {
       subcategories: [
         { label: 'Zen', value: 'zen', type: 'mode' },
         { label: 'No Timer', value: 'notimer', type: 'mode' },
-        { label: 'Soft Theme Mode', value: 'softtheme', type: 'mode' },
       ],
     },
     {
@@ -2258,33 +2292,29 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Navbar - Hides when typing */}
-      <AnimatePresence>
-        {!isTyping && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3 }}
-          >
-      <Navbar />
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Navbar - Fades when typing */}
+      <motion.div
+        animate={{ opacity: isTyping ? 0 : 1 }}
+        transition={{ duration: 0.3, ease: 'easeInOut' }}
+        style={{ pointerEvents: isTyping ? 'none' : 'auto' }}
+      >
+        <Navbar />
+      </motion.div>
       {/* Main Content */}
       <div className="flex-1 flex flex-col items-center justify-center space-y-4 w-full pt-4 sm:pt-20 pb-8 px-4" style={{ minHeight: 'calc(100vh - 200px)' }}>
-        {/* Category Bar - Desktop Only - Hides when typing */}
-        <AnimatePresence>
-          {!isTyping && (
-          <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.3 }}
-              className="hidden sm:flex w-full justify-center px-4 sm:px-6 mb-6"
-              style={{ position: 'relative', zIndex: 10 }}
-              ref={categoryBarRef}
-            >
+        {/* Category Bar - Desktop Only - Fades when typing */}
+        <motion.div
+          animate={{ opacity: isTyping ? 0 : 1 }}
+          transition={{ duration: 0.3, ease: 'easeInOut' }}
+          className="hidden sm:flex w-full justify-center px-4 sm:px-6 mb-6"
+          style={{ 
+            position: 'relative', 
+            zIndex: 10,
+            pointerEvents: isTyping ? 'none' : 'auto',
+            minHeight: isTyping ? 'auto' : 'auto'
+          }}
+          ref={categoryBarRef}
+        >
               <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-card/50 backdrop-blur-sm border border-border/50 shadow-sm overflow-x-auto scrollbar-hide">
                 {mainCategories.map((cat) => {
                   const isActive = openCategory === cat.heading;
@@ -2480,21 +2510,19 @@ const Index = () => {
                   </>
                 )}
               </AnimatePresence>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        </motion.div>
 
-        {/* Mobile: Clean Settings Button - Hides when typing */}
-        <AnimatePresence>
-          {!isTyping && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.3 }}
-              className="sm:hidden w-full flex justify-center px-4 sm:px-6 mb-8"
-              style={{ position: 'relative', zIndex: 10 }}
-            >
+        {/* Mobile: Clean Settings Button - Fades when typing */}
+        <motion.div
+          animate={{ opacity: isTyping ? 0 : 1 }}
+          transition={{ duration: 0.3, ease: 'easeInOut' }}
+          className="sm:hidden w-full flex justify-center px-4 sm:px-6 mb-8"
+          style={{ 
+            position: 'relative', 
+            zIndex: 10,
+            pointerEvents: isTyping ? 'none' : 'auto'
+          }}
+        >
               <div className="w-full max-w-md mx-auto">
                 <button
                   onClick={() => setMobileDrawerOpen(true)}
@@ -2514,7 +2542,6 @@ const Index = () => {
                           'syntax': 'Syntax',
                           'essay': 'Essay',
                           'notimer': 'No Timer',
-                          'softtheme': 'Soft Theme',
                           'hardwords': 'Hard Words',
                           'foreign': 'Foreign',
                         };
@@ -2533,9 +2560,7 @@ const Index = () => {
                   </svg>
                 </button>
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        </motion.div>
 
         {/* Mobile Settings Drawer - Premium & Modern */}
         <AnimatePresence>
@@ -2616,7 +2641,6 @@ const Index = () => {
                 sub: [
                   { label: 'Zen', value: 'zen', type: 'mode' },
                   { label: 'No Timer', value: 'notimer', type: 'mode' },
-                  { label: 'Soft Theme Mode', value: 'softtheme', type: 'mode' },
                 ],
               },
               {
@@ -2879,38 +2903,42 @@ const Index = () => {
         </AnimatePresence>
         {/* Timer Display - Minimal & Clean */}
         {currentMode === 'time' && (
-          <AnimatePresence>
-            {isTyping && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ duration: 0.2 }}
-                className="flex justify-center mb-4"
-              >
+          <motion.div
+            animate={{ 
+              opacity: isTyping ? 1 : 0,
+              scale: isTyping ? 1 : 0.9
+            }}
+            transition={{ duration: 0.3, ease: 'easeInOut' }}
+            className="flex justify-center mb-4"
+            style={{ 
+              pointerEvents: isTyping ? 'auto' : 'none',
+              height: '4rem', // Fixed height to prevent layout shift
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+          >
             <span
-                  className="text-5xl font-bold text-primary transition-all duration-300"
-                  style={{ letterSpacing: '0.02em', fontVariantNumeric: 'tabular-nums' }}
+              className="text-5xl font-bold text-primary transition-all duration-300"
+              style={{ letterSpacing: '0.02em', fontVariantNumeric: 'tabular-nums' }}
             >
-            {timeLeft}
+              {timeLeft}
             </span>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          </motion.div>
         )}
 
         {/* Typing Area - Wide & Clean */}
         <div className="w-full px-4 sm:px-6 md:px-12 lg:px-16 xl:px-20 flex flex-col items-center justify-center" style={{ maxWidth: '1600px' }}>
-          {/* Language Selector - Minimal - Hides when typing */}
-          <AnimatePresence>
-            {!isTyping && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.3 }}
-                className="w-full flex justify-center mb-8"
-              >
+          {/* Language Selector - Minimal - Fades when typing */}
+          <motion.div
+            animate={{ opacity: isTyping ? 0 : 1 }}
+            transition={{ duration: 0.3, ease: 'easeInOut' }}
+            className="w-full flex justify-center mb-8"
+            style={{ 
+              pointerEvents: isTyping ? 'none' : 'auto',
+              minHeight: '2.5rem' // Maintain space to prevent layout shift
+            }}
+          >
             <button
                   className="flex items-center gap-2 text-foreground/60 hover:text-foreground text-sm font-medium px-3 py-1.5 rounded-full bg-card/30 hover:bg-card/50 border border-border/30 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-primary/50"
               onClick={() => setLangModalOpen(true)}
@@ -2920,9 +2948,7 @@ const Index = () => {
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3C7.03 3 3 7.03 3 12s4.03 9 9 9 9-4.03 9-9-4.03-9-9-9zm0 0c2.21 0 4 4.03 4 9s-1.79 9-4 9-4-4.03-4-9 1.79-9 4-9z" /></svg>
               <span className="lowercase text-xs">{[...globalLanguages, ...indianLanguages].find(l => l.value === language)?.label || language}</span>
             </button>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          </motion.div>
           {langModalOpen && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={() => setLangModalOpen(false)}>
               <div className="bg-card border border-border rounded-xl shadow-2xl w-full max-w-md mx-4 p-0 relative animate-fade-in" onClick={(e) => e.stopPropagation()}>
@@ -3059,8 +3085,15 @@ const Index = () => {
           </div>
           )}
           {/* Reset Button - Clean & Minimal */}
-          {!isTyping && (
-          <div className="mt-6 flex justify-center w-full">
+          <motion.div 
+            animate={{ opacity: isTyping ? 0 : 1 }}
+            transition={{ duration: 0.3, ease: 'easeInOut' }}
+            className="mt-6 flex justify-center w-full"
+            style={{ 
+              pointerEvents: isTyping ? 'none' : 'auto',
+              visibility: isTyping ? 'hidden' : 'visible'
+            }}
+          >
             <button
               onClick={() => resetTest()}
               disabled={showResults}
@@ -3071,23 +3104,17 @@ const Index = () => {
               <span>Reset Test</span>
               <span className="text-xs text-muted-foreground ml-1">(Tab + Shift)</span>
             </button>
-          </div>
-          )}
+          </motion.div>
         </div>
       </div>
-      {/* Footer - Hides when typing */}
-      <AnimatePresence>
-        {!isTyping && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            transition={{ duration: 0.3 }}
-          >
-      <Footer />
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Footer - Fades when typing */}
+      <motion.div
+        animate={{ opacity: isTyping ? 0 : 1 }}
+        transition={{ duration: 0.3, ease: 'easeInOut' }}
+        style={{ pointerEvents: isTyping ? 'none' : 'auto' }}
+      >
+        <Footer />
+      </motion.div>
     </div>
   );
 };
