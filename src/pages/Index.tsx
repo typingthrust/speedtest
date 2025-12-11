@@ -1188,67 +1188,50 @@ const Index = () => {
       return text;
     }
     
-    // Trim the input text first to remove any leading/trailing spaces
-    text = text.trim();
+    let modifiedText = text;
     
-    // Split text into words while preserving word boundaries
-    // Split by whitespace to get individual words
-    const words = text.split(/\s+/).filter(word => word.trim().length > 0);
-    const processedWords: string[] = [];
-    
-    // Process each word individually to preserve word boundaries
-    for (const word of words) {
-      let processedWord = word;
-      
-      // Remove punctuation if disabled (remove punctuation from the word, but keep the word)
-      if (!includePunctuation) {
-        processedWord = processedWord.replace(/[.,!?;:'"()\[\]{}\-_=+<>\/\\|`~@#$%^&*]/g, '');
-      }
-      
-      // Remove numbers if disabled (remove digits from the word, but keep the word)
-      if (!includeNumbers) {
-        processedWord = processedWord.replace(/[0-9]/g, '');
-      }
-      
-      // Only add the word if it's not empty after processing
-      if (processedWord.trim().length > 0) {
-        processedWords.push(processedWord);
-      }
+    // Remove punctuation if disabled
+    if (!includePunctuation) {
+      // Remove common punctuation marks but keep spaces and word boundaries
+      modifiedText = modifiedText.replace(/[.,!?;:'"()\[\]{}\-_=+<>\/\\|`~@#$%^&*]/g, '');
+      // Clean up multiple spaces that might result (but preserve newlines and single spaces)
+      modifiedText = modifiedText.replace(/[ \t]+/g, ' ').replace(/ +$/gm, '');
     }
+    // If includePunctuation is true, keep text as-is (don't modify)
     
-    let modifiedText = processedWords.join(' ');
-    
-    // If numbers are enabled and text doesn't have numbers, add them between words (not within words)
-    if (includeNumbers && !/[0-9]/.test(modifiedText) && modifiedText.length > 10) {
-      // Split into words again (preserving word boundaries)
-      const wordsForNumbers = modifiedText.split(/\s+/).filter(word => word.trim().length > 0);
-      const numbers = ['1', '2', '3', '4', '5', '10', '20', '50', '100', '2024'];
-      let numberIndex = 0;
-      const wordsWithNumbers: string[] = [];
-      
-      for (let i = 0; i < wordsForNumbers.length; i++) {
-        wordsWithNumbers.push(wordsForNumbers[i]);
+    // Handle numbers
+    if (!includeNumbers) {
+      // Remove all digits (0-9) but preserve word boundaries
+      modifiedText = modifiedText.replace(/[0-9]/g, '');
+      // Clean up multiple spaces that might result (but preserve newlines and single spaces)
+      modifiedText = modifiedText.replace(/[ \t]+/g, ' ').replace(/ +$/gm, '');
+    } else {
+      // If numbers are enabled, ensure some numbers exist in the text
+      const hasNumbers = /[0-9]/.test(modifiedText);
+      if (!hasNumbers && modifiedText.length > 10) {
+        // Add numbers to the text by inserting them between words
+        // Split by whitespace to get words, but preserve the structure
+        // Filter out empty strings from multiple spaces
+        const words = modifiedText.split(/\s+/).filter(word => word.trim().length > 0);
+        const numbers = ['1', '2', '3', '4', '5', '10', '20', '50', '100', '2024'];
+        let numberIndex = 0;
+        const wordsWithNumbers: string[] = [];
         
-        // Add a number after every 5 words, but not at the very end
-        // Insert as separate token between words to maintain word boundaries
-        if (i > 0 && (i + 1) % 5 === 0 && i < wordsForNumbers.length - 1) {
-          wordsWithNumbers.push(numbers[numberIndex % numbers.length]);
-          numberIndex++;
+        for (let i = 0; i < words.length; i++) {
+          wordsWithNumbers.push(words[i]);
+          
+          // Add a number after every 5 words, but not at the very end
+          // Insert with proper spacing to maintain word boundaries
+          if (i > 0 && (i + 1) % 5 === 0 && i < words.length - 1) {
+            wordsWithNumbers.push(numbers[numberIndex % numbers.length]);
+            numberIndex++;
+          }
         }
+        
+        // Join with single spaces to preserve word boundaries
+        modifiedText = wordsWithNumbers.join(' ');
       }
-      
-      // Join with single spaces to preserve word boundaries
-      modifiedText = wordsWithNumbers.join(' ');
     }
-    
-    // Final cleanup: normalize multiple spaces but preserve word boundaries
-    modifiedText = modifiedText.replace(/[ \t]+/g, ' ').replace(/ +$/gm, '');
-    
-    // Trim leading and trailing spaces to prevent extra spaces at sentence beginning/end
-    modifiedText = modifiedText.trim();
-    
-    // Final safety check: remove any leading space that might have been introduced
-    modifiedText = modifiedText.replace(/^\s+/, '');
     
     return modifiedText;
   };
@@ -1269,13 +1252,11 @@ const Index = () => {
     } else {
       // Trim and normalize spaces to prevent wrapping issues - remove trailing spaces from each line
       const normalizedText = modifiedText
-        .trim() // Trim first to remove any leading/trailing spaces
         .split('\n')
         .map(line => line.trimEnd())
         .join('\n')
-        .trim() // Trim again after joining
-        .replace(/^\s+/, '') // Remove any leading spaces
-        .replace(/\s+/g, ' '); // Normalize multiple spaces to single space
+        .trim()
+        .replace(/\s+/g, ' ');
       setCurrentText(normalizedText);
     }
     }
@@ -1890,9 +1871,7 @@ const Index = () => {
   // Helper: get a random sample from an object of arrays
   function getRandom(arr) {
     if (!arr || arr.length === 0) return '';
-    const result = arr[Math.floor(Math.random() * arr.length)];
-    // Trim the result to remove any leading/trailing spaces
-    return typeof result === 'string' ? result.trim() : result;
+    return arr[Math.floor(Math.random() * arr.length)];
   }
 
   // Update generateNewText to handle ALL modes
@@ -2000,13 +1979,11 @@ const Index = () => {
       setCurrentText(modifiedText);
     } else {
       const normalizedText = modifiedText
-        .trim() // Trim first to remove any leading/trailing spaces
         .split('\n')
         .map(line => line.trimEnd())
         .join('\n')
-        .trim() // Trim again after joining
-        .replace(/^\s+/, '') // Remove any leading spaces
-        .replace(/\s+/g, ' '); // Normalize multiple spaces to single space
+        .trim()
+        .replace(/\s+/g, ' ');
       setCurrentText(normalizedText);
     }
     setTimeLeft(newMode === 'time' ? timeLimit : 0);
@@ -2708,9 +2685,15 @@ const Index = () => {
                                         document.activeElement.blur();
                                       }
                                       setTimeLimit(Number(item.value));
-                                      resetTest(Number(item.value));
                                       setMobileExpandedCategory(null);
-                                      setMobileDrawerOpen(false);
+                                      // Force close drawer immediately
+                                      requestAnimationFrame(() => {
+                                        setMobileDrawerOpen(false);
+                                        // Reset test after drawer starts closing
+                                        setTimeout(() => {
+                                          resetTest(Number(item.value));
+                                        }, 100);
+                                      });
                                     } else if (item.type === 'difficulty') {
                                       setDifficulty(String(item.value));
                                       resetTest();
