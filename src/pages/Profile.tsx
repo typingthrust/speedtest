@@ -1244,12 +1244,12 @@ export default function Profile() {
                   {(user?.username || user?.user_metadata?.username) ? (user?.username || user?.user_metadata?.username)?.[0]?.toUpperCase() : (user?.email ? user?.email[0]?.toUpperCase() : '?')}
                 </div>
               )}
-              <div className="flex-1 min-w-0">
+              <div className="flex-1 min-w-0 flex flex-col justify-center">
                 <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-1.5 leading-tight">
                   {(user?.username || user?.user_metadata?.username) || (user?.email ? user.email.split('@')[0] : 'User')}
                 </h1>
                 {user?.email && (
-                  <p className="text-sm sm:text-base text-muted-foreground">
+                  <p className="text-sm sm:text-base text-muted-foreground leading-tight">
                     {user.email}
                   </p>
                 )}
