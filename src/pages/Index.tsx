@@ -2684,16 +2684,15 @@ const Index = () => {
                                       if (document.activeElement instanceof HTMLElement) {
                                         document.activeElement.blur();
                                       }
-                                      setTimeLimit(Number(item.value));
+                                      // Close category and drawer first
                                       setMobileExpandedCategory(null);
-                                      // Force close drawer immediately
-                                      requestAnimationFrame(() => {
-                                        setMobileDrawerOpen(false);
-                                        // Reset test after drawer starts closing
-                                        setTimeout(() => {
-                                          resetTest(Number(item.value));
-                                        }, 100);
-                                      });
+                                      setMobileDrawerOpen(false);
+                                      // Then update state
+                                      setTimeLimit(Number(item.value));
+                                      // Reset test after a brief delay to ensure drawer closes
+                                      setTimeout(() => {
+                                        resetTest(Number(item.value));
+                                      }, 150);
                                     } else if (item.type === 'difficulty') {
                                       setDifficulty(String(item.value));
                                       resetTest();
