@@ -1241,6 +1241,9 @@ const Index = () => {
     // Final cleanup: normalize multiple spaces but preserve word boundaries
     modifiedText = modifiedText.replace(/[ \t]+/g, ' ').replace(/ +$/gm, '');
     
+    // Trim leading and trailing spaces to prevent extra spaces at sentence beginning/end
+    modifiedText = modifiedText.trim();
+    
     return modifiedText;
   };
 
