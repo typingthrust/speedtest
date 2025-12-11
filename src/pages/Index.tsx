@@ -2680,6 +2680,10 @@ const Index = () => {
                                         setMobileDrawerOpen(false);
                                       }
                                     } else if (item.type === 'duration') {
+                                      // Blur first to prevent keyboard
+                                      if (document.activeElement instanceof HTMLElement) {
+                                        document.activeElement.blur();
+                                      }
                                       setTimeLimit(Number(item.value));
                                       resetTest(Number(item.value));
                                       setMobileExpandedCategory(null);
