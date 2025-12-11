@@ -1229,12 +1229,16 @@ export default function Profile() {
       <Navbar />
       <div className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         {/* Profile Header Section */}
-        <div className="mb-6 sm:mb-8">
+        <div className="mb-6 sm:mb-8 profile-header">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
             {/* Left: Avatar and User Info */}
             <div className="flex items-center gap-4">
               {user?.avatar_url || user?.user_metadata?.avatar_url ? (
-                <img src={user?.avatar_url || user?.user_metadata?.avatar_url} alt="avatar" className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border-2 border-border flex-shrink-0 object-cover" />
+                <img 
+                  src={user?.avatar_url || user?.user_metadata?.avatar_url} 
+                  alt="avatar" 
+                  className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border-2 border-border flex-shrink-0 object-cover"
+                />
               ) : (
                 <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-primary flex items-center justify-center text-2xl sm:text-3xl font-bold text-primary-foreground flex-shrink-0">
                   {(user?.username || user?.user_metadata?.username) ? (user?.username || user?.user_metadata?.username)?.[0]?.toUpperCase() : (user?.email ? user?.email[0]?.toUpperCase() : '?')}

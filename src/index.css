@@ -265,6 +265,15 @@ All colors MUST be HSL.
   pointer-events: none;
 }
 
+/* Remove unwanted outlines from profile header */
+.profile-header,
+.profile-header *,
+.profile-header:focus,
+.profile-header:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
 /* Monospace font for typing area */
 .font-mono {
   font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', 'Monaco', monospace;
