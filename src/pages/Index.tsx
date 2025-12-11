@@ -2670,9 +2670,30 @@ const Index = () => {
                         return (
                           <button
                             key={item.value}
+                                  type="button"
+                                  tabIndex={-1}
+                                  onMouseDown={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                  }}
+                                  onTouchStart={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                  }}
                                   onClick={(e) => {
                                     e.preventDefault();
                                     e.stopPropagation();
+                                    // Blur FIRST to prevent keyboard from showing
+                                    if (document.activeElement instanceof HTMLElement) {
+                                      document.activeElement.blur();
+                                    }
+                                    // Also blur any input elements
+                                    const inputs = document.querySelectorAll('input, textarea');
+                                    inputs.forEach(input => {
+                                      if (input instanceof HTMLElement) {
+                                        input.blur();
+                                      }
+                                    });
                                     if (item.type === 'mode') {
                                       handleModeChange(String(item.value));
                                       setMobileExpandedCategory(null);
@@ -2690,14 +2711,6 @@ const Index = () => {
                                       setMobileExpandedCategory(null);
                                       setMobileDrawerOpen(false);
                                     }
-                                    // Blur to prevent keyboard from showing
-                                    if (document.activeElement instanceof HTMLElement) {
-                                      document.activeElement.blur();
-                                    }
-                                  }}
-                                  onTouchStart={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
                                   }}
                                   className={`w-full text-left px-4 py-2.5 rounded-lg text-sm transition-colors ${
                                     isActive
