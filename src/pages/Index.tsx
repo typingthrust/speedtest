@@ -1615,7 +1615,7 @@ const Index = () => {
   };
 
   // Enhanced resetTest to always reset WPM history and stats
-  const resetTest = useCallback((newTimeLimit = undefined, skipFocus = false) => {
+  const resetTest = useCallback((newTimeLimit = undefined) => {
     setIsTyping(false);
     setTimeLeft(currentMode === 'time' ? (newTimeLimit ?? timeLimit) : 0);
     setUserInput('');
@@ -1656,14 +1656,11 @@ const Index = () => {
     if (timerRef.current) clearTimeout(timerRef.current);
     if (wpmIntervalRef.current) clearInterval(wpmIntervalRef.current);
     if (typingPauseTimeoutRef.current) clearTimeout(typingPauseTimeoutRef.current);
-    // Only focus input if skipFocus is false
-    if (!skipFocus) {
-      setTimeout(() => {
-        if (inputRef.current) {
-          inputRef.current.focus();
-        }
-      }, 100);
-    }
+    setTimeout(() => {
+      if (inputRef.current) {
+        inputRef.current.focus();
+      }
+    }, 100);
   }, [currentMode, timeLimit, difficulty, language, includePunctuation, includeNumbers]);
 
   // Focus input when clicking on container
@@ -2727,9 +2724,38 @@ const Index = () => {
                           {[15, 30, 60, 120].map((sec) => (
               <button
                               key={sec}
-                              onClick={() => {
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                // Blur immediately to prevent keyboard
+                                if (document.activeElement instanceof HTMLElement) {
+                                  document.activeElement.blur();
+                                }
+                                const inputs = document.querySelectorAll('input, textarea');
+                                inputs.forEach(input => {
+                                  if (input instanceof HTMLElement) {
+                                    input.blur();
+                                  }
+                                });
                                 setTimeLimit(Number(sec));
-                                resetTest(Number(sec));
+                                setMobileDrawerOpen(false);
+                                // Delay resetTest to ensure drawer closes and prevent focus
+                                setTimeout(() => {
+                                  resetTest(Number(sec));
+                                  // Blur again after reset to prevent auto-focus
+                                  setTimeout(() => {
+                                    if (inputRef.current) {
+                                      inputRef.current.blur();
+                                    }
+                                  }, 150);
+                                }, 200);
+                              }}
+                              onTouchStart={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                              }}
+                              onMouseDown={(e) => {
+                                e.preventDefault();
                               }}
                               className={`py-2.5 rounded-lg text-sm font-medium transition-colors ${
                                 timeLimit === sec
