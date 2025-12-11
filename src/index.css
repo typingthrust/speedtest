@@ -274,6 +274,14 @@ All colors MUST be HSL.
   box-shadow: none !important;
 }
 
+/* Ensure proper alignment for profile header text */
+.profile-header h1,
+.profile-header p {
+  text-align: left !important;
+  margin-left: 0 !important;
+  padding-left: 0 !important;
+}
+
 /* Monospace font for typing area */
 .font-mono {
   font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', 'Monaco', monospace;

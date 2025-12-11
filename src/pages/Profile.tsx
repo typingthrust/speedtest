@@ -1245,11 +1245,11 @@ export default function Profile() {
                 </div>
               )}
               <div className="flex-1 min-w-0 flex flex-col justify-center">
-                <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-1.5 leading-tight">
+                <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-1.5 leading-tight m-0 p-0 text-left">
                   {(user?.username || user?.user_metadata?.username) || (user?.email ? user.email.split('@')[0] : 'User')}
                 </h1>
                 {user?.email && (
-                  <p className="text-sm sm:text-base text-muted-foreground leading-tight mt-0">
+                  <p className="text-sm sm:text-base text-muted-foreground leading-tight m-0 p-0 text-left">
                     {user.email}
                   </p>
                 )}
