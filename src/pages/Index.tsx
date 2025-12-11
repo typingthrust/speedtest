@@ -2683,6 +2683,7 @@ const Index = () => {
                                       setTimeLimit(Number(item.value));
                                       resetTest(Number(item.value));
                                       setMobileExpandedCategory(null);
+                                      setMobileDrawerOpen(false);
                                     } else if (item.type === 'difficulty') {
                                       setDifficulty(String(item.value));
                                       resetTest();
@@ -2748,9 +2749,20 @@ const Index = () => {
                         <h3 className="text-sm font-medium text-foreground mb-3">Options</h3>
                         <div className="flex flex-col gap-2">
                 <button
-                            onClick={() => {
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
                               setIncludePunctuation(!includePunctuation);
                               resetTest();
+                              setMobileDrawerOpen(false);
+                              // Blur to prevent keyboard from showing
+                              if (document.activeElement instanceof HTMLElement) {
+                                document.activeElement.blur();
+                              }
+                            }}
+                            onTouchStart={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
                             }}
                             className={`w-full py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
                               includePunctuation
@@ -2762,9 +2774,20 @@ const Index = () => {
                             <span>punctuation</span>
                 </button>
               <button
-                            onClick={() => {
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
                               setIncludeNumbers(!includeNumbers);
                               resetTest();
+                              setMobileDrawerOpen(false);
+                              // Blur to prevent keyboard from showing
+                              if (document.activeElement instanceof HTMLElement) {
+                                document.activeElement.blur();
+                              }
+                            }}
+                            onTouchStart={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
                             }}
                             className={`w-full py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
                               includeNumbers
@@ -2793,10 +2816,20 @@ const Index = () => {
                         ].map((item) => (
                 <button
                   key={item.value}
-                            onClick={() => {
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
                               setDifficulty(String(item.value));
                               resetTest();
                               setMobileDrawerOpen(false);
+                              // Blur to prevent keyboard from showing
+                              if (document.activeElement instanceof HTMLElement) {
+                                document.activeElement.blur();
+                              }
+                            }}
+                            onTouchStart={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
                             }}
                             className={`py-2.5 rounded-lg text-sm font-medium transition-colors ${
                               difficulty === String(item.value)
