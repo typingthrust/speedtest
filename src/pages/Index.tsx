@@ -1436,16 +1436,29 @@ const Index = () => {
     setUserInput(value);
     setCurrentIndex(value.length);
     
-    // Recalculate errors and accuracy on every change
+    // Recalculate errors and accuracy on every change (robust logic)
     let errorCount = 0;
-    for (let i = 0; i < value.length; i++) {
-      if (value[i] !== currentText[i]) errorCount++;
+    let correctChars = 0;
+    const totalChars = value.length;
+    const textLength = currentText.length;
+    
+    // Count errors and correct characters up to the minimum of input length and text length
+    for (let i = 0; i < Math.min(value.length, textLength); i++) {
+      if (value[i] === currentText[i]) {
+        correctChars++;
+      } else {
+        errorCount++;
+      }
     }
+    
+    // Count extra characters beyond text length as errors
+    if (value.length > textLength) {
+      errorCount += (value.length - textLength);
+    }
+    
     setErrors(errorCount);
     // Calculate accuracy: (correct characters / total characters) * 100
     // If no input, show 100%. If all wrong, show 0% (not negative)
-    const totalChars = value.length;
-    const correctChars = totalChars - errorCount;
     const currentAcc = totalChars > 0 
       ? Math.max(0, Math.round((correctChars / totalChars) * 100))
       : 100;
@@ -1476,16 +1489,17 @@ const Index = () => {
         let extra = prev.extra;
         
         if (value.length > userInput.length) {
-          let newChar = value[value.length - 1];
-          // Normalize to uppercase for letters, keep others as is
-          if (/^[a-zA-Z]$/.test(newChar)) newChar = newChar.toUpperCase();
-          // Track all keys
-          keyCounts[newChar] = (keyCounts[newChar] || 0) + 1;
+          const newCharIndex = value.length - 1;
+          const newChar = value[newCharIndex];
+          // Track all keys (use original case for tracking)
+          const keyToTrack = newChar;
+          keyCounts[keyToTrack] = (keyCounts[keyToTrack] || 0) + 1;
           // --- Finger usage tracking ---
           const finger = keyToFinger[newChar] || 'other';
           // setFingerUsage(fu => ({ ...fu, [finger]: (fu[finger] || 0) + 1 })); // Removed as per edit hint
           total++;
-          if (newChar === currentText[value.length - 1]) {
+          // Compare with original case from text (case-sensitive comparison)
+          if (newCharIndex < currentText.length && newChar === currentText[newCharIndex]) {
             correct++;
           } else {
             incorrect++;
@@ -1503,16 +1517,24 @@ const Index = () => {
         };
       });
       
-      // Error types (debounced)
-      if (value.length > userInput.length && value[value.length - 1] !== currentText[value.length - 1]) {
-        const expected = currentText[value.length - 1];
-        const actual = value[value.length - 1];
-        setErrorTypes(prev => {
-          if (/\p{P}/u.test(expected)) return { ...prev, punctuation: prev.punctuation + 1 };
-          if (/[A-Za-z]/.test(expected) && expected.toLowerCase() === actual.toLowerCase() && expected !== actual) return { ...prev, case: prev.case + 1 };
-          if (/[0-9]/.test(expected)) return { ...prev, number: prev.number + 1 };
-          return { ...prev, other: prev.other + 1 };
-        });
+      // Error types (debounced) - robust logic
+      if (value.length > userInput.length) {
+        const newCharIndex = value.length - 1;
+        const actual = value[newCharIndex];
+        const expected = newCharIndex < currentText.length ? currentText[newCharIndex] : null;
+        
+        // Only categorize error if there's an expected character to compare
+        if (expected && actual !== expected) {
+          setErrorTypes(prev => {
+            if (/\p{P}/u.test(expected)) return { ...prev, punctuation: prev.punctuation + 1 };
+            if (/[A-Za-z]/.test(expected) && expected.toLowerCase() === actual.toLowerCase() && expected !== actual) return { ...prev, case: prev.case + 1 };
+            if (/[0-9]/.test(expected)) return { ...prev, number: prev.number + 1 };
+            return { ...prev, other: prev.other + 1 };
+          });
+        } else if (!expected) {
+          // Extra character beyond text length - count as "other" error
+          setErrorTypes(prev => ({ ...prev, other: prev.other + 1 }));
+        }
       }
     }, 50); // 50ms debounce for smooth typing
     
@@ -1535,12 +1557,19 @@ const Index = () => {
       const finalActiveTimeMs = Date.now() - startTime - totalPauseTime;
       const timeElapsed = finalActiveTimeMs / 1000 / 60; // minutes
       
-      // Count correct characters only
+      // Count correct characters only (robust logic - handles extra characters)
       let correctChars = 0;
-      for (let i = 0; i < userInput.length; i++) {
-        if (userInput[i] === currentText[i]) correctChars++;
+      const textLength = currentText.length;
+      const inputLength = userInput.length;
+      
+      // Count correct characters up to the minimum of input length and text length
+      for (let i = 0; i < Math.min(inputLength, textLength); i++) {
+        if (userInput[i] === currentText[i]) {
+          correctChars++;
+        }
       }
-      const totalTyped = userInput.length;
+      // Extra characters beyond text length are not counted as correct
+      const totalTyped = inputLength;
       
       // WPM = (correct characters / 5) / time in minutes
       // Require minimum 0.5 seconds for accurate WPM
@@ -1579,8 +1608,18 @@ const Index = () => {
       // --- Gamification logic ---
       // Always award XP after a test, for both guests and signed-in users
       if (gamificationEnabled && typeof addXP === 'function') {
-        // Award XP: 1 XP per word, bonus for high accuracy/speed
-        let xpEarned = Math.round(correctChars / 5) + (finalAcc >= 98 ? 10 : 0) + (finalWpm >= 60 ? 10 : 0);
+        // Award XP: 1 XP per word (5 characters = 1 word), bonus for high accuracy/speed
+        // Ensure XP is calculated correctly based on correct characters only
+        const wordsTyped = Math.max(0, Math.round(correctChars / 5)); // Round to nearest word
+        const accuracyBonus = finalAcc >= 98 ? 10 : 0;
+        const speedBonus = finalWpm >= 60 ? 10 : 0;
+        let xpEarned = wordsTyped + accuracyBonus + speedBonus;
+        
+        // Ensure XP is never negative and at least 1 if any typing occurred
+        if (totalTyped > 0 && xpEarned <= 0) {
+          xpEarned = Math.max(1, wordsTyped); // At least 1 XP per word typed
+        }
+        
         if (xpEarned > 0) addXP(xpEarned);
         // Streak: Only increment once per day if accuracy >= 90
         // The incrementStreak function handles checking if we've already counted today
@@ -2096,6 +2135,24 @@ const Index = () => {
 
   const { user } = useAuth();
 
+  // Helper function to get category name from mode
+  const getCategoryFromMode = (mode: string): string => {
+    const categoryMap: Record<string, string> = {
+      'coding': 'Coding',
+      'syntax': 'Syntax Challenges',
+      'custom': 'Custom',
+      'words': 'Words',
+      'time': 'Timed',
+      'essay': 'Essay Builder',
+      'quote': 'Quotes',
+      'zen': 'Zen Writing',
+      'notimer': 'No Timer',
+      'hardwords': 'Hard Words',
+      'foreign': 'Foreign Language Practice',
+    };
+    return categoryMap[mode] || 'General';
+  };
+
   async function saveTestResultToSupabase({
     userId,
     wpm,
@@ -2116,7 +2173,7 @@ const Index = () => {
       errors,
       time,
       consistency,
-      keystroke_stats: keystrokeStats,
+      keystroke_stats: { ...keystrokeStats, testType: getCategoryFromMode(currentMode) },
       error_types: errorTypes,
       wordCount,
       duration,

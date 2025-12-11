@@ -114,9 +114,45 @@ function getTotalWords(history: any[]) {
   return history.reduce((sum: number, h: any) => sum + (h.wordCount || 0), 0);
 }
 function getTopCategory(history: any[]) {
+  const validCategories = [
+    'Coding',
+    'Syntax Challenges',
+    'Custom',
+    'Words',
+    'Timed',
+    'Essay Builder',
+    'Quotes',
+    'Zen Writing',
+    'No Timer',
+    'Hard Words',
+    'Foreign Language Practice',
+  ];
+  
   const cat: Record<string, number> = {};
   history.forEach((h: any) => {
-    const type = h.testType || (h.keystroke_stats?.testType) || 'General';
+    // Try multiple sources: testType (already normalized), keystroke_stats.testType, test_type
+    let type = h.testType || null;
+    
+    // If testType is not set, try to get it from keystroke_stats
+    if (!type) {
+      const keystrokeStats = h.keystroke_stats || h.keystrokeStats || {};
+      // Handle case where keystroke_stats might be a string
+      let parsedStats = keystrokeStats;
+      if (typeof keystrokeStats === 'string') {
+        try {
+          parsedStats = JSON.parse(keystrokeStats);
+        } catch (e) {
+          parsedStats = {};
+        }
+      }
+      type = parsedStats.testType || h.test_type || null;
+    }
+    
+    // Validate category - only use if it's in our valid categories list
+    if (!type || !validCategories.includes(type)) {
+      type = 'General';
+    }
+    
     cat[type] = (cat[type] || 0) + 1;
   });
   return Object.entries(cat).sort((a, b) => b[1] - a[1])[0]?.[0] || 'General';
@@ -208,19 +244,39 @@ export default function Profile() {
         console.error('Error fetching test results:', error);
         setTestResults([]);
       } else if (data && data.length > 0) {
-        const normalizedData = data.map((result: any) => ({
-          ...result,
-          keystrokeStats: result.keystroke_stats || result.keystrokeStats || {},
-          errorTypes: result.error_types || result.errorTypes || {},
-          wordCount: result.word_count || result.wordCount || 0,
-          testType: result.test_type || result.testType || (result.keystroke_stats?.testType) || (result.keystrokeStats?.testType) || 'General',
-          timestamp: result.timestamp || result.created_at || new Date().toISOString(),
-          duration: result.duration || (result.time || 0),
-          wpm: result.wpm || 0,
-          accuracy: result.accuracy || 0,
-          errors: result.errors || 0,
-          time: result.time || 0,
-        }));
+        const normalizedData = data.map((result: any) => {
+          // Parse keystroke_stats if it's a string (JSONB from Supabase)
+          let keystrokeStats: any = {};
+          if (result.keystroke_stats) {
+            if (typeof result.keystroke_stats === 'string') {
+              try {
+                keystrokeStats = JSON.parse(result.keystroke_stats);
+              } catch (e) {
+                keystrokeStats = result.keystroke_stats;
+              }
+            } else {
+              keystrokeStats = result.keystroke_stats;
+            }
+          }
+          
+          // Extract testType from keystroke_stats
+          const testType = (keystrokeStats && keystrokeStats.testType) || result.test_type || result.testType || 'General';
+          
+          return {
+            ...result,
+            keystrokeStats: keystrokeStats,
+            keystroke_stats: keystrokeStats, // Keep both formats for compatibility
+            errorTypes: result.error_types || result.errorTypes || {},
+            wordCount: result.word_count || result.wordCount || 0,
+            testType: testType,
+            timestamp: result.timestamp || result.created_at || new Date().toISOString(),
+            duration: result.duration || (result.time || 0),
+            wpm: result.wpm || 0,
+            accuracy: result.accuracy || 0,
+            errors: result.errors || 0,
+            time: result.time || 0,
+          };
+        });
         setTestResults(normalizedData);
       } else {
         setTestResults([]);
@@ -851,17 +907,41 @@ export default function Profile() {
     };
   }, [cardBg, borderColor, foreground, mutedColor, primaryColor]);
 
-  const sessionTimes = useMemo(() => filteredHistory.map(h => h.time || 0), [filteredHistory]);
+  const sessionTimes = useMemo(() => {
+    // Use duration (test setting) if available, otherwise use time (actual time taken)
+    // Duration shows the test setting (15s, 30s, 60s, 120s), time shows actual completion time
+    return filteredHistory.map(h => {
+      // Prefer duration (test setting) over time (actual completion time) for Time Insights
+      const timeValue = h.duration || h.time || 0;
+      const numValue = Math.max(0, Number(timeValue));
+      return numValue;
+    });
+  }, [filteredHistory]);
+  
   const sessionTimeLabels = useMemo(() => filteredHistory.map((h, i) => `Test ${i + 1}`), [filteredHistory]);
+  
+  // Calculate max Y value with proper padding to prevent flat lines at top
+  const sessionTimeMax = useMemo(() => {
+    if (sessionTimes.length === 0) return 100;
+    const validTimes = sessionTimes.filter(t => t > 0);
+    if (validTimes.length === 0) return 100;
+    const maxValue = Math.max(...validTimes);
+    // Add 20% padding above max value and round to nearest 5 for cleaner scale
+    const paddedMax = Math.ceil(maxValue * 1.2 / 5) * 5;
+    return Math.max(100, paddedMax); // Minimum 100 for visibility
+  }, [sessionTimes]);
+  
   const sessionTimeChartData = useMemo(() => {
     if (!sessionTimeLabels.length || !sessionTimes.length) {
       return {
         labels: [],
-        datasets: [{ label: 'Time (s)', data: [], fill: true, backgroundColor: 'rgba(34, 211, 238, 0.15)', borderColor: '#22d3ee', tension: 0.4, borderWidth: 2.5 }],
+        datasets: [{ label: 'Time (s)', data: [], fill: true, backgroundColor: 'rgba(34, 211, 238, 0.15)', borderColor: '#22d3ee', tension: 0, borderWidth: 2.5 }],
       };
     }
     const validPrimaryColor = primaryColor && (primaryColor.startsWith('#') || primaryColor.startsWith('rgb')) ? primaryColor : '#22d3ee';
     const fillColor = hexToRgba(validPrimaryColor, 0.15);
+    
+    // Use smooth curve interpolation for proper curve rendering
     return {
     labels: sessionTimeLabels,
     datasets: [
@@ -872,11 +952,19 @@ export default function Profile() {
           backgroundColor: fillColor,
           borderColor: validPrimaryColor,
           pointBackgroundColor: validPrimaryColor,
-          pointRadius: 0,
-          pointHoverRadius: 4,
-        tension: 0.4,
+          pointBorderColor: validPrimaryColor,
+          pointRadius: 0, // Hide points for cleaner look
+          pointHoverRadius: 5,
+          pointHoverBackgroundColor: validPrimaryColor,
+          pointHoverBorderColor: '#fff',
+          pointHoverBorderWidth: 2,
+        tension: 0.4, // Smooth curve interpolation
           borderWidth: 2.5,
           borderCapStyle: 'round' as const,
+          borderJoinStyle: 'round' as const,
+          stepped: false, // Ensure smooth curves, not stepped
+          spanGaps: false, // Don't connect across gaps
+          cubicInterpolationMode: 'monotone' as const, // Monotone interpolation prevents flat segments and overshooting
       },
     ],
   };
@@ -889,6 +977,9 @@ export default function Profile() {
     const validMutedColor = mutedColor && (mutedColor.startsWith('#') || mutedColor.startsWith('rgb')) ? mutedColor : '#94a3b8';
     const validPrimaryColor = primaryColor && (primaryColor.startsWith('#') || primaryColor.startsWith('rgb')) ? primaryColor : '#22d3ee';
     const gridColor = hexToRgba(validBorderColor, 0.15);
+    
+    // Calculate step size based on max value for clean Y-axis labels
+    const stepSize = sessionTimeMax <= 60 ? 10 : sessionTimeMax <= 120 ? 20 : Math.ceil(sessionTimeMax / 6);
     
     return {
     responsive: true,
@@ -914,15 +1005,24 @@ export default function Profile() {
         }, 
         y: { 
           grid: { color: gridColor, drawBorder: false }, 
-          ticks: { color: validMutedColor, font: { size: 10 }, padding: 8 }, 
+          ticks: { 
+            color: validMutedColor, 
+            font: { size: 10 }, 
+            padding: 8,
+            stepSize: stepSize,
+            maxTicksLimit: 8,
+            precision: 0, // No decimal places for time
+          }, 
           beginAtZero: true,
+          max: sessionTimeMax, // Set explicit max to prevent flat lines
+          suggestedMax: sessionTimeMax, // Suggest max for better scaling
           border: { display: false },
         } 
       },
       interaction: { intersect: false, mode: 'index' as const },
       animation: { duration: 800, easing: 'easeOutQuart' as const },
     };
-  }, [cardBg, borderColor, foreground, mutedColor, primaryColor]);
+  }, [cardBg, borderColor, foreground, mutedColor, primaryColor, sessionTimeMax]);
 
   const wpmVarianceLabels = useMemo(() => filteredHistory.map((h, i) => i + 1), [filteredHistory]);
   const wpmVarianceData = useMemo(() => filteredHistory.map(h => h.wpm || 0), [filteredHistory]);
@@ -999,13 +1099,62 @@ export default function Profile() {
     };
   }, [cardBg, borderColor, foreground, mutedColor, primaryColor]);
 
+  // Map of actual categories that exist in the app
+  const validCategories = [
+    'Coding',
+    'Syntax Challenges',
+    'Custom',
+    'Words',
+    'Timed',
+    'Essay Builder',
+    'Quotes',
+    'Zen Writing',
+    'No Timer',
+    'Hard Words',
+    'Foreign Language Practice',
+  ];
+
   const categoryStats = useMemo(() => {
     const stats: Record<string, { wpm: number[] }> = {};
     for (const h of filteredHistory) {
-      const cat = h.testType || (h.keystroke_stats?.testType) || 'General';
+      // Try multiple sources for category: testType (already normalized), keystroke_stats.testType, test_type
+      // testType is already extracted in normalizedData
+      let cat = h.testType || null;
+      
+      // If testType is not set, try to get it from keystroke_stats
+      if (!cat) {
+        const keystrokeStats = h.keystroke_stats || h.keystrokeStats || {};
+        // Handle case where keystroke_stats might be a string
+        let parsedStats = keystrokeStats;
+        if (typeof keystrokeStats === 'string') {
+          try {
+            parsedStats = JSON.parse(keystrokeStats);
+          } catch (e) {
+            parsedStats = {};
+          }
+        }
+        cat = parsedStats.testType || h.test_type || null;
+      }
+      
+      // Debug: log first few entries to see what we're getting
+      if (Object.keys(stats).length < 3) {
+        console.log('Category debug:', { 
+          testType: h.testType, 
+          keystroke_stats: h.keystroke_stats, 
+          keystrokeStats: h.keystrokeStats,
+          extractedCat: cat 
+        });
+      }
+      
+      // Validate category - only use if it's in our valid categories list
+      if (!cat || !validCategories.includes(cat)) {
+        cat = 'General';
+      }
+      
       if (!stats[cat]) stats[cat] = { wpm: [] };
       if (h.wpm) stats[cat].wpm.push(h.wpm);
     }
+    console.log('Category stats:', stats);
     return stats;
   }, [filteredHistory]);
 
@@ -1334,41 +1483,80 @@ export default function Profile() {
             </div>
             </div>
 
-                {/* Filters */}
+                {/* Filters - Clean & Compact Design */}
         <div className="mb-5 sm:mb-6">
-          <div className="flex flex-wrap items-center gap-2 mb-3">
-            <span className="text-xs font-medium text-muted-foreground whitespace-nowrap">Duration:</span>
-                  {durations.map(d => (
-                    <button
-                      key={d.value}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors whitespace-nowrap ${
-                  selectedDuration === d.value
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-card text-foreground/70 hover:text-foreground hover:bg-muted border border-border'
-                }`}
-                      onClick={() => setSelectedDuration(d.value)}
-                    >
-                      {d.label}
-                    </button>
-                  ))}
+          {/* Mobile: Compact single-row design */}
+          <div className="sm:hidden space-y-2">
+            <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide pb-1">
+              <span className="text-[10px] font-medium text-muted-foreground whitespace-nowrap flex-shrink-0">Duration:</span>
+              {durations.map(d => (
+                <button
+                  key={d.value}
+                  className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors whitespace-nowrap flex-shrink-0 ${
+                    selectedDuration === d.value
+                      ? 'bg-primary text-primary-foreground shadow-sm'
+                      : 'bg-card/60 text-foreground/70 hover:text-foreground hover:bg-card border border-border/50'
+                  }`}
+                  onClick={() => setSelectedDuration(d.value)}
+                >
+                  {d.label}
+                </button>
+              ))}
+            </div>
+            <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide pb-1">
+              <span className="text-[10px] font-medium text-muted-foreground whitespace-nowrap flex-shrink-0">Range:</span>
+              {ranges.map(r => (
+                <button
+                  key={r.value}
+                  className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors whitespace-nowrap flex-shrink-0 ${
+                    selectedRange === r.value
+                      ? 'bg-primary text-primary-foreground shadow-sm'
+                      : 'bg-card/60 text-foreground/70 hover:text-foreground hover:bg-card border border-border/50'
+                  }`}
+                  onClick={() => setSelectedRange(r.value)}
+                >
+                  {r.label}
+                </button>
+              ))}
+            </div>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-xs font-medium text-muted-foreground whitespace-nowrap">Time Range:</span>
-                  {ranges.map(r => (
-                    <button
-                      key={r.value}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors whitespace-nowrap ${
-                  selectedRange === r.value
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-card text-foreground/70 hover:text-foreground hover:bg-muted border border-border'
-                }`}
-                      onClick={() => setSelectedRange(r.value)}
-                    >
-                      {r.label}
-                    </button>
-                  ))}
-                </div>
-                </div>
+          
+          {/* Desktop: Original design */}
+          <div className="hidden sm:block">
+            <div className="flex flex-wrap items-center gap-2 mb-3">
+              <span className="text-xs font-medium text-muted-foreground whitespace-nowrap">Duration:</span>
+              {durations.map(d => (
+                <button
+                  key={d.value}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors whitespace-nowrap ${
+                    selectedDuration === d.value
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-card text-foreground/70 hover:text-foreground hover:bg-muted border border-border'
+                  }`}
+                  onClick={() => setSelectedDuration(d.value)}
+                >
+                  {d.label}
+                </button>
+              ))}
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs font-medium text-muted-foreground whitespace-nowrap">Time Range:</span>
+              {ranges.map(r => (
+                <button
+                  key={r.value}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors whitespace-nowrap ${
+                    selectedRange === r.value
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-card text-foreground/70 hover:text-foreground hover:bg-muted border border-border'
+                  }`}
+                  onClick={() => setSelectedRange(r.value)}
+                >
+                  {r.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
 
         {/* Main Tabs */}
         <div className="mb-5 sm:mb-6">
