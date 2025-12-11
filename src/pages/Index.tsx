@@ -1615,7 +1615,7 @@ const Index = () => {
   };
 
   // Enhanced resetTest to always reset WPM history and stats
-  const resetTest = useCallback((newTimeLimit = undefined) => {
+  const resetTest = useCallback((newTimeLimit = undefined, skipFocus = false) => {
     setIsTyping(false);
     setTimeLeft(currentMode === 'time' ? (newTimeLimit ?? timeLimit) : 0);
     setUserInput('');
@@ -1656,11 +1656,14 @@ const Index = () => {
     if (timerRef.current) clearTimeout(timerRef.current);
     if (wpmIntervalRef.current) clearInterval(wpmIntervalRef.current);
     if (typingPauseTimeoutRef.current) clearTimeout(typingPauseTimeoutRef.current);
-    setTimeout(() => {
-      if (inputRef.current) {
-        inputRef.current.focus();
-      }
-    }, 100);
+    // Only focus input if skipFocus is false
+    if (!skipFocus) {
+      setTimeout(() => {
+        if (inputRef.current) {
+          inputRef.current.focus();
+        }
+      }, 100);
+    }
   }, [currentMode, timeLimit, difficulty, language, includePunctuation, includeNumbers]);
 
   // Focus input when clicking on container
@@ -2701,10 +2704,28 @@ const Index = () => {
                                         setMobileDrawerOpen(false);
                                       }
                                     } else if (item.type === 'duration') {
+                                      // Blur ALL inputs first to prevent keyboard
+                                      const inputs = document.querySelectorAll('input, textarea');
+                                      inputs.forEach(input => {
+                                        if (input instanceof HTMLElement) {
+                                          input.blur();
+                                        }
+                                      });
+                                      // Prevent input from focusing
+                                      if (inputRef.current) {
+                                        inputRef.current.blur();
+                                      }
                                       setTimeLimit(Number(item.value));
-                                      resetTest(Number(item.value));
                                       setMobileExpandedCategory(null);
                                       setMobileDrawerOpen(false);
+                                      // Reset test but skip focus to prevent keyboard
+                                      setTimeout(() => {
+                                        resetTest(Number(item.value), true);
+                                        // Blur again after reset to be safe
+                                        if (inputRef.current) {
+                                          inputRef.current.blur();
+                                        }
+                                      }, 200);
                                     } else if (item.type === 'difficulty') {
                                       setDifficulty(String(item.value));
                                       resetTest();
