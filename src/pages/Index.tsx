@@ -1192,43 +1192,32 @@ const Index = () => {
     
     // Remove punctuation if disabled
     if (!includePunctuation) {
-      // Remove punctuation marks that are attached to words (like "word." -> "word")
-      // This preserves word boundaries better than removing punctuation globally
-      modifiedText = modifiedText.replace(/([a-zA-Z0-9])[.,!?;:'"()\[\]{}\-_=+<>\/\\|`~@#$%^&*]+/g, '$1');
-      // Remove standalone punctuation (punctuation with spaces around it)
-      modifiedText = modifiedText.replace(/\s*[.,!?;:'"()\[\]{}\-_=+<>\/\\|`~@#$%^&*]+\s*/g, ' ');
-      // Clean up multiple spaces that might result
-      modifiedText = modifiedText.replace(/[ \t]+/g, ' ').replace(/ +$/gm, '').trim();
+      // Remove common punctuation marks but keep spaces and word boundaries
+      modifiedText = modifiedText.replace(/[.,!?;:'"()\[\]{}\-_=+<>\/\\|`~@#$%^&*]/g, '');
+      // Clean up multiple spaces that might result (but preserve newlines and single spaces)
+      modifiedText = modifiedText.replace(/[ \t]+/g, ' ').replace(/ +$/gm, '');
     }
     // If includePunctuation is true, keep text as-is (don't modify)
     
     // Handle numbers
     if (!includeNumbers) {
-      // Remove numbers that are attached to words (like "word123" -> "word")
-      modifiedText = modifiedText.replace(/([a-zA-Z])[0-9]+/g, '$1');
-      // Remove standalone numbers (numbers with spaces around them)
-      modifiedText = modifiedText.replace(/\s*[0-9]+\s*/g, ' ');
-      // Remove any remaining digits
+      // Remove all digits (0-9) but preserve word boundaries
       modifiedText = modifiedText.replace(/[0-9]/g, '');
-      // Clean up multiple spaces that might result
-      modifiedText = modifiedText.replace(/[ \t]+/g, ' ').replace(/ +$/gm, '').trim();
+      // Clean up multiple spaces that might result (but preserve newlines and single spaces)
+      modifiedText = modifiedText.replace(/[ \t]+/g, ' ').replace(/ +$/gm, '');
     } else {
       // If numbers are enabled, ensure some numbers exist in the text
       const hasNumbers = /[0-9]/.test(modifiedText);
       if (!hasNumbers && modifiedText.length > 10) {
         // Add numbers to the text by inserting them between words
-        // First, normalize the text to ensure proper word boundaries
-        modifiedText = modifiedText.replace(/[ \t]+/g, ' ').trim();
         // Split by whitespace to get words, but preserve the structure
         // Filter out empty strings from multiple spaces
         const words = modifiedText.split(/\s+/).filter(word => word.trim().length > 0);
-        
         const numbers = ['1', '2', '3', '4', '5', '10', '20', '50', '100', '2024'];
         let numberIndex = 0;
         const wordsWithNumbers: string[] = [];
         
         for (let i = 0; i < words.length; i++) {
-          // Add the word as-is (punctuation already handled above)
           wordsWithNumbers.push(words[i]);
           
           // Add a number after every 5 words, but not at the very end
@@ -1243,9 +1232,6 @@ const Index = () => {
         modifiedText = wordsWithNumbers.join(' ');
       }
     }
-    
-    // Final normalization to ensure no extra spaces or word breaking
-    modifiedText = modifiedText.replace(/[ \t]+/g, ' ').trim();
     
     return modifiedText;
   };
