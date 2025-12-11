@@ -1188,6 +1188,9 @@ const Index = () => {
       return text;
     }
     
+    // Trim the input text first to remove any leading/trailing spaces
+    text = text.trim();
+    
     // Split text into words while preserving word boundaries
     // Split by whitespace to get individual words
     const words = text.split(/\s+/).filter(word => word.trim().length > 0);
@@ -1263,11 +1266,13 @@ const Index = () => {
     } else {
       // Trim and normalize spaces to prevent wrapping issues - remove trailing spaces from each line
       const normalizedText = modifiedText
+        .trim() // Trim first to remove any leading/trailing spaces
         .split('\n')
         .map(line => line.trimEnd())
         .join('\n')
-        .trim()
-        .replace(/\s+/g, ' ');
+        .trim() // Trim again after joining
+        .replace(/^\s+/, '') // Remove any leading spaces
+        .replace(/\s+/g, ' '); // Normalize multiple spaces to single space
       setCurrentText(normalizedText);
     }
     }
@@ -1990,11 +1995,13 @@ const Index = () => {
       setCurrentText(modifiedText);
     } else {
       const normalizedText = modifiedText
+        .trim() // Trim first to remove any leading/trailing spaces
         .split('\n')
         .map(line => line.trimEnd())
         .join('\n')
-        .trim()
-        .replace(/\s+/g, ' ');
+        .trim() // Trim again after joining
+        .replace(/^\s+/, '') // Remove any leading spaces
+        .replace(/\s+/g, ' '); // Normalize multiple spaces to single space
       setCurrentText(normalizedText);
     }
     setTimeLeft(newMode === 'time' ? timeLimit : 0);
