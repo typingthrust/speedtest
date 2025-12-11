@@ -1249,7 +1249,7 @@ export default function Profile() {
                   {(user?.username || user?.user_metadata?.username) || (user?.email ? user.email.split('@')[0] : 'User')}
                 </h1>
                 {user?.email && (
-                  <p className="text-sm sm:text-base text-muted-foreground leading-tight">
+                  <p className="text-sm sm:text-base text-muted-foreground leading-tight mt-0">
                     {user.email}
                   </p>
                 )}
