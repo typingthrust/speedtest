@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabaseClient';
 import { Mail, Send, CheckCircle, AlertCircle, ArrowLeft } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import SEO from '../components/SEO';
 
 export default function Contact() {
   const navigate = useNavigate();
@@ -42,8 +43,14 @@ export default function Contact() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <Navbar />
+    <>
+      <SEO
+        title="Contact Us - TypingThrust"
+        description="Get in touch with TypingThrust team. Have questions, feedback, or need support? Contact us and we'll get back to you soon."
+        url="/contact"
+      />
+      <div className="min-h-screen bg-background flex flex-col">
+        <Navbar />
       <div className="flex-1 w-full max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         {/* Mobile Back Button */}
         <button
@@ -157,5 +164,6 @@ export default function Contact() {
       </div>
       <Footer />
     </div>
+    </>
   );
 }

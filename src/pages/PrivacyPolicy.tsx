@@ -3,13 +3,21 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import SEO from '../components/SEO';
 
 export default function PrivacyPolicy() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <Navbar />
+    <>
+      <SEO
+        title="Privacy Policy - TypingThrust"
+        description="Read TypingThrust's privacy policy to understand how we collect, use, and protect your personal information and typing data."
+        url="/privacy-policy"
+        noindex={true}
+      />
+      <div className="min-h-screen bg-background flex flex-col">
+        <Navbar />
       <div className="flex-1 w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         {/* Mobile Back Button */}
         <button
@@ -198,5 +206,6 @@ export default function PrivacyPolicy() {
       </div>
       <Footer />
     </div>
+    </>
   );
 } 

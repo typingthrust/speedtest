@@ -3,13 +3,21 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import SEO from '../components/SEO';
 
 export default function TermsOfService() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <Navbar />
+    <>
+      <SEO
+        title="Terms of Service - TypingThrust"
+        description="Read TypingThrust's terms of service to understand the rules and guidelines for using our typing speed test platform."
+        url="/terms-of-service"
+        noindex={true}
+      />
+      <div className="min-h-screen bg-background flex flex-col">
+        <Navbar />
       <div className="flex-1 w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         {/* Mobile Back Button */}
         <button
@@ -275,5 +283,6 @@ export default function TermsOfService() {
       </div>
       <Footer />
     </div>
+    </>
   );
 } 

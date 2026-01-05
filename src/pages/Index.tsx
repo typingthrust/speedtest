@@ -16,6 +16,7 @@ import Navbar from '../components/Navbar';
 import { useAuth } from '../components/AuthProvider';
 import { supabase } from '../lib/supabaseClient';
 import { useLeaderboard } from '../components/LeaderboardProvider';
+import SEO from '../components/SEO';
 
 // Add this style block at the top-level of the file (or in App.css if preferred)
 // For popover fade/slide animation and backdrop
@@ -438,8 +439,8 @@ const TypingArea: React.FC<TypingAreaProps & { mode?: string; godModeIndex?: num
           
           return (
             <span key={idx} className={className}>
-        {char === ' ' ? '\u00A0' : char}
-      </span>
+              {char}
+            </span>
           );
         })}
         {/* Caret at end if all text typed */}
@@ -929,6 +930,9 @@ const Index = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const textDisplayRef = useRef<HTMLDivElement>(null);
   const typingPauseTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const originalCustomTextRef = useRef<string>(''); // Store original custom text for re-applying modifications
+  const lastSelectedContentIdRef = useRef<string | null>(null); // Track last selected content ID to prevent re-triggering
+  const autoRandomizeTestRef = useRef<(() => void) | null>(null); // Ref to store autoRandomizeTest function
   const [intervalActive, setIntervalActive] = useState(false);
   const [chartData, setChartData] = useState<Array<{ x: number; y: number; acc: number }>>([]);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -942,7 +946,7 @@ const Index = () => {
   // Allow openSetting to be a category heading string, 'duration', 'difficulty', or null
   const [openSetting, setOpenSetting] = useState<string | null>(null);
   const { updateStats } = usePersonalization();
-  const { state: contentLibraryState } = useContentLibrary();
+  const { state: contentLibraryState, clearSelection } = useContentLibrary();
 
   // Add language selector state
   const [language, setLanguage] = useState('english');
@@ -1253,6 +1257,21 @@ const Index = () => {
       }
     }
   }, [language, difficulty, currentMode, includePunctuation, includeNumbers]);
+
+  // Handle punctuation/numbers toggle changes for custom mode
+  useEffect(() => {
+    // Only apply modifications if we're in custom mode AND have original text stored
+    // AND we're not currently switching modes (to avoid conflicts)
+    if (currentMode === 'custom' && originalCustomTextRef.current && !isTyping) {
+      // Re-apply modifications to the original custom text
+      const modifiedText = modifyTextForOptions(originalCustomTextRef.current, 'custom');
+      setCurrentText(modifiedText.trim());
+      // Reset user input when text changes
+      setUserInput('');
+      setCurrentIndex(0);
+      setErrors(0);
+    }
+  }, [includePunctuation, includeNumbers, currentMode, isTyping]);
 
   // On initial load, set currentText to default
   useEffect(() => {
@@ -1677,10 +1696,19 @@ const Index = () => {
         });
       }
     }
+
+    // Note: Auto-randomization happens when user clicks "Try Again" (in resetTest)
+    // This ensures results screen shows correctly before changes
   };
+
 
   // Enhanced resetTest to always reset WPM history and stats
   const resetTest = useCallback((newTimeLimit = undefined) => {
+    // Auto-randomize test parameters if we just finished a test (showResults was true)
+    // and we're not in custom mode
+    const wasShowingResults = showResults;
+    const wasInCustomMode = currentMode === 'custom';
+    
     // Reset pause tracking
     setPauseStartTime(null);
     setTotalPauseTime(0);
@@ -1691,6 +1719,17 @@ const Index = () => {
     setErrors(0);
     setStartTime(null);
     setShowResults(false);
+    
+    // Auto-randomize if we just finished a test and not in custom mode
+    if (wasShowingResults && !wasInCustomMode && autoRandomizeTestRef.current) {
+      // Use setTimeout to ensure state updates complete first
+      setTimeout(() => {
+        if (autoRandomizeTestRef.current) {
+          autoRandomizeTestRef.current();
+        }
+      }, 100);
+      return; // Early return - autoRandomizeTest will handle the rest
+    }
     setWpm(0);
     setAccuracy(100);
     setWpmHistory([{ t: 0, wpm: 0 }]);
@@ -1729,7 +1768,7 @@ const Index = () => {
         inputRef.current.focus();
       }
     }, 100);
-  }, [currentMode, timeLimit, difficulty, language, includePunctuation, includeNumbers]);
+  }, [currentMode, timeLimit, difficulty, language, includePunctuation, includeNumbers, showResults]);
 
   // Focus input when clicking on container
   const handleContainerClick = () => {
@@ -1816,8 +1855,21 @@ const Index = () => {
 
   // Add a handler to set the typing content from the content library
   const handleContentSelect = useCallback((content: string) => {
+    if (!content || !content.trim()) return; // Don't set empty content
+    
+    // Store original text FIRST before any modifications
+    originalCustomTextRef.current = content;
+    
+    // Set mode to custom FIRST to prevent main effect from overriding
     setCurrentMode('custom');
-    setCurrentText(content);
+    
+    // Apply modifications based on current punctuation/numbers settings
+    const modifiedText = modifyTextForOptions(content, 'custom');
+    
+    // Set the text AFTER mode is set to custom
+    setCurrentText(modifiedText.trim());
+    
+    // Reset all test state
     setShowResults(false);
     setIsTyping(false);
     setUserInput('');
@@ -1835,19 +1887,48 @@ const Index = () => {
     setConsistency(null);
     setChartData([{ x: 0, y: 0, acc: 100 }]);
     setTimeLeft(0);
+    
+    // Focus input after a brief delay to ensure state is updated
     setTimeout(() => {
       if (inputRef.current) {
         inputRef.current.focus();
       }
     }, 100);
-  }, []);
+  }, [modifyTextForOptions]);
 
-  // Listen to content library selection changes
+  // Listen to content library selection changes - handle when custom text is added
   useEffect(() => {
+    // Only process if there's a selected item and it's a NEW selection (different ID)
+    // This prevents re-triggering when mode changes or other state updates
     if (contentLibraryState.selected && contentLibraryState.selected.content) {
-      handleContentSelect(contentLibraryState.selected.content);
+      const selectedId = contentLibraryState.selected.id;
+      const selectedContent = contentLibraryState.selected.content.trim();
+      
+      if (!selectedContent) return; // Don't process empty content
+      
+      // Only process if this is a NEW selection (different ID than last processed)
+      // AND we're either in custom mode or switching to custom mode
+      // This ensures we only set text when user actually selects/adds new content
+      // and prevents re-triggering when switching away from custom mode
+      if (lastSelectedContentIdRef.current !== selectedId) {
+        // Only process if we're in custom mode OR if this is a new selection (user is adding/selecting content)
+        // If we're not in custom mode and the ref is already set, it means we're switching away, so ignore
+        if (currentMode === 'custom' || lastSelectedContentIdRef.current === null) {
+          lastSelectedContentIdRef.current = selectedId;
+          
+          // Set the text when content is newly selected - this handles new additions
+          // handleContentSelect will switch to custom mode and set the text
+          handleContentSelect(selectedContent);
+        }
+      }
+    } else {
+      // Clear the ref when selection is cleared (but don't clear when switching modes)
+      // Only clear if selection is actually null/undefined
+      if (!contentLibraryState.selected) {
+        lastSelectedContentIdRef.current = null;
+      }
     }
-  }, [contentLibraryState.selected, handleContentSelect]);
+  }, [contentLibraryState.selected?.id, currentMode, handleContentSelect]);
 
   // Scroll the text display to keep the current character in view
   useEffect(() => {
@@ -2021,6 +2102,13 @@ const Index = () => {
       return;
     }
 
+    // Clear custom text ref, last selected ID, and content library selection when switching away from custom mode
+    if (currentMode === 'custom') {
+      originalCustomTextRef.current = '';
+      lastSelectedContentIdRef.current = null;
+      clearSelection(); // Clear the content library selection to prevent useEffect from re-triggering
+    }
+
     setCurrentMode(newMode);
     setShowResults(false);
     setIsTyping(false);
@@ -2062,6 +2150,95 @@ const Index = () => {
     }
     setTimeLeft(newMode === 'time' ? timeLimit : 0);
   };
+
+  // Auto-randomize test parameters after completion (excluding custom mode and foreign language)
+  const autoRandomizeTest = useCallback(() => {
+    // Don't randomize if in custom mode or foreign language practice mode
+    if (currentMode === 'custom' || currentMode === 'foreign') {
+      return;
+    }
+
+    // Get all available modes (excluding custom and foreign language practice)
+    // Foreign language practice should only be selected manually, not randomly
+    const availableModes = [
+      'time', 'words', 'quote', 'coding', 'syntax', 
+      'essay', 'zen', 'notimer', 'hardwords'
+    ];
+    
+    // Randomly select a new mode (different from current)
+    let newMode = currentMode;
+    if (availableModes.length > 1) {
+      const otherModes = availableModes.filter(m => m !== currentMode);
+      if (otherModes.length > 0) {
+        newMode = otherModes[Math.floor(Math.random() * otherModes.length)];
+      }
+    }
+
+    // Randomly select a difficulty level
+    const difficulties = ['short', 'medium', 'long', 'thicc'];
+    const newDifficulty = difficulties[Math.floor(Math.random() * difficulties.length)];
+
+    // Randomly toggle punctuation (but force true for coding/syntax modes)
+    let newIncludePunctuation = includePunctuation;
+    if (newMode !== 'coding' && newMode !== 'syntax') {
+      newIncludePunctuation = Math.random() > 0.5;
+    } else {
+      newIncludePunctuation = true; // Force true for coding/syntax
+    }
+
+    // Randomly toggle numbers (but force true for coding/syntax modes)
+    let newIncludeNumbers = includeNumbers;
+    if (newMode !== 'coding' && newMode !== 'syntax') {
+      newIncludeNumbers = Math.random() > 0.5;
+    } else {
+      newIncludeNumbers = true; // Force true for coding/syntax
+    }
+
+    // Apply the changes
+    setCurrentMode(newMode);
+    setDifficulty(newDifficulty);
+    setIncludePunctuation(newIncludePunctuation);
+    setIncludeNumbers(newIncludeNumbers);
+
+    // Generate new text with the randomized parameters
+    const newText = generateNewText(newMode, newDifficulty, language);
+    const modifiedText = modifyTextForOptions(newText, newMode);
+    
+    // For coding/syntax mode, preserve original formatting
+    if (newMode === 'coding' || newMode === 'syntax') {
+      setCurrentText(modifiedText);
+    } else {
+      const normalizedText = modifiedText
+        .split('\n')
+        .map(line => line.trimEnd())
+        .join('\n')
+        .trim()
+        .replace(/\s+/g, ' ');
+      setCurrentText(normalizedText);
+    }
+
+    // Reset test state
+    setTimeLeft(newMode === 'time' ? timeLimit : 0);
+    setUserInput('');
+    setCurrentIndex(0);
+    setErrors(0);
+    setStartTime(null);
+    setPauseStartTime(null);
+    setTotalPauseTime(0);
+    setWpm(0);
+    setAccuracy(100);
+    setWpmHistory([{ t: 0, wpm: 0 }]);
+    setKeystrokeStats({ total: 0, correct: 0, incorrect: 0, extra: 0, keyCounts: {} });
+    setErrorTypes({ punctuation: 0, case: 0, number: 0, other: 0 });
+    setConsistency(null);
+    setChartData([{ x: 0, y: 0, acc: 100 }]);
+    setGodModeIndex(0);
+  }, [currentMode, difficulty, includePunctuation, includeNumbers, language, timeLimit, generateNewText, modifyTextForOptions]);
+
+  // Update ref whenever autoRandomizeTest changes
+  useEffect(() => {
+    autoRandomizeTestRef.current = autoRandomizeTest;
+  }, [autoRandomizeTest]);
 
   // Replace the categories bar rendering with the following structure:
   // Main categories and their subcategories
@@ -2166,6 +2343,10 @@ const Index = () => {
     duration,
     timestamp,
   }) {
+    if (!userId || userId === 'guest') {
+      return;
+    }
+    
     const testResult = {
       user_id: userId,
       wpm,
@@ -2175,18 +2356,13 @@ const Index = () => {
       consistency,
       keystroke_stats: { ...keystrokeStats, testType: getCategoryFromMode(currentMode) },
       error_types: errorTypes,
-      wordCount,
+      word_count: wordCount, // Fixed: use snake_case to match database schema
       duration,
       timestamp,
     };
-    // Debug print to inspect what is being saved
-    console.log('Saving test result:', testResult);
-    const { error, data } = await supabase.from('test_results').insert([testResult]);
-    if (error) {
-      console.error('Supabase test_results insert error:', error);
-    } else {
-      console.log('Supabase test_results insert success:', data);
-      
+    
+    const { error } = await supabase.from('test_results').insert([testResult]);
+    if (!error) {
       // Update leaderboard after successfully saving test result
       await updateLeaderboard(userId, wpm);
     }
@@ -2195,9 +2371,19 @@ const Index = () => {
   // Function to update leaderboard for all timeframes
   async function updateLeaderboard(userId: string, wpm: number) {
     try {
-      // Get user email and XP
-      const { data: userData } = await supabase.auth.getUser();
-      const userEmail = userData?.user?.email || null;
+      if (!userId || userId === 'guest') {
+        return;
+      }
+      
+      // Get user data including username from metadata
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      if (userError) {
+        return;
+      }
+      
+      // Get username from user_metadata, fallback to email prefix, then to null
+      const username = userData?.user?.user_metadata?.username 
+        || (userData?.user?.email ? userData.user.email.split('@')[0] : null);
       
       // Get user's current XP from gamification
       const { data: gamificationData } = await supabase
@@ -2223,7 +2409,7 @@ const Index = () => {
         .from('leaderboard')
         .upsert({
           user_id: userId,
-          email: userEmail,
+          username: username,
           wpm: bestWpm,
           xp: xp,
           timeframe: 'all',
@@ -2232,7 +2418,7 @@ const Index = () => {
         });
       
       if (allError) {
-        console.error('Error updating leaderboard (all):', allError);
+        // Silent fail - don't log
       }
       
       // Update weekly leaderboard (always update - timeframe filtering is handled by the leaderboard query)
@@ -2251,7 +2437,7 @@ const Index = () => {
           .from('leaderboard')
           .upsert({
             user_id: userId,
-            email: userEmail,
+            username: username,
             wpm: bestWeeklyWpm,
             xp: xp,
             timeframe: 'weekly',
@@ -2260,7 +2446,7 @@ const Index = () => {
           });
         
         if (weeklyError) {
-          console.error('Error updating leaderboard (weekly):', weeklyError);
+          // Silent fail
         }
       }
       
@@ -2280,7 +2466,7 @@ const Index = () => {
           .from('leaderboard')
           .upsert({
             user_id: userId,
-            email: userEmail,
+            username: username,
             wpm: bestMonthlyWpm,
             xp: xp,
             timeframe: 'monthly',
@@ -2289,7 +2475,7 @@ const Index = () => {
           });
         
         if (monthlyError) {
-          console.error('Error updating leaderboard (monthly):', monthlyError);
+          // Silent fail
         }
       }
       
@@ -2309,7 +2495,7 @@ const Index = () => {
           .from('leaderboard')
           .upsert({
             user_id: userId,
-            email: userEmail,
+            username: username,
             wpm: bestYearlyWpm,
             xp: xp,
             timeframe: 'yearly',
@@ -2318,7 +2504,7 @@ const Index = () => {
           });
         
         if (yearlyError) {
-          console.error('Error updating leaderboard (yearly):', yearlyError);
+          // Silent fail
         }
       }
       
@@ -2327,7 +2513,7 @@ const Index = () => {
         await refreshLeaderboard();
       }
     } catch (err) {
-      console.error('Error updating leaderboard:', err);
+      // Silent fail
     }
   };
 
@@ -2348,8 +2534,46 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      {/* Navbar - Fades when typing */}
+    <>
+      <SEO
+        title="Typing Speed Test for Developers & Coders | Online WPM Test"
+        description="Free online typing speed test for developers, coders, and programmers. Practice typing code, measure your WPM (Words Per Minute), and improve typing accuracy with real code samples. Track progress, compete on leaderboards, and get certified. Supports multiple languages."
+        keywords="typing speed test, code typing test, typing test for coders, typing practice online, wpm typing test, typing test website, typing speed checker, developer typing speed, keyboard typing test, programming typing test, typing test with code samples, online coding typing test, html typing speed test, typing test for programmers, coding practice typing speed, real code typing test online, typing speed test with real code, measure coding speed online, wpm test for developers, how to improve typing speed, benefits of faster typing for developers, best typing test sites in 2025, tips to increase coding speed, typing test accuracy vs speed, typing vs copy-pasting speed, instant typing test results, track typing speed over time, typing stats for developers, typing WPM leaderboard, code-based typing challenges, free typing test, online typing practice, typing certificate, typing certification"
+        url="/"
+        structuredData={{
+          "@context": "https://schema.org",
+          "@type": "WebApplication",
+          "name": "TypingThrust",
+          "description": "Free online typing speed test for developers, coders, and programmers. Practice typing code, measure your WPM, and improve typing accuracy with real code samples.",
+          "url": "https://typingthrust.com/",
+          "applicationCategory": "EducationalApplication",
+          "operatingSystem": "Any",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+          },
+          "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "4.8",
+            "ratingCount": "1250",
+            "bestRating": "5",
+            "worstRating": "1"
+          },
+          "featureList": [
+            "Real code typing practice",
+            "WPM (Words Per Minute) measurement",
+            "Accuracy tracking",
+            "Multiple programming languages",
+            "Leaderboard competition",
+            "Typing certification",
+            "Multi-language support",
+            "Free typing test"
+          ]
+        }}
+      />
+      <div className="min-h-screen bg-background flex flex-col">
+        {/* Navbar - Fades when typing */}
       <motion.div
         animate={{ opacity: isTyping ? 0 : 1 }}
         transition={{ duration: 0.3, ease: 'easeInOut' }}
@@ -2403,18 +2627,20 @@ const Index = () => {
                     Duration
                   </button>
                 )}
-                {/* Difficulty Category */}
-                <button
-                  onClick={(e) => handleCategoryClick('Difficulty', e)}
-                  className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 whitespace-nowrap ${
-                    openCategory === 'Difficulty'
-                      ? 'bg-primary text-primary-foreground'
-                      : 'text-foreground/70 hover:text-foreground hover:bg-muted/50'
-                  }`}
-                >
-                  Difficulty
-                </button>
-                {/* Punctuation Toggle - Disabled for coding/syntax mode */}
+                {/* Difficulty Category - Hidden/Locked for Custom Mode */}
+                {currentMode !== 'custom' && (
+                  <button
+                    onClick={(e) => handleCategoryClick('Difficulty', e)}
+                    className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 whitespace-nowrap ${
+                      openCategory === 'Difficulty'
+                        ? 'bg-primary text-primary-foreground'
+                        : 'text-foreground/70 hover:text-foreground hover:bg-muted/50'
+                    }`}
+                  >
+                    Difficulty
+                  </button>
+                )}
+                {/* Punctuation Toggle - Enabled for custom mode, disabled for coding/syntax mode */}
                 <button
                   onClick={() => {
                     if (currentMode !== 'coding' && currentMode !== 'syntax') {
@@ -2432,11 +2658,11 @@ const Index = () => {
                       ? 'bg-primary/20 text-primary border border-primary/30'
                       : 'text-foreground/70 hover:text-foreground hover:bg-muted/50'
                   }`}
-                  title={currentMode === 'coding' || currentMode === 'syntax' ? 'Punctuation is always included in coding mode' : ''}
+                  title={currentMode === 'coding' || currentMode === 'syntax' ? 'Punctuation is always included in coding mode' : 'Toggle punctuation in your custom text'}
                 >
                   @ punctuation
                 </button>
-                {/* Numbers Toggle - Disabled for coding/syntax mode */}
+                {/* Numbers Toggle - Enabled for custom mode, disabled for coding/syntax mode */}
                 <button
                   onClick={() => {
                     if (currentMode !== 'coding' && currentMode !== 'syntax') {
@@ -2454,7 +2680,7 @@ const Index = () => {
                       ? 'bg-primary/20 text-primary border border-primary/30'
                       : 'text-foreground/70 hover:text-foreground hover:bg-muted/50'
                   }`}
-                  title={currentMode === 'coding' || currentMode === 'syntax' ? 'Numbers are always included in coding mode' : ''}
+                  title={currentMode === 'coding' || currentMode === 'syntax' ? 'Numbers are always included in coding mode' : 'Toggle numbers in your custom text'}
                 >
                   # numbers
                 </button>
@@ -2533,6 +2759,10 @@ const Index = () => {
                             </div>
                           );
                         } else if (openCategory === 'Difficulty') {
+                          // Don't show difficulty dropdown if in custom mode
+                          if (currentMode === 'custom') {
+                            return null;
+                          }
                           return (
                             <div className="flex flex-col gap-2">
                               {[
@@ -2913,46 +3143,48 @@ const Index = () => {
                     </div>
                   )}
 
-                  {/* Difficulty */}
-                  <div className="rounded-lg overflow-hidden bg-card/50 border border-border/50">
-                    <div className="p-4">
-                      <h3 className="text-sm font-medium text-foreground mb-3">Difficulty</h3>
-                      <div className="grid grid-cols-2 gap-2">
-                        {[
-                { label: 'Easy', value: 'short' },
-                { label: 'Classic', value: 'medium' },
-                { label: 'Epic', value: 'long' },
-                { label: 'Ultra', value: 'thicc' },
-                        ].map((item) => (
-                <button
-                  key={item.value}
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              setDifficulty(String(item.value));
-                              resetTest();
-                              setMobileDrawerOpen(false);
-                              // Blur to prevent keyboard from showing
-                              if (document.activeElement instanceof HTMLElement) {
-                                document.activeElement.blur();
-                              }
-                            }}
-                            onTouchStart={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                            }}
-                            className={`py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                              difficulty === String(item.value)
-                                ? 'bg-primary text-primary-foreground'
-                                : 'bg-muted/50 text-foreground/70 hover:text-foreground hover:bg-muted'
-                            }`}
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
-        </div>
-                  </div>
+                  {/* Difficulty - Hidden for Custom Mode */}
+                  {currentMode !== 'custom' && (
+                    <div className="rounded-lg overflow-hidden bg-card/50 border border-border/50">
+                      <div className="p-4">
+                        <h3 className="text-sm font-medium text-foreground mb-3">Difficulty</h3>
+                        <div className="grid grid-cols-2 gap-2">
+                          {[
+                    { label: 'Easy', value: 'short' },
+                    { label: 'Classic', value: 'medium' },
+                    { label: 'Epic', value: 'long' },
+                    { label: 'Ultra', value: 'thicc' },
+                          ].map((item) => (
+                    <button
+                      key={item.value}
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  setDifficulty(String(item.value));
+                                  resetTest();
+                                  setMobileDrawerOpen(false);
+                                  // Blur to prevent keyboard from showing
+                                  if (document.activeElement instanceof HTMLElement) {
+                                    document.activeElement.blur();
+                                  }
+                                }}
+                                onTouchStart={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                }}
+                                className={`py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                                  difficulty === String(item.value)
+                                    ? 'bg-primary text-primary-foreground'
+                                    : 'bg-muted/50 text-foreground/70 hover:text-foreground hover:bg-muted'
+                                }`}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+              </div>
+          </div>
+                    </div>
+                  )}
                 </div>
               </motion.div>
             </>
@@ -3173,6 +3405,7 @@ const Index = () => {
         <Footer />
       </motion.div>
     </div>
+    </>
   );
 };
 

@@ -1,9 +1,10 @@
-import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabaseClient';
 
 export interface LeaderboardEntry {
   user_id: string;
   email: string | null;
+  username: string | null;
   wpm: number;
   xp: number;
   timeframe: 'weekly' | 'monthly' | 'yearly' | 'all';
@@ -36,24 +37,36 @@ export const LeaderboardProvider = ({ children }: { children: ReactNode }) => {
   const setMultiplayerRoomId = (id: string | undefined) => setState(prev => ({ ...prev, multiplayerRoomId: id }));
 
   // --- Add manual refreshLeaderboard function ---
-  const refreshLeaderboard = async (timeframeOverride?: LeaderboardState['timeframe']) => {
+  const refreshLeaderboard = useCallback(async (timeframeOverride?: LeaderboardState['timeframe']) => {
     const targetTimeframe = timeframeOverride ?? state.timeframe;
-    let query = supabase
-      .from('leaderboard')
-      .select('user_id, wpm, xp, timeframe, email')
-      .eq('timeframe', targetTimeframe);
-    const { data, error } = await query;
-    if (!error && data) {
-      // Sort by WPM (desc), then XP (desc)
-      const sorted = [...data].sort((a, b) => b.wpm - a.wpm || b.xp - a.xp);
-      setEntries(sorted as LeaderboardEntry[]);
-    } else {
+    
+    try {
+      const { data, error } = await supabase
+        .from('leaderboard')
+        .select('user_id, wpm, xp, timeframe, email, username')
+        .eq('timeframe', targetTimeframe)
+        .order('wpm', { ascending: false })
+        .order('xp', { ascending: false });
+      
       if (error) {
-        console.error('Error fetching leaderboard:', error);
+        setEntries([]);
+        return;
       }
+      
+      if (data && data.length > 0) {
+        // Additional sort by WPM (desc), then XP (desc) as fallback
+        const sorted = [...data].sort((a, b) => {
+          if (b.wpm !== a.wpm) return b.wpm - a.wpm;
+          return (b.xp || 0) - (a.xp || 0);
+        });
+        setEntries(sorted as LeaderboardEntry[]);
+      } else {
+        setEntries([]);
+      }
+    } catch (err) {
       setEntries([]);
     }
-  };
+  }, [state.timeframe]);
 
   // Refresh when timeframe changes and auto-refresh every hour
   useEffect(() => {
@@ -65,8 +78,7 @@ export const LeaderboardProvider = ({ children }: { children: ReactNode }) => {
     }, 60 * 60 * 1000); // 1 hour in milliseconds
 
     return () => clearInterval(interval);
-    // eslint-disable-next-line
-  }, [state.timeframe]);
+  }, [state.timeframe, refreshLeaderboard]);
 
   return (
     <LeaderboardContext.Provider value={{ state, setTimeframe, setEntries, setMultiplayerRoomId, refreshLeaderboard }}>

@@ -87,10 +87,10 @@ function ShareModal({ open, onClose, link }: { open: boolean; onClose: () => voi
   );
 }
 
-// Helper to get display name
+// Helper to get display name - uses username for security
 function getDisplayName(entry: any) {
-  if (entry.email && entry.email !== 'NULL') return entry.email;
-  if (entry.user_id) return entry.user_id.slice(0, 6) + '...' + entry.user_id.slice(-4);
+  if (entry.username && entry.username !== 'NULL') return entry.username;
+  if (entry.user_id) return 'User_' + entry.user_id.slice(0, 6);
   return 'User';
 }
 
@@ -101,12 +101,12 @@ export default function LeaderboardOverlay() {
   const { user } = useAuth();
   const link = 'https://typingthrust.com/leaderboard';
 
-  // Refresh leaderboard when overlay opens
+  // Refresh leaderboard when overlay opens or timeframe changes
   useEffect(() => {
     if (open === 'leaderboard') {
-      refreshLeaderboard();
+      refreshLeaderboard(state.timeframe);
     }
-  }, [open, refreshLeaderboard]);
+  }, [open, state.timeframe, refreshLeaderboard]);
 
   // Use real user ID/email for filtering
   const currentUserId = user?.id;
@@ -116,11 +116,11 @@ export default function LeaderboardOverlay() {
   const sorted = [...state.entries].sort((a, b) => b.wpm - a.wpm || b.xp - a.xp);
   
   // Find current user's entry and index
-  const userIdx = sorted.findIndex(e => e.user_id === currentUserId || e.email === currentUserEmail);
+  const userIdx = sorted.findIndex(e => e.user_id === currentUserId);
   const userEntry = userIdx !== -1 ? sorted[userIdx] : null;
   
   // Filter out current user from the displayed list (show only top 5 others)
-  const filteredEntries = sorted.filter(e => e.user_id !== currentUserId && e.email !== currentUserEmail);
+  const filteredEntries = sorted.filter(e => e.user_id !== currentUserId);
 
   return (
     <MinimalLeaderboardOverlay open={open === 'leaderboard'} onClose={closeOverlay}>
@@ -141,7 +141,11 @@ export default function LeaderboardOverlay() {
             <button
               key={tf.value}
               className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${state.timeframe === tf.value ? 'bg-primary text-primary-foreground shadow-sm' : 'bg-muted/50 text-foreground/70 hover:text-foreground hover:bg-muted'}`}
-              onClick={() => setTimeframe(tf.value as any)}
+              onClick={() => {
+                setTimeframe(tf.value as any);
+                // Refresh immediately when timeframe changes
+                setTimeout(() => refreshLeaderboard(tf.value as any), 100);
+              }}
             >
               {tf.label}
             </button>
@@ -149,9 +153,27 @@ export default function LeaderboardOverlay() {
         </div>
         {/* Leaderboard List */}
         <section className="w-full flex flex-col gap-2">
-          {filteredEntries.length === 0 ? (
+          {filteredEntries.length === 0 && sorted.length === 0 ? (
             <div className="text-center py-8">
               <span className="text-muted-foreground text-sm">No leaderboard data</span>
+              <p className="text-xs text-muted-foreground mt-2">
+                Complete a typing test while logged in to appear on the leaderboard
+              </p>
+            </div>
+          ) : filteredEntries.length === 0 && userEntry ? (
+            <div className="text-center py-8">
+              <span className="text-muted-foreground text-sm">You're the only one on the leaderboard!</span>
+              <div className="mt-4">
+                <div className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg border-2 border-primary bg-primary/10 ring-2 ring-primary/20 font-semibold w-full" style={{ minHeight: 56 }}>
+                  <span className="w-6 sm:w-8 text-center text-base sm:text-lg font-bold text-primary select-none">1</span>
+                  <span className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-primary flex items-center justify-center overflow-hidden text-primary-foreground">
+                    <UserIcon className="w-5 h-5 sm:w-6 sm:h-6" />
+                  </span>
+                  <span className="flex-1 truncate text-primary text-sm sm:text-base font-medium">{getDisplayName(userEntry)}</span>
+                  <span className="w-14 sm:w-16 text-center text-primary font-mono text-sm sm:text-base">{userEntry.wpm} WPM</span>
+                  <span className="hidden sm:block w-14 text-center text-primary font-mono text-sm">{userEntry.xp ?? 0} XP</span>
+                </div>
+              </div>
             </div>
           ) : (
             <ul className="flex flex-col gap-2">

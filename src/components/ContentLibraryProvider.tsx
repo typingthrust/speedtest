@@ -41,6 +41,7 @@ const ContentLibraryContext = createContext<{
   state: ContentLibraryState;
   addItem: (item: ContentItem) => void;
   selectItem: (id: string) => void;
+  clearSelection: () => void;
   setItems: (items: ContentItem[]) => void;
 } | undefined>(undefined);
 
@@ -48,9 +49,10 @@ export const ContentLibraryProvider = ({ children }: { children: ReactNode }) =>
   const [state, setState] = useState<ContentLibraryState>(defaultState);
   const addItem = (item: ContentItem) => setState(prev => ({ ...prev, items: [...prev.items, item] }));
   const selectItem = (id: string) => setState(prev => ({ ...prev, selected: prev.items.find(i => i.id === id) || null }));
+  const clearSelection = () => setState(prev => ({ ...prev, selected: null }));
   const setItems = (items: ContentItem[]) => setState(prev => ({ ...prev, items }));
   return (
-    <ContentLibraryContext.Provider value={{ state, addItem, selectItem, setItems }}>
+    <ContentLibraryContext.Provider value={{ state, addItem, selectItem, clearSelection, setItems }}>
       {children}
     </ContentLibraryContext.Provider>
   );

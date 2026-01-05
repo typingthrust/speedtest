@@ -252,15 +252,52 @@ export default function Profile() {
               try {
                 keystrokeStats = JSON.parse(result.keystroke_stats);
               } catch (e) {
-                keystrokeStats = result.keystroke_stats;
+                // If JSON parsing fails, try to extract testType from string directly
+                try {
+                  const testTypeMatch = result.keystroke_stats.match(/"testType"\s*:\s*"([^"]+)"/);
+                  if (testTypeMatch && testTypeMatch[1]) {
+                    keystrokeStats = { testType: testTypeMatch[1] };
+                  } else {
+                    keystrokeStats = {};
+                  }
+                } catch (e2) {
+                  keystrokeStats = {};
+                }
               }
             } else {
               keystrokeStats = result.keystroke_stats;
             }
           }
           
-          // Extract testType from keystroke_stats
-          const testType = (keystrokeStats && keystrokeStats.testType) || result.test_type || result.testType || 'General';
+          // Extract testType with improved logic
+          let testType = null;
+          
+          // Try multiple sources in order of reliability
+          if (keystrokeStats && keystrokeStats.testType) {
+            testType = keystrokeStats.testType;
+          } else if (result.test_type) {
+            testType = result.test_type;
+          } else if (result.testType) {
+            testType = result.testType;
+          }
+          
+          // Validate testType against valid categories
+          const validCategories = [
+            'Coding', 'Syntax Challenges', 'Custom', 'Words', 'Timed',
+            'Essay Builder', 'Quotes', 'Zen Writing', 'No Timer',
+            'Hard Words', 'Foreign Language Practice'
+          ];
+          
+          if (testType && validCategories.includes(testType)) {
+            // Valid category, use it
+          } else if (testType) {
+            // Invalid category, log for debugging
+            console.warn('Invalid testType found:', testType, 'in result:', result.id);
+            testType = 'General';
+          } else {
+            // No category found, default to General
+            testType = 'General';
+          }
           
           return {
             ...result,
@@ -268,7 +305,7 @@ export default function Profile() {
             keystroke_stats: keystrokeStats, // Keep both formats for compatibility
             errorTypes: result.error_types || result.errorTypes || {},
             wordCount: result.word_count || result.wordCount || 0,
-            testType: testType,
+            testType: testType, // Always set a valid category
             timestamp: result.timestamp || result.created_at || new Date().toISOString(),
             duration: result.duration || (result.time || 0),
             wpm: result.wpm || 0,
@@ -277,6 +314,14 @@ export default function Profile() {
             time: result.time || 0,
           };
         });
+        // Debug: Log category distribution
+        const categoryCounts: Record<string, number> = {};
+        normalizedData.forEach((r: any) => {
+          categoryCounts[r.testType] = (categoryCounts[r.testType] || 0) + 1;
+        });
+        console.log('Test results by category:', categoryCounts);
+        console.log('Total test results:', normalizedData.length);
+        
         setTestResults(normalizedData);
       } else {
         setTestResults([]);
@@ -685,15 +730,50 @@ export default function Profile() {
       return;
     }
     try {
+      // Wait a moment to ensure certificate is fully rendered
+      await new Promise(resolve => setTimeout(resolve, 200));
+      
+      // Get actual dimensions including all content
+      const rect = certArea.getBoundingClientRect();
+      
+      // Optimized canvas settings for smaller file size and better quality
       const canvas = await html2canvas(certArea, { 
-        scale: 2,
+        scale: 1.2, // Reduced scale for smaller file
         backgroundColor: '#ffffff',
         logging: false,
-        useCORS: true
+        useCORS: true,
+        allowTaint: false,
+        removeContainer: false,
+        imageTimeout: 15000,
+        width: rect.width,
+        height: rect.height,
+        windowWidth: rect.width,
+        windowHeight: rect.height,
+        x: 0,
+        y: 0,
+        scrollX: 0,
+        scrollY: 0
       });
-    const imgData = canvas.toDataURL('image/png');
-    const pdf = new jsPDF({ orientation: 'landscape', unit: 'px', format: [600, 400] });
-    pdf.addImage(imgData, 'PNG', 0, 0, 600, 400);
+      
+      // Convert to JPEG with good compression (0.80 = 80% quality, good balance)
+      const imgData = canvas.toDataURL('image/jpeg', 0.80);
+      
+      // Use A4 landscape dimensions (297mm x 210mm) - exact match
+      const pdfWidth = 297; // A4 landscape width in mm
+      const pdfHeight = 210; // A4 landscape height in mm
+      
+      // Create optimized PDF with compression
+      const pdf = new jsPDF({ 
+        orientation: 'landscape',
+        unit: 'mm',
+        format: [pdfWidth, pdfHeight],
+        compress: true
+      });
+      
+      // Add image directly to fill PDF (certificate is already A4 sized)
+      pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
+      
+      // Save with optimized filename
       pdf.save(`TypingThrust-Certificate-${new Date().toISOString().split('T')[0]}.pdf`);
     } catch (error) {
       console.error('Error generating certificate:', error);
@@ -1117,44 +1197,89 @@ export default function Profile() {
   const categoryStats = useMemo(() => {
     const stats: Record<string, { wpm: number[] }> = {};
     for (const h of filteredHistory) {
-      // Try multiple sources for category: testType (already normalized), keystroke_stats.testType, test_type
-      // testType is already extracted in normalizedData
-      let cat = h.testType || null;
+      // Try multiple sources for category with improved extraction
+      let cat: string | null = null;
       
-      // If testType is not set, try to get it from keystroke_stats
+      // 1. First try: testType from normalized data (most reliable)
+      if (h.testType && typeof h.testType === 'string' && h.testType !== 'General') {
+        cat = h.testType;
+      }
+      
+      // 2. Second try: Extract from keystroke_stats
       if (!cat) {
         const keystrokeStats = h.keystroke_stats || h.keystrokeStats || {};
-        // Handle case where keystroke_stats might be a string
         let parsedStats = keystrokeStats;
+        
+        // Handle string format (JSONB from Supabase)
         if (typeof keystrokeStats === 'string') {
           try {
             parsedStats = JSON.parse(keystrokeStats);
           } catch (e) {
-            parsedStats = {};
+            // If parsing fails, try to extract testType directly from string
+            try {
+              const match = keystrokeStats.match(/"testType"\s*:\s*"([^"]+)"/);
+              if (match && match[1]) {
+                cat = match[1];
+              }
+            } catch (e2) {
+              parsedStats = {};
+            }
           }
         }
-        cat = parsedStats.testType || h.test_type || null;
+        
+        // Extract testType from parsed stats
+        if (!cat && parsedStats && typeof parsedStats === 'object') {
+          cat = parsedStats.testType || parsedStats.test_type || null;
+        }
       }
       
-      // Debug: log first few entries to see what we're getting
-      if (Object.keys(stats).length < 3) {
-        console.log('Category debug:', { 
-          testType: h.testType, 
-          keystroke_stats: h.keystroke_stats, 
-          keystrokeStats: h.keystrokeStats,
-          extractedCat: cat 
-        });
+      // 3. Third try: Check other possible fields
+      if (!cat) {
+        cat = h.test_type || h.testType || null;
       }
       
-      // Validate category - only use if it's in our valid categories list
+      // 4. Validate and normalize category name
+      if (cat) {
+        // Normalize common variations
+        const normalizedCat = cat.trim();
+        if (validCategories.includes(normalizedCat)) {
+          cat = normalizedCat;
+        } else {
+          // Try case-insensitive match
+          const found = validCategories.find(c => c.toLowerCase() === normalizedCat.toLowerCase());
+          if (found) {
+            cat = found;
+          } else {
+            cat = null; // Invalid category, will default to General
+          }
+        }
+      }
+      
+      // 5. Default to General only if no valid category found
       if (!cat || !validCategories.includes(cat)) {
         cat = 'General';
       }
       
-      if (!stats[cat]) stats[cat] = { wpm: [] };
-      if (h.wpm) stats[cat].wpm.push(h.wpm);
+      // Initialize category if it doesn't exist
+      if (!stats[cat]) {
+        stats[cat] = { wpm: [] };
+      }
+      
+      // Add WPM to category stats
+      if (h.wpm && typeof h.wpm === 'number' && h.wpm > 0) {
+        stats[cat].wpm.push(h.wpm);
+      }
     }
-    console.log('Category stats:', stats);
+    
+    // Debug: Log category distribution
+    if (Object.keys(stats).length > 0) {
+      console.log('Category breakdown:', Object.keys(stats).map(cat => ({
+        category: cat,
+        count: stats[cat].wpm.length,
+        avgWpm: Math.round(stats[cat].wpm.reduce((a, b) => a + b, 0) / stats[cat].wpm.length)
+      })));
+    }
+    
     return stats;
   }, [filteredHistory]);
 
@@ -1376,193 +1501,141 @@ export default function Profile() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
-      <div className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-        {/* Profile Header Section */}
-        <div className="mb-6 sm:mb-8 profile-header">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-            {/* Left: Avatar and User Info */}
-            <div className="flex items-center gap-4">
-              {user?.avatar_url || user?.user_metadata?.avatar_url ? (
-                <img 
-                  src={user?.avatar_url || user?.user_metadata?.avatar_url} 
-                  alt="avatar" 
-                  className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border-2 border-border flex-shrink-0 object-cover"
-                />
-              ) : (
-                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-primary flex items-center justify-center text-2xl sm:text-3xl font-bold text-primary-foreground flex-shrink-0">
-                  {(user?.username || user?.user_metadata?.username) ? (user?.username || user?.user_metadata?.username)?.[0]?.toUpperCase() : (user?.email ? user?.email[0]?.toUpperCase() : '?')}
-                </div>
-              )}
-              <div className="flex-1 min-w-0 flex flex-col justify-center">
-                <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-1.5 leading-tight m-0 p-0 text-left">
-                  {(user?.username || user?.user_metadata?.username) || (user?.email ? user.email.split('@')[0] : 'User')}
-                </h1>
-                {user?.email && (
-                  <p className="text-sm sm:text-base text-muted-foreground leading-tight m-0 p-0 text-left">
-                    {user.email}
-                  </p>
+      <div className="flex-1 w-full max-w-5xl mx-auto px-3 sm:px-4 lg:px-6 pt-8 pb-4 sm:pt-6 sm:pb-6">
+        {/* Minimal Header - No Boxes */}
+        <div className="mb-6">
+          <div className="flex flex-col gap-4 mb-6">
+            {/* User Info - Clean & Minimal */}
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                {user?.avatar_url || user?.user_metadata?.avatar_url ? (
+                  <img 
+                    src={user?.avatar_url || user?.user_metadata?.avatar_url} 
+                    alt="avatar" 
+                    className="w-12 h-12 sm:w-14 sm:h-14 rounded-full flex-shrink-0 object-cover"
+                  />
+                ) : (
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-primary/10 flex items-center justify-center text-lg sm:text-xl font-semibold text-primary flex-shrink-0">
+                    {(user?.username || user?.user_metadata?.username) ? (user?.username || user?.user_metadata?.username)?.[0]?.toUpperCase() : (user?.email ? user?.email[0]?.toUpperCase() : '?')}
+                  </div>
                 )}
+                <div className="flex-1 min-w-0">
+                  <h1 className="text-xl sm:text-2xl font-bold text-foreground truncate">
+                    {(user?.username || user?.user_metadata?.username) || (user?.email ? user.email.split('@')[0] : 'User')}
+                  </h1>
+                  <div className="flex items-center gap-3 flex-wrap mt-1">
+                    <span className="text-xs text-muted-foreground">Level {level}</span>
+                    <span className="text-xs text-muted-foreground">•</span>
+                    <span className="text-xs text-muted-foreground">{xp} XP</span>
+                    {badges && badges.length > 0 && (
+                      <>
+                        <span className="text-xs text-muted-foreground">•</span>
+                        <span className="text-xs text-primary">{badges.length} badges</span>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+              
+              {/* Action Buttons - Minimal */}
+              <div className="flex items-center gap-1.5 flex-shrink-0">
+                <button
+                  onClick={handleDownloadCertificate}
+                  disabled={!testResults || testResults.length === 0 || !bestWpm || bestWpm === 0}
+                  className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
+                    (!testResults || testResults.length === 0 || !bestWpm || bestWpm === 0)
+                      ? 'text-muted-foreground cursor-not-allowed'
+                      : 'text-primary hover:bg-primary/10'
+                  }`}
+                >
+                  Cert
+                </button>
+                <button
+                  onClick={logout}
+                  className="px-2.5 py-1 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+                >
+                  Out
+                </button>
               </div>
             </div>
-            
-            {/* Right: Level and XP Badge */}
-            <div className="flex items-center gap-2 sm:flex-shrink-0">
-              <div className="px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg bg-card border border-border flex items-center gap-2">
-                <Award className="w-4 h-4 text-primary flex-shrink-0" />
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-semibold text-foreground">Level {level}</span>
-                  <span className="text-muted-foreground">•</span>
-                  <span className="text-xs sm:text-sm text-muted-foreground">{xp} XP</span>
-                </div>
-              </div>
-            </div>
-          </div>
 
-          {/* Quick Stats Row */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6">
-            <ModernStatCard 
-              icon={Zap} 
-              label="Best WPM" 
-              value={bestWpm || 0} 
-              color="cyan" 
-            />
-            <ModernStatCard 
-              icon={Target} 
-              label="Best Accuracy" 
-              value={`${bestAccuracy || 0}%`} 
-              color="emerald" 
-            />
-            <ModernStatCard 
-              icon={TrendingUp} 
-              label="Average WPM" 
-              value={avgWpm || 0} 
-              color="cyan" 
-            />
-            <ModernStatCard 
-              icon={Activity} 
-              label="Streak" 
-              value={`${streak} day${streak !== 1 ? 's' : ''}`} 
-              color="amber" 
-            />
-                </div>
-
-          {/* Level Progress Card */}
-          <div className="bg-card rounded-lg border border-border p-4 sm:p-5 mb-6">
-            <div className="flex flex-col gap-3 mb-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-base sm:text-lg font-semibold text-foreground">Level {level}</h3>
-                  <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">{progress}% to Level {level + 1}</p>
-                </div>
-                <div className="text-right">
-                  <div className="text-lg sm:text-xl font-bold text-primary">{xp}</div>
-                  <div className="text-xs text-muted-foreground">XP</div>
+            {/* Progress Bar - Minimal */}
+            <div className="w-full">
+              <div className="flex items-center justify-between text-xs text-muted-foreground mb-1.5">
+                <span>Level {level} → {level + 1}</span>
+                <span>{progress}%</span>
               </div>
-              </div>
-              <div className="w-full h-1.5 bg-muted/30 rounded-full overflow-hidden">
+              <div className="w-full h-1 bg-muted/20 rounded-full overflow-hidden">
                 <div 
-                  className="h-full bg-primary rounded-full transition-all duration-300" 
+                  className="h-full bg-primary rounded-full transition-all duration-500" 
                   style={{ width: `${progress}%` }} 
                 />
               </div>
             </div>
-              {badges && badges.length > 0 && (
-              <div className="flex flex-wrap gap-2 pt-3 border-t border-border">
-                {badges.slice(0, 3).map(badge => (
-                  <div key={badge} className="px-2.5 py-1 bg-primary/5 text-primary rounded text-xs font-medium border border-primary/10">
-                    {badge}
-                  </div>
-                ))}
-                {badges.length > 3 && (
-                  <div className="px-2.5 py-1 bg-muted/30 text-muted-foreground rounded text-xs font-medium border border-border">
-                    +{badges.length - 3}
-                </div>
-              )}
-              </div>
-            )}
-            </div>
-            </div>
-
-                {/* Filters - Clean & Compact Design */}
-        <div className="mb-5 sm:mb-6">
-          {/* Mobile: Compact single-row design */}
-          <div className="sm:hidden space-y-2">
-            <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide pb-1">
-              <span className="text-[10px] font-medium text-muted-foreground whitespace-nowrap flex-shrink-0">Duration:</span>
-              {durations.map(d => (
-                <button
-                  key={d.value}
-                  className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors whitespace-nowrap flex-shrink-0 ${
-                    selectedDuration === d.value
-                      ? 'bg-primary text-primary-foreground shadow-sm'
-                      : 'bg-card/60 text-foreground/70 hover:text-foreground hover:bg-card border border-border/50'
-                  }`}
-                  onClick={() => setSelectedDuration(d.value)}
-                >
-                  {d.label}
-                </button>
-              ))}
-            </div>
-            <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide pb-1">
-              <span className="text-[10px] font-medium text-muted-foreground whitespace-nowrap flex-shrink-0">Range:</span>
-              {ranges.map(r => (
-                <button
-                  key={r.value}
-                  className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors whitespace-nowrap flex-shrink-0 ${
-                    selectedRange === r.value
-                      ? 'bg-primary text-primary-foreground shadow-sm'
-                      : 'bg-card/60 text-foreground/70 hover:text-foreground hover:bg-card border border-border/50'
-                  }`}
-                  onClick={() => setSelectedRange(r.value)}
-                >
-                  {r.label}
-                </button>
-              ))}
-            </div>
           </div>
-          
-          {/* Desktop: Original design */}
-          <div className="hidden sm:block">
-            <div className="flex flex-wrap items-center gap-2 mb-3">
-              <span className="text-xs font-medium text-muted-foreground whitespace-nowrap">Duration:</span>
-              {durations.map(d => (
-                <button
-                  key={d.value}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors whitespace-nowrap ${
-                    selectedDuration === d.value
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-card text-foreground/70 hover:text-foreground hover:bg-muted border border-border'
-                  }`}
-                  onClick={() => setSelectedDuration(d.value)}
-                >
-                  {d.label}
-                </button>
-              ))}
+
+          {/* Key Stats - Minimal Horizontal Layout */}
+          <div className="grid grid-cols-4 gap-2 sm:gap-3">
+            <div className="text-center">
+              <div className="text-xs text-muted-foreground mb-1">Best</div>
+              <div className="text-lg sm:text-xl font-bold text-foreground">{bestWpm || 0}</div>
             </div>
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs font-medium text-muted-foreground whitespace-nowrap">Time Range:</span>
-              {ranges.map(r => (
-                <button
-                  key={r.value}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors whitespace-nowrap ${
-                    selectedRange === r.value
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-card text-foreground/70 hover:text-foreground hover:bg-muted border border-border'
-                  }`}
-                  onClick={() => setSelectedRange(r.value)}
-                >
-                  {r.label}
-                </button>
-              ))}
+            <div className="text-center">
+              <div className="text-xs text-muted-foreground mb-1">Acc</div>
+              <div className="text-lg sm:text-xl font-bold text-foreground">{bestAccuracy || 0}%</div>
+            </div>
+            <div className="text-center">
+              <div className="text-xs text-muted-foreground mb-1">Avg</div>
+              <div className="text-lg sm:text-xl font-bold text-foreground">{avgWpm || 0}</div>
+            </div>
+            <div className="text-center">
+              <div className="text-xs text-muted-foreground mb-1">Days</div>
+              <div className="text-lg sm:text-xl font-bold text-foreground">{streak}</div>
             </div>
           </div>
         </div>
 
-        {/* Main Tabs */}
-        <div className="mb-5 sm:mb-6">
-          <div className="flex gap-1 border-b border-border">
+        {/* Minimal Filters - Single Row */}
+        <div className="mb-4 flex items-center gap-2 overflow-x-auto scrollbar-hide pb-2">
+          <div className="flex items-center gap-1.5 flex-shrink-0">
+            <span className="text-xs text-muted-foreground">Duration:</span>
+            {durations.map(d => (
+              <button
+                key={d.value}
+                className={`px-2 py-0.5 rounded text-xs font-medium transition-all whitespace-nowrap ${
+                  selectedDuration === d.value
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                }`}
+                onClick={() => setSelectedDuration(d.value)}
+              >
+                {d.label}
+              </button>
+            ))}
+          </div>
+          <div className="flex items-center gap-1.5 flex-shrink-0 ml-2">
+            <span className="text-xs text-muted-foreground">Range:</span>
+            {ranges.map(r => (
+              <button
+                key={r.value}
+                className={`px-2 py-0.5 rounded text-xs font-medium transition-all whitespace-nowrap ${
+                  selectedRange === r.value
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                }`}
+                onClick={() => setSelectedRange(r.value)}
+              >
+                {r.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Minimal Tabs */}
+        <div className="mb-4 border-b border-border/30">
+          <div className="flex gap-0">
             <button
-              className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+              className={`px-3 py-2 text-sm font-medium border-b-2 transition-colors ${
                 selectedTab === 'overview'
                   ? 'border-primary text-primary'
                   : 'border-transparent text-muted-foreground hover:text-foreground'
@@ -1572,25 +1645,25 @@ export default function Profile() {
               Overview
             </button>
             <button
-              className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+              className={`px-3 py-2 text-sm font-medium border-b-2 transition-colors ${
                 selectedTab === 'advanced'
                   ? 'border-primary text-primary'
                   : 'border-transparent text-muted-foreground hover:text-foreground'
               }`}
               onClick={() => setSelectedTab('advanced')}
             >
-              Advanced Analytics
+              Analytics
             </button>
-                  </div>
+          </div>
         </div>
 
         {/* Tab Content */}
         {selectedTab === 'overview' && (
-          <div className="space-y-6">
-            {/* Progress Chart */}
-            <div className="bg-card rounded-lg border border-border p-4 sm:p-5">
-              <h2 className="text-base sm:text-lg font-semibold text-foreground mb-4 text-left">Progress Over Time</h2>
-              <div className="h-64 border border-primary/20 rounded-lg p-2">
+          <div className="space-y-4">
+            {/* Progress Chart - Minimal */}
+            <div>
+              <h2 className="text-sm font-semibold text-foreground mb-3">Progress Over Time</h2>
+              <div className="h-64 sm:h-72 rounded-lg bg-background/30 p-2">
                 {filteredHistory.length > 1 ? (
                   <Line key={chartKey} data={chartData} options={chartOptions} />
                 ) : (
@@ -1599,45 +1672,63 @@ export default function Profile() {
                   </div>
                 )}
               </div>
-                </div>
+            </div>
 
-            {/* Additional Stats Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-                  <StatCard label="Tests Completed" value={testsCompleted} />
-              <StatCard label="Total Time" value={formatTime(totalTimeTyping)} />
-              <StatCard label="Words Typed" value={totalWordsTyped.toLocaleString()} />
-              <StatCard label="Rank" value={typingRank} />
-                  <StatCard label="Most Active Day" value={mostActiveDay} />
-              <StatCard label="Top Category" value={topCategory} />
-                </div>
+            {/* Additional Stats - Minimal Grid */}
+            <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 sm:gap-3">
+              <div className="text-center">
+                <div className="text-xs text-muted-foreground mb-1">Tests</div>
+                <div className="text-base font-bold text-foreground">{testsCompleted}</div>
+              </div>
+              <div className="text-center">
+                <div className="text-xs text-muted-foreground mb-1">Time</div>
+                <div className="text-base font-bold text-foreground">{formatTime(totalTimeTyping)}</div>
+              </div>
+              <div className="text-center">
+                <div className="text-xs text-muted-foreground mb-1">Words</div>
+                <div className="text-base font-bold text-foreground">{totalWordsTyped > 1000 ? `${(totalWordsTyped/1000).toFixed(1)}k` : totalWordsTyped}</div>
+              </div>
+              <div className="text-center">
+                <div className="text-xs text-muted-foreground mb-1">Rank</div>
+                <div className="text-base font-bold text-foreground">{typingRank}</div>
+              </div>
+              <div className="text-center hidden sm:block">
+                <div className="text-xs text-muted-foreground mb-1">Day</div>
+                <div className="text-base font-bold text-foreground truncate text-xs">{mostActiveDay}</div>
+              </div>
+              <div className="text-center hidden sm:block">
+                <div className="text-xs text-muted-foreground mb-1">Category</div>
+                <div className="text-base font-bold text-foreground truncate text-xs">{topCategory}</div>
+              </div>
+            </div>
           </div>
-            )}
+        )}
 
-            {selectedTab === 'advanced' && (
-          <div className="space-y-6">
-            {/* Advanced Analytics Sub-tabs */}
-            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-                    {['Speed Trends', 'Accuracy', 'Time Insights', 'Consistency', 'Category Breakdown'].map(tab => (
-                      <button
-                        key={tab}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
+        {selectedTab === 'advanced' && (
+          <div className="space-y-4">
+            {/* Advanced Analytics Sub-tabs - Minimal */}
+            <div className="flex gap-1.5 overflow-x-auto pb-2 scrollbar-hide">
+              {['Speed Trends', 'Accuracy', 'Time Insights', 'Consistency', 'Category Breakdown'].map(tab => (
+                <button
+                  key={tab}
+                  className={`px-2.5 py-1 rounded text-xs font-medium whitespace-nowrap transition-all flex-shrink-0 ${
                     activeAnalyticsTab === tab
                       ? 'bg-primary text-primary-foreground'
-                      : 'bg-card text-foreground/70 hover:text-foreground hover:bg-muted border border-border'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
                   }`}
-                        onClick={() => setActiveAnalyticsTab(tab)}
-                      >
-                        {tab}
-                          </button>
-                        ))}
-                      </div>
+                  onClick={() => setActiveAnalyticsTab(tab)}
+                >
+                  {tab}
+                </button>
+              ))}
+            </div>
 
-            {/* Advanced Analytics Content */}
-            <div className="bg-card rounded-lg border border-border p-4 sm:p-5">
+            {/* Advanced Analytics Content - Minimal */}
+            <div>
               {activeAnalyticsTab === 'Speed Trends' && (
                 <div>
-                  <h2 className="text-base sm:text-lg font-semibold text-foreground mb-4 text-left">Speed Trends</h2>
-                  <div className="h-72 w-full border border-primary/20 rounded-lg p-2">
+                  <h2 className="text-sm font-semibold text-foreground mb-3">Speed Trends</h2>
+                  <div className="h-64 sm:h-72 w-full rounded-lg bg-background/30 p-2">
                     {history.length === 0 ? (
                       <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
                         No tests completed yet
@@ -1655,8 +1746,8 @@ export default function Profile() {
 
               {activeAnalyticsTab === 'Accuracy' && (
                 <div>
-                  <h2 className="text-base sm:text-lg font-semibold text-foreground mb-4 text-left">Error Distribution by Key</h2>
-                  <div className="h-72 w-full border border-primary/20 rounded-lg p-2">
+                  <h2 className="text-sm font-semibold text-foreground mb-3">Error Distribution by Key</h2>
+                  <div className="h-64 sm:h-72 w-full rounded-lg bg-background/30 p-2">
                     {history.length === 0 ? (
                       <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
                         No tests completed yet
@@ -1676,10 +1767,10 @@ export default function Profile() {
                 </div>
                   )}
 
-                  {activeAnalyticsTab === 'Time Insights' && (
+              {activeAnalyticsTab === 'Time Insights' && (
                 <div>
-                  <h2 className="text-base sm:text-lg font-semibold text-foreground mb-4 text-left">Time Insights</h2>
-                  <div className="h-72 w-full border border-primary/20 rounded-lg p-2">
+                  <h2 className="text-sm font-semibold text-foreground mb-3">Time Insights</h2>
+                  <div className="h-64 sm:h-72 w-full rounded-lg bg-background/30 p-2">
                     {sessionTimes.length > 0 ? (
                       <Line key={chartKey} data={sessionTimeChartData} options={sessionTimeChartOptions} />
                     ) : (
@@ -1691,10 +1782,15 @@ export default function Profile() {
                 </div>
                   )}
 
-                  {activeAnalyticsTab === 'Consistency' && (
+              {activeAnalyticsTab === 'Consistency' && (
                 <div>
-                  <h2 className="text-base sm:text-lg font-semibold text-foreground mb-4 text-left">Consistency</h2>
-                  <div className="h-72 w-full mb-4 border border-primary/20 rounded-lg p-2">
+                  <div className="flex items-center justify-between mb-3">
+                    <h2 className="text-sm font-semibold text-foreground">Consistency</h2>
+                    <div className="text-sm font-semibold text-primary">
+                      {consistency === '-' ? '-' : `${consistency}%`}
+                    </div>
+                  </div>
+                  <div className="h-64 sm:h-72 w-full rounded-lg bg-background/30 p-2">
                     {wpmVarianceData.length > 1 ? (
                       <Line key={chartKey} data={wpmVarianceChartData} options={wpmVarianceChartOptions} />
                     ) : (
@@ -1703,16 +1799,13 @@ export default function Profile() {
                       </div>
                     )}
                   </div>
-                  <div className="text-base sm:text-lg font-semibold text-foreground">
-                    Consistency Score: {consistency === '-' ? '-' : `${consistency}%`}
-                  </div>
                 </div>
               )}
 
-                  {activeAnalyticsTab === 'Category Breakdown' && (
+              {activeAnalyticsTab === 'Category Breakdown' && (
                 <div>
-                  <h2 className="text-base sm:text-lg font-semibold text-foreground mb-4 text-left">Category Breakdown</h2>
-                  <div className="h-72 w-full mb-6 border border-primary/20 rounded-lg p-2">
+                  <h2 className="text-sm font-semibold text-foreground mb-3">Category Breakdown</h2>
+                  <div className="h-64 sm:h-72 w-full mb-3 rounded-lg bg-background/30 p-2">
                     {categoryLabels.length > 0 ? (
                       <Bar key={chartKey} data={categoryChartData} options={categoryChartOptions} />
                     ) : (
@@ -1721,52 +1814,38 @@ export default function Profile() {
                       </div>
                     )}
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                        {categoryLabels.map((cat, i) => (
-                      <div key={cat} className="bg-card border border-border rounded-lg p-3">
-                        <div className="text-xs text-muted-foreground mb-1">{cat}</div>
-                        <div className="text-lg font-bold text-primary">{categoryWpmData[i]} WPM</div>
-                </div>
-                        ))}
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+                    {categoryLabels.map((cat, i) => (
+                      <div key={cat} className="text-center">
+                        <div className="text-xs text-muted-foreground mb-1 truncate">{cat}</div>
+                        <div className="text-sm font-bold text-primary">{categoryWpmData[i]} WPM</div>
                       </div>
+                    ))}
+                  </div>
                 </div>
-                  )}
-                </div>
-              </div>
-            )}
+              )}
+            </div>
+          </div>
+        )}
 
-        {/* Action Buttons */}
-        <div className="mt-6 flex flex-col sm:flex-row gap-3">
-          <button
-            onClick={handleDownloadCertificate}
-            disabled={!testResults || testResults.length === 0 || !bestWpm || bestWpm === 0}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              (!testResults || testResults.length === 0 || !bestWpm || bestWpm === 0)
-                ? 'bg-muted text-muted-foreground cursor-not-allowed'
-                : 'bg-primary text-primary-foreground hover:opacity-90'
-            }`}
-          >
-            Download Certificate
-          </button>
-          <button
-            onClick={logout}
-            className="px-4 py-2 rounded-lg bg-card text-foreground text-sm font-medium hover:bg-muted transition-colors border border-border"
-          >
-            Sign Out
-          </button>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setShowDeleteProgress(true)}
-              className="px-3 py-2 rounded-lg bg-red-600/10 text-red-400 text-xs font-medium hover:bg-red-600/20 transition-colors border border-red-600/20"
-            >
-              Delete Progress
-            </button>
-            <button
-              onClick={() => setShowDeleteAccount(true)}
-              className="px-3 py-2 rounded-lg bg-red-600/10 text-red-400 text-xs font-medium hover:bg-red-600/20 transition-colors border border-red-600/20"
-            >
-              Delete Account
-            </button>
+        {/* Action Buttons - Minimal Bottom */}
+        <div className="mt-6 pt-4 border-t border-border/30">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <span className="text-xs text-muted-foreground">Account management</span>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setShowDeleteProgress(true)}
+                className="px-2.5 py-1 rounded text-xs font-medium text-red-400 hover:bg-red-500/10 transition-colors"
+              >
+                Delete Progress
+              </button>
+              <button
+                onClick={() => setShowDeleteAccount(true)}
+                className="px-2.5 py-1 rounded text-xs font-medium text-red-400 hover:bg-red-500/10 transition-colors"
+              >
+                Delete Account
+              </button>
+            </div>
           </div>
         </div>
 
@@ -1815,25 +1894,3 @@ export default function Profile() {
   );
 }
 
-// Modern Stat Card Component
-function ModernStatCard({ icon: Icon, label, value, color = 'cyan' }: { icon: any; label: string; value: React.ReactNode; color?: 'cyan' | 'emerald' | 'amber' }) {
-  return (
-    <div className="bg-card rounded-lg border border-border p-3 sm:p-4 transition-colors hover:border-primary/20">
-      <div className="flex items-center gap-2 mb-2">
-        <Icon className="w-4 h-4 text-primary flex-shrink-0" />
-        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{label}</span>
-      </div>
-      <div className="text-lg sm:text-xl font-bold text-primary leading-tight">{value}</div>
-    </div>
-  );
-}
-
-// Simple Stat Card Component
-function StatCard({ label, value }: { label: string; value: React.ReactNode }) {
-  return (
-    <div className="bg-card rounded-lg border border-border p-3 hover:border-primary/20 transition-colors">
-      <div className="text-xs font-medium text-muted-foreground mb-1.5 uppercase tracking-wide">{label}</div>
-      <div className="text-base sm:text-lg font-bold text-primary">{value}</div>
-    </div>
-  );
-} 
